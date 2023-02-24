@@ -15,16 +15,32 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Plugin strings are defined here.
+ * The main screen of the tool.
  *
  * @package     tool_laaudit
- * @category    string
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
- * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+require(__DIR__ . '/../../../config.php');
 
-$string['pluginname'] = 'Let(\')s audit Learning Analytics';
-$string['nomodelconfigurations'] = 'No model configurations found. Create some models using the Learning Analytics functionality, before you can train them and collect evidence for auditing them.';
-$string['nomodelversions'] = 'You have not created any models for this configuration yet. Thus, no evidence for auditing is available.';
+require_admin();
+
+$pageurl = new moodle_url('/admin/tool/laaudit/index.php');
+$heading = get_string('pluginname', 'tool_laaudit');
+$context = context_system::instance();
+
+$PAGE->set_context($context);
+$PAGE->set_url($pageurl);
+$PAGE->set_pagelayout('standard');
+$PAGE->set_title(format_string($heading));
+$PAGE->set_heading($heading);
+// $PAGE->navbar->add($heading);
+
+echo $OUTPUT->header();
+
+echo get_string('pluginname', 'tool_laaudit');
+echo get_string('nomodelconfigurations', 'tool_laaudit');
+echo get_string('nomodelversions', 'tool_laaudit');
+
+echo $OUTPUT->footer();

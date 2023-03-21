@@ -26,6 +26,26 @@ require(__DIR__ . '/../../../config.php');
 
 require_admin();
 
+/////// CONTROLER
+
+// get all model configurations
+use tool_laaudit\model_configuration;
+use core_analytics\manager;
+
+$models = manager::get_all_models();
+$model_configs = [];
+
+foreach ($models as $model) {
+    // todo: only check non-static models?
+    $model_config = new model_configuration($model);
+    $model_config_obj = $model_config->get_model_config_obj();
+
+    array_push($model_configs, json_encode($model_config_obj));
+}
+
+
+/////// VIEW
+
 $pageurl = new moodle_url('/admin/tool/laaudit/index.php');
 $heading = get_string('pluginname', 'tool_laaudit');
 $context = context_system::instance();
@@ -35,9 +55,10 @@ $PAGE->set_url($pageurl);
 $PAGE->set_pagelayout('standard');
 $PAGE->set_title(format_string($heading));
 $PAGE->set_heading($heading);
-// $PAGE->navbar->add($heading);
 
 echo $OUTPUT->header();
+
+echo implode($model_configs);
 
 echo get_string('pluginname', 'tool_laaudit');
 echo get_string('nomodelconfigurations', 'tool_laaudit');

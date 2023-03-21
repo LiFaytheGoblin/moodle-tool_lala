@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="admin/tool/laaudit/db" VERSION="20230321" COMMENT="XMLDB file for Moodle admin/tool/laaudit"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
+>
+    <TABLES>
+        <TABLE NAME="tool_laaudit_model_configs" COMMENT="Model configurations (immutable model properties) derived from analytics_models">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="modelid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="versions" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Versions of the model configuration, e.g. with different time-splitting method etc.">
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+                <KEY NAME="modelid" TYPE="unique" FIELDS="modelid"/>
+            </KEYS>
+        </TABLE>
+    </TABLES>
+</XMLDB>

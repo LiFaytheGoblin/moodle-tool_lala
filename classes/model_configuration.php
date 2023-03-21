@@ -1,14 +1,35 @@
 <?php
+// This file is part of Moodle - https://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+/**
+ * The model configuration class, built on top of the analytics/model class.
+ *
+ * @package     tool_laaudit
+ * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 namespace tool_laaudit;
 
-// file admin/tool/laaudit/classes/model_configuration.php
 use core_analytics\model;
 
 class model_configuration {
-    private $ID;
-    private $MODEL; // model object
-    private $VERSIONS;
+    private $id;
+    private $model; // Serialized model object.
+    private $versions;
 
 
     /**
@@ -20,18 +41,17 @@ class model_configuration {
     public function __construct($model) {
         global $DB;
 
-        $this->MODEL = $model->get_model_obj();
+        $this->model = $model->get_model_obj();
+        $this->model->name_safe = isset($model->name) ? $model->name : "model" . $this->model->id;
 
-        $this->MODEL->name_safe = isset($model->name) ? $model->name : "model" . $this->MODEL->id;
-
-        if(!$DB->record_exists('tool_laaudit_model_configs', array('modelid' => $this->MODEL->id))) {
-            model_configuration::insert_new_from_model_into_DB($this->MODEL);
+        if (!$DB->record_exists('tool_laaudit_model_configs', array('modelid' => $this->model->id))) {
+            self::insert_new_from_model_into_db($this->model);
         }
 
-        $model_config = $DB->get_record('tool_laaudit_model_configs', array('modelid' => $this->MODEL->id), '*', MUST_EXIST);
+        $modelconfig = $DB->get_record('tool_laaudit_model_configs', array('modelid' => $this->model->id), '*', MUST_EXIST);
 
-        $this->ID = $model_config->id;
-        $this->VERSIONS = json_decode($model_config->versions); //array of ids, todo see if this works
+        $this->id = $modelconfig->id;
+        $this->versions = json_decode($modelconfig->versions); // Array of ids, todo see if this works!
     }
 
     /**
@@ -39,13 +59,13 @@ class model_configuration {
      *
      * @return \stdClass
      */
-    public function get_model_config_obj() {
+    public function get_modelconfig_obj() {
         $obj = new \stdClass();
-        $obj->id = $this->ID;
-        $obj->modelid = $this->MODEL->id;
-        $obj->modelname = $this->MODEL->name_safe;
-        $obj->modeltarget = $this->MODEL->target;
-        $obj->versions = $this->VERSIONS;
+        $obj->id = $this->id;
+        $obj->modelid = $this->model->id;
+        $obj->modelname = $this->model->name_safe;
+        $obj->modeltarget = $this->model->target;
+        $obj->versions = $this->versions;
 
         return $obj;
     }
@@ -56,10 +76,9 @@ class model_configuration {
      * @param \stdClass $model
      * @return void
      */
-    public static function insert_new_from_model_into_DB($model) {
+    public static function insert_new_from_model_into_db($model) {
         global $DB;
 
-        // create new db entry
         $obj = new \stdClass();
         $obj->modelid = $model->id;
         $obj->versions = json_encode([]);

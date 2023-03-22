@@ -65,7 +65,7 @@ class model_configuration {
         $obj->modelid = $this->model->id;
         $obj->modelname = $this->model->name_safe;
         $obj->modeltarget = $this->model->target;
-        $obj->versions = $this->versions;
+        $obj->versions = json_encode($this->versions);
 
         return $obj;
     }

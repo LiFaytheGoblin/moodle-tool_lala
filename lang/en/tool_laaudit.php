@@ -28,3 +28,8 @@ defined('MOODLE_INTERNAL') || die();
 $string['pluginname'] = 'Let(\')s audit Learning Analytics';
 $string['nomodelconfigurations'] = 'No model configurations found. Create some models using the Learning Analytics functionality, before you can train them and collect evidence for auditing them.';
 $string['nomodelversions'] = 'You have not created any models for this configuration yet. Thus, no evidence for auditing is available.';
+$string['learnaboutauditing'] = 'Learn about model auditing';
+$string['automaticallycreateevidence'] = '+ automatically create new evidence set';
+$string['configidinfo'] = 'config-id: {$a}';
+$string['modelidinfo'] = 'model-id: {$a}';
+$string['targetinfo'] = 'target: {$a}';

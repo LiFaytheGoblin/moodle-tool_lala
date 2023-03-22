@@ -40,7 +40,7 @@ foreach ($models as $model) {
     $modelconfig = new model_configuration($model);
     $modelconfigobj = $modelconfig->get_modelconfig_obj();
 
-    array_push($modelconfigs, json_encode($modelconfigobj));
+    $modelconfigs[] = $modelconfigobj;
 }
 
 
@@ -58,10 +58,13 @@ $PAGE->set_heading($heading);
 
 echo $OUTPUT->header();
 
-echo implode($modelconfigs);
-
-echo get_string('pluginname', 'tool_laaudit');
-echo get_string('nomodelconfigurations', 'tool_laaudit');
-echo get_string('nomodelversions', 'tool_laaudit');
+if (sizeof($modelconfigs) < 1) {
+    echo get_string('nomodelconfigurations', 'tool_laaudit');
+} else {
+    foreach ($modelconfigs as $data) {
+        echo $OUTPUT->render_from_template('tool_laaudit/model_configuration', $data);
+    }
+}
+// echo get_string('nomodelversions', 'tool_laaudit');
 
 echo $OUTPUT->footer();

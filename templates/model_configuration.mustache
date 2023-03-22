@@ -15,39 +15,41 @@
     @template tool_laaudit/model_configurations_list
     Template for model configurations list.
     Context variables required for this template:
-    * modelconfigs: array - list of model configurations to display
+    * modelconfigs: array - a model configuration to display
         - id: int - model config unique identifier
         - modelname: string - name of the model config
         - modelid
         - target: string - name of the target associated with the model config
-        - targethelp: object - data for the help tooltip template
-        - indicatorsnum: int - number of indicators
-        - indicators: array - list of indicators used by the model
-            + name: string - name of the indicator
-            + help: object - data for the help tooltip template
+        - versions
+        - backbutton
     Example context (json):
     {
         "id": 1,
         "modelid": 4,
         "modelname": "model4",
         "modeltarget": "Prevent devs at risk",
-        "versions": [1, 2, 3]
+        "versions": [1, 2, 3],
+        "backbutton": {
+            "method" : "post",
+            "classes": "singlebutton",
+            "url" : "/evidencecollection",
+            "primary" : false,
+            "label" : "automatically create new evidence collection"
+        },
+        "information": ["some info", "other info"]
     }
 }}
-<section>
-    <div>
+<li class="activity activity-wrapper">
+    <div class="activity-item">
+        <h2>{{modelname}}</h2>
         <div>
-            <h2>{{modelname}}</h2>
+            <ul>
+                <li class="text-muted small config-info">{{#str}}configidinfo, tool_laaudit, {{id}}{{/str}}</li>
+                <li class="text-muted small config-info">{{#str}}modelidinfo, tool_laaudit, {{modelid}}{{/str}}</li>
+                <li class="text-muted small config-info">{{#str}}targetinfo, tool_laaudit, {{modeltarget}}{{/str}}</li>
+                <li class="text-muted small config-info">versions: {{versions}}</li>
+            </ul>
         </div>
-        <div>
-            <button>{{#str}}automaticallycreateevidence, tool_laaudit{{/str}}</button>
-        </div>
+        <div> {{#automaticallycreateevidencebutton}}{{> core/single_button}}{{/automaticallycreateevidencebutton}} </div>
     </div>
-    <div>
-        <ul>
-            <li>{{#str}}configidinfo, tool_laaudit, {{id}}{{/str}}, {{#str}}modelidinfo, tool_laaudit, {{modelid}}{{/str}}</li>
-            <li>{{#str}}targetinfo, tool_laaudit, {{modeltarget}}{{/str}}</li>
-            <li>versions: {{versions}}</li>
-        </ul>
-    </div>
-</section>
+</li>

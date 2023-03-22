@@ -61,9 +61,21 @@ echo $OUTPUT->header();
 if (sizeof($modelconfigs) < 1) {
     echo get_string('nomodelconfigurations', 'tool_laaudit');
 } else {
-    foreach ($modelconfigs as $data) {
-        echo $OUTPUT->render_from_template('tool_laaudit/model_configuration', $data);
+    $renderable = new \stdClass();
+    $renderable->modelconfigs = [];
+
+    foreach ($modelconfigs as $modelconfig) {
+        // Create context for button that will start the evidence collection for a new version of this model config automatically.
+        $modelconfig->automaticallycreateevidencebutton = new \stdClass();
+        $modelconfig->automaticallycreateevidencebutton->method = "post";
+        $modelconfig->automaticallycreateevidencebutton->url = "config/" . $modelconfig->id . "/version";
+        $modelconfig->automaticallycreateevidencebutton->label = get_string('automaticallycreateevidence', 'tool_laaudit');
+
+        $renderable->modelconfigs[] = $modelconfig;
+        // echo $OUTPUT->render_from_template('tool_laaudit/model_configuration', $data);
     }
+
+    echo $OUTPUT->render_from_template('tool_laaudit/model_configurations', $renderable);
 }
 // echo get_string('nomodelversions', 'tool_laaudit');
 

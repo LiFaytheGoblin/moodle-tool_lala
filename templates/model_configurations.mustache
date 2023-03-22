@@ -1,0 +1,63 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template tool_laaudit/model_configurations_list
+    Template for model configurations list.
+    Context variables required for this template:
+    * modelconfigs: array - a model configuration to display
+        - id: int - model config unique identifier
+        - modelname: string - name of the model config
+        - modelid
+        - target: string - name of the target associated with the model config
+        - versions
+        - backbutton
+    Example context (json):
+    {
+        "modelconfigs": [
+            {
+            "id": 1,
+            "modelid": 4,
+            "modelname": "model4",
+            "modeltarget": "Prevent devs at risk",
+            "versions": [1, 2, 3],
+            "automaticallycreateevidencebutton": {
+                "method" : "post",
+                "classes": "singlebutton",
+                "url" : "/evidencecollection",
+                "primary" : false,
+                "label" : "automatically create new evidence collection"
+            }
+            }
+         ]
+    }
+}}
+<ul class="section m-0 p-0 d-block">
+    {{#modelconfigs}}
+        <li class="activity activity-wrapper">
+            <div class="activity-item">
+                <div class="activity-basis d-flex w-100 align-items-center flex-column flex-md-row align-self-start">
+                    <h3 class="activity-instance activity-title d-flex flex-column">{{modelname}}</h3>
+                    <div class="activity-info mt-1 mt-md-0">{{#automaticallycreateevidencebutton}}{{> core/single_button}}{{/automaticallycreateevidencebutton}}</div>
+                </div>
+
+                <ul class="description p-0">
+                    <li class="course-description-item config-info"><strong>{{#str}}configid, tool_laaudit{{/str}}</strong> {{id}}</li>
+                    <li class="course-description-item config-info"><strong>{{#str}}modelid, tool_laaudit{{/str}}</strong> {{modelid}}</li>
+                    <li class="course-description-item config-info"><strong>{{#str}}target, tool_laaudit{{/str}}</strong> {{modeltarget}}</li>
+                    <li class="course-description-item config-info"><strong>{{#str}}versions, tool_laaudit{{/str}}</strong> {{versions}}</li>
+                </ul>
+            </div>
+        </li>
+    {{/modelconfigs}}
+</ul>

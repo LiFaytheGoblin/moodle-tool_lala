@@ -29,20 +29,10 @@ require_admin();
 /////// CONTROLLER
 
 // Get all model configurations.
-use tool_laaudit\model_configuration;
-use core_analytics\manager;
+use tool_laaudit\model_configuration_controller;
 
-$models = manager::get_all_models();
-$modelconfigs = [];
-
-foreach ($models as $model) {
-    // Todo: only check non-static models?
-    $modelconfig = new model_configuration($model);
-    $modelconfigobj = $modelconfig->get_modelconfig_obj();
-
-    $modelconfigs[] = $modelconfigobj;
-}
-
+$model_configuration_controller = new model_configuration_controller();
+$renderable = $model_configuration_controller->get_all_model_configs_renderable();
 
 /////// VIEW
 
@@ -58,23 +48,9 @@ $PAGE->set_heading($heading);
 
 echo $OUTPUT->header();
 
-if (sizeof($modelconfigs) < 1) {
+if (sizeof($renderable->modelconfigs) < 1) {
     echo get_string('nomodelconfigurations', 'tool_laaudit');
 } else {
-    $renderable = new \stdClass();
-    $renderable->modelconfigs = [];
-
-    foreach ($modelconfigs as $modelconfig) {
-        // Create context for button that will start the evidence collection for a new version of this model config automatically.
-        $modelconfig->automaticallycreateevidencebutton = new \stdClass();
-        $modelconfig->automaticallycreateevidencebutton->method = "post";
-        $modelconfig->automaticallycreateevidencebutton->url = "config/" . $modelconfig->id . "/version";
-        $modelconfig->automaticallycreateevidencebutton->label = get_string('automaticallycreateevidence', 'tool_laaudit');
-
-        $renderable->modelconfigs[] = $modelconfig;
-        // echo $OUTPUT->render_from_template('tool_laaudit/model_configuration', $data);
-    }
-
     echo $OUTPUT->render_from_template('tool_laaudit/model_configurations', $renderable);
 }
 // echo get_string('nomodelversions', 'tool_laaudit');

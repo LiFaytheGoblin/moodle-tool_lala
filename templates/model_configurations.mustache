@@ -18,10 +18,13 @@
     * modelconfigs: array - a model configuration to display
         - id: int - model config unique identifier
         - modelname: string - name of the model config
-        - modelid
+        - modelid: int - model id
         - target: string - name of the target associated with the model config
-        - versions
-        - backbutton
+        - versions: currently an array of version ids (int)
+        - automaticallycreateevidencebutton:
+            - method
+            - url
+            - label
     Example context (json):
     {
         "modelconfigs": [
@@ -33,9 +36,7 @@
             "versions": [1, 2, 3],
             "automaticallycreateevidencebutton": {
                 "method" : "post",
-                "classes": "singlebutton",
-                "url" : "/evidencecollection",
-                "primary" : false,
+                "url" : "/config/1/version",
                 "label" : "automatically create new evidence collection"
             }
             }

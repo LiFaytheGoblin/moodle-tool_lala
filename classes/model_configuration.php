@@ -56,16 +56,25 @@ class model_configuration {
 
     /**
      * Returns a plain \stdClass with the model config data (id, modelid, versions) plus modelname and modeltarget.
+     * Todo: Possibly move parts of this to the controller or another location...
      *
      * @return \stdClass
      */
-    public function get_modelconfig_obj() {
+    public function get_template_context_json() {
         $obj = new \stdClass();
+
+        // Add info about the model configuration.
         $obj->id = $this->id;
         $obj->modelid = $this->model->id;
         $obj->modelname = $this->model->name_safe;
         $obj->modeltarget = $this->model->target;
         $obj->versions = json_encode($this->versions);
+
+        // Create context for button that will start the evidence collection for a new version of this model config automatically.
+        $obj->automaticallycreateevidencebutton = new \stdClass();
+        $obj->automaticallycreateevidencebutton->method = "post";
+        $obj->automaticallycreateevidencebutton->url = "config/" . $this->id . "/version";
+        $obj->automaticallycreateevidencebutton->label = get_string('automaticallycreateevidence', 'tool_laaudit');
 
         return $obj;
     }

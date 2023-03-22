@@ -8,7 +8,7 @@
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="modelid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="versions" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Versions of the model configuration, e.g. with different time-splitting method etc.">
+                <FIELD NAME="versions" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Versions of the model configuration, e.g. with different time-splitting method etc." />
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

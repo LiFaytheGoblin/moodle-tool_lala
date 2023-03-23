@@ -35,7 +35,7 @@ class model_configuration {
     /**
      * Constructor.
      *
-     * @param \model $model
+     * @param model $model
      * @return void
      */
     public function __construct($model) {
@@ -55,13 +55,12 @@ class model_configuration {
     }
 
     /**
-     * Returns a plain \stdClass with the model config data (id, modelid, versions) plus modelname and modeltarget.
-     * Todo: Possibly move parts of this to the controller or another location...
+     * Returns a plain stdClass with the model config data (id, modelid, versions) plus modelname and modeltarget.
      *
-     * @return \stdClass
+     * @return stdClass
      */
-    public function get_template_context_json() {
-        $obj = new \stdClass();
+    public function get_model_config_obj() {
+        $obj = new stdClass();
 
         // Add info about the model configuration.
         $obj->id = $this->id;
@@ -70,25 +69,19 @@ class model_configuration {
         $obj->modeltarget = $this->model->target;
         $obj->versions = json_encode($this->versions);
 
-        // Create context for button that will start the evidence collection for a new version of this model config automatically.
-        $obj->automaticallycreateevidencebutton = new \stdClass();
-        $obj->automaticallycreateevidencebutton->method = "post";
-        $obj->automaticallycreateevidencebutton->url = "config/" . $this->id . "/version";
-        $obj->automaticallycreateevidencebutton->label = get_string('automaticallycreateevidence', 'tool_laaudit');
-
         return $obj;
     }
 
     /**
      * Create a new model configuration from a model object
      *
-     * @param \stdClass $model
+     * @param stdClass $model model object
      * @return void
      */
     public static function insert_new_from_model_into_db($model) {
         global $DB;
 
-        $obj = new \stdClass();
+        $obj = new stdClass();
         $obj->modelid = $model->id;
         $obj->versions = json_encode([]);
 

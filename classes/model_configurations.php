@@ -25,34 +25,25 @@
 namespace tool_laaudit;
 
 use core_analytics\manager;
+use single_button;
 
-class model_configuration_controller {
-    private $models;
-    private $modelconfigs;
-    private $modelconfigsrenderable;
-    public function __construct() {
-        $this->models = manager::get_all_models();
+class model_configurations {
 
-        $this->modelconfigs = [];
+    /**
+     * Collect all model configuration objects
+     *
+     * @return array of model config objects
+     */
+    public static function get_all_model_config_objs() {
+        $models = manager::get_all_models();
+        $modelconfigs = [];
 
-        $this->modelconfigsrenderable = new \stdClass();
-        $this->modelconfigsrenderable->modelconfigs = [];
-
-        foreach ($this->models as $model) {
+        foreach ($models as $model) {
             // Todo: only check non-static models?
             $modelconfig = new model_configuration($model);
-            // $this->modelconfigs[] = $modelconfig;
-
-            $modelconfigobj = $modelconfig->get_template_context_json();
-            $this->modelconfigsrenderable->modelconfigs[] = $modelconfigobj;
+            $modelconfigs[] = $modelconfig->get_model_config_obj();
         }
-    }
-    /**
-     * Set up model configurations
-     *
-     * @return json
-     */
-    public function get_all_model_configs_renderable() {
-        return $this->modelconfigsrenderable;
+
+        return $modelconfigs;
     }
 }

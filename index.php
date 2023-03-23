@@ -29,13 +29,11 @@ require_admin();
 /////// CONTROLLER
 
 // Get all model configurations.
-use tool_laaudit\model_configuration_controller;
-
-$model_configuration_controller = new model_configuration_controller();
-$renderable = $model_configuration_controller->get_all_model_configs_renderable();
+$model_config_objs = tool_laaudit\model_configurations::get_all_model_config_objs();
 
 /////// VIEW
 
+// Set some page parameters.
 $pageurl = new moodle_url('/admin/tool/laaudit/index.php');
 $heading = get_string('pluginname', 'tool_laaudit');
 $context = context_system::instance();
@@ -46,13 +44,19 @@ $PAGE->set_pagelayout('standard');
 $PAGE->set_title(format_string($heading));
 $PAGE->set_heading($heading);
 
-echo $OUTPUT->header();
+// Output the page.
+$output = $PAGE->get_renderer('tool_laaudit');
 
-if (sizeof($renderable->modelconfigs) < 1) {
+echo $output->header();
+
+$model_configs_renderable = new tool_laaudit\output\model_configurations($model_config_objs);
+echo $output->render($model_configs_renderable);
+
+/*
+if (sizeof($data->modelconfigs) < 1) {
     echo get_string('nomodelconfigurations', 'tool_laaudit');
 } else {
-    echo $OUTPUT->render_from_template('tool_laaudit/model_configurations', $renderable);
-}
-// echo get_string('nomodelversions', 'tool_laaudit');
+    echo $OUTPUT->render_from_template('tool_laaudit/model_configurations', $data);
+}*/
 
-echo $OUTPUT->footer();
+echo $output->footer();

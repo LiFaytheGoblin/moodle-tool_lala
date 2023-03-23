@@ -26,6 +26,9 @@ namespace tool_laaudit\output;
 
 use plugin_renderer_base;
 
+/**
+ * Renderer
+ */
 class renderer extends plugin_renderer_base {
 
     /**

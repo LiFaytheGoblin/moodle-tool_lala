@@ -25,10 +25,17 @@
 namespace tool_laaudit;
 
 use core_analytics\model;
+use stdClass;
 
+/**
+ * Class for the model configuration.
+ */
 class model_configuration {
+    /** @var int $id id assigned to the configuration by the db. */
     private $id;
-    private $model; // Serialized model object.
+    /** @var stdClass $model of the serialized model object. */
+    private $model;
+    /** @var array $versions of model version ids. */
     private $versions;
 
 

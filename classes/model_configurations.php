@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * The model configuration controller class.
+ * The model configuration list class.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
@@ -27,6 +27,9 @@ namespace tool_laaudit;
 use core_analytics\manager;
 use single_button;
 
+/**
+ * Class for the list of model configurations.
+ */
 class model_configurations {
 
     /**

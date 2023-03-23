@@ -29,7 +29,11 @@ use templatable;
 use renderable;
 use stdClass;
 
+/**
+ * Class for the output for a list of single model configurations.
+ */
 class model_configurations implements templatable, renderable {
+    /** @var array $modelconfigs of stdClass of a model config */
     protected $modelconfigs;
     /**
      * Constructor for this object.

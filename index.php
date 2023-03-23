@@ -29,7 +29,7 @@ require_admin();
 /////// CONTROLLER
 
 // Get all model configurations.
-$model_config_objs = tool_laaudit\model_configurations::get_all_model_config_objs();
+$modelconfigobjs = tool_laaudit\model_configurations::get_all_model_config_objs();
 
 /////// VIEW
 
@@ -49,14 +49,7 @@ $output = $PAGE->get_renderer('tool_laaudit');
 
 echo $output->header();
 
-$model_configs_renderable = new tool_laaudit\output\model_configurations($model_config_objs);
-echo $output->render($model_configs_renderable);
-
-/*
-if (sizeof($data->modelconfigs) < 1) {
-    echo get_string('nomodelconfigurations', 'tool_laaudit');
-} else {
-    echo $OUTPUT->render_from_template('tool_laaudit/model_configurations', $data);
-}*/
+$modelconfigsrenderable = new tool_laaudit\output\model_configurations($modelconfigobjs);
+echo $output->render($modelconfigsrenderable);
 
 echo $output->footer();

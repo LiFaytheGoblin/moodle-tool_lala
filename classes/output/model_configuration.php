@@ -31,9 +31,13 @@ use moodle_url;
 use help_icon;
 use single_button;
 use stdClass;
+
+/**
+ * Class for the output for a single model configuration.
+ */
 class model_configuration implements templatable, renderable {
+    /** @var stdClass $modelconfig of a model config */
     protected $modelconfig;
-    protected $versionurl;
     /**
      * Constructor for this object.
      *
@@ -41,7 +45,6 @@ class model_configuration implements templatable, renderable {
      */
     public function __construct($modelconfig) {
         $this->modelconfig = $modelconfig;
-        $this->versionurl = new moodle_url(""); // "/config/" . $this->modelconfig->id . "/version"
     }
 
     /**
@@ -62,7 +65,7 @@ class model_configuration implements templatable, renderable {
 
         // Add buttons.
         $buttons = [];
-        $buttons[] = new single_button($this->versionurl, get_string('automaticallycreateevidence', 'tool_laaudit'), 'post');
+        $buttons[] = new single_button(new moodle_url(""), get_string('automaticallycreateevidence', 'tool_laaudit'), 'post');
         foreach ($buttons as $key => $button) {
             $buttons[$key] = $button->export_for_template($output);
         }

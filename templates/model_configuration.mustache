@@ -21,17 +21,56 @@
     - target: string - name of the target associated with the model config
     - versions: currently an array of version ids (int)
     - buttons: [{}]
+    - startedevidencesets: [{}]
+    - completedevidencesets: [{}]
     Example context (json):
     {
             "id": 1,
             "modelid": 4,
             "modelname": "model4",
             "modeltarget": "Prevent devs at risk",
-            "versions": [1, 2, 3],
             "buttons": [{
                 "method" : "post",
                 "url" : "/config/1/version",
                 "label" : "automatically create new evidence collection"
+            }],
+            "startedevidencesets": [{
+                "description": {
+                    "id": 1,
+                    "name": "AutoSet",
+                    "timecreationstarted": "1679987403",
+                    "indicators": ["someindicator"],
+                    "analysisinterval": "quarters",
+                    "predictionsprocessor": "php",
+                    "contextids": [1, 2, 3],
+                    "timecreationfinished": null
+                },
+                "evidence": [{
+                    "id": 1,
+                    "name": "training data",
+                    "timecreationstarted": "1679987403",
+                    "timecreationfinished": "1679987953",
+                    "serializedfilelocation": "/evidencecollections/1"
+                }]
+            }],
+            "completedevidencesets": [{
+                "description": {
+                    "id": 1,
+                    "name": "AutoSet",
+                    "timecreationstarted": "1679987403",
+                    "indicators": ["someindicator"],
+                    "analysisinterval": "quarters",
+                    "predictionsprocessor": "php",
+                    "contextids": [1, 2, 3],
+                    "timecreationfinished": null
+                },
+                "evidence": [{
+                    "id": 1,
+                    "name": "training data",
+                    "timecreationstarted": "1679987403",
+                    "timecreationfinished": "1679987953",
+                    "serializedfilelocation": "/evidencecollections/1"
+                }]
             }]
     }
 }}
@@ -46,7 +85,28 @@
             <li class="course-description-item config-info"><strong>{{#str}}configid, tool_laaudit{{/str}}</strong> {{id}}</li>
             <li class="course-description-item config-info"><strong>{{#str}}modelid, tool_laaudit{{/str}}</strong> {{modelid}}</li>
             <li class="course-description-item config-info"><strong>{{#str}}target, tool_laaudit{{/str}}</strong> {{modeltarget}}</li>
-            <li class="course-description-item config-info"><strong>{{#str}}versions, tool_laaudit{{/str}}</strong> {{versions}}</li>
         </ul>
+
+        <div>
+            <h4>Started Evidence Sets</h4>
+            <ul>
+                {{#startedevidencesets}}
+                    <li>
+                        {{> tool_laaudit/evidence_set}}
+                    </li>
+                {{/startedevidencesets}}
+            </ul>
+        </div>
+
+        <div>
+            <h4>Completed Evidence Sets</h4>
+            <ul>
+                {{#completedevidencesets}}
+                    <li>
+                        {{> tool_laaudit/evidence_set}}
+                    </li>
+                {{/completedevidencesets}}
+            </ul>
+        </div>
     </div>
 </li>

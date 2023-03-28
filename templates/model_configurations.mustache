@@ -22,6 +22,8 @@
         - target: string - name of the target associated with the model config
         - versions: currently an array of version ids (int)
         - buttons: [{}]
+        - startedevidencesets: [{}]
+        - completedevidencesets: [{}]
     Example context (json):
     {
         "modelconfigs": [{
@@ -34,6 +36,44 @@
                 "method" : "post",
                 "url" : "/config/1/version",
                 "label" : "automatically create new evidence collection"
+            }],
+            "startedevidencesets": [{
+                "description": {
+                    "id": 1,
+                    "name": "AutoSet",
+                    "timecreationstarted": "1679987403",
+                    "indicators": ["someindicator"],
+                    "analysisinterval": "quarters",
+                    "predictionsprocessor": "php",
+                    "contextids": [1, 2, 3],
+                    "timecreationfinished": null
+                },
+                "evidence": [{
+                    "id": 1,
+                    "name": "training data",
+                    "timecreationstarted": "1679987403",
+                    "timecreationfinished": "1679987953",
+                    "serializedfilelocation": "/evidencecollections/1"
+                }]
+            }],
+            "completedevidencesets": [{
+                "description": {
+                    "id": 1,
+                    "name": "AutoSet",
+                    "timecreationstarted": "1679987403",
+                    "indicators": ["someindicator"],
+                    "analysisinterval": "quarters",
+                    "predictionsprocessor": "php",
+                    "contextids": [1, 2, 3],
+                    "timecreationfinished": null
+                },
+                "evidence": [{
+                    "id": 1,
+                    "name": "training data",
+                    "timecreationstarted": "1679987403",
+                    "timecreationfinished": "1679987953",
+                    "serializedfilelocation": "/evidencecollections/1"
+                }]
             }]
         }]
     }

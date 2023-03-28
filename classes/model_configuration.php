@@ -35,8 +35,6 @@ class model_configuration {
     private $id;
     /** @var stdClass $model of the serialized model object. */
     private $model;
-    /** @var array $versions of model version ids. */
-    private $versions;
 
 
     /**
@@ -48,17 +46,19 @@ class model_configuration {
     public function __construct($model) {
         global $DB;
 
-        $this->model = $model->get_model_obj();
-        $this->model->name_safe = isset($model->name) ? $model->name : "model" . $this->model->id;
-
-        if (!$DB->record_exists('tool_laaudit_model_configs', array('modelid' => $this->model->id))) {
-            self::insert_new_from_model_into_db($this->model);
+        // Create in DB.
+        $model_obj = $model->get_model_obj();
+        if (!$DB->record_exists('tool_laaudit_model_configs', array('modelid' => $model_obj->id))) {
+            self::insert_new_from_model_into_db($model_obj);
         }
 
-        $modelconfig = $DB->get_record('tool_laaudit_model_configs', array('modelid' => $this->model->id), '*', MUST_EXIST);
+        // Fill properties from DB.
+        $modelconfig = $DB->get_record('tool_laaudit_model_configs', array('modelid' => $model_obj->id), '*', MUST_EXIST);
 
         $this->id = $modelconfig->id;
-        $this->versions = json_decode($modelconfig->versions); // Array of ids, todo see if this works!
+        $this->modelid = $model_obj->id;
+        $this->modelname = isset($model_obj->name) ? $model_obj->name : "model" . $this->modelid;
+        $this->modeltarget = $model_obj->target;
     }
 
     /**
@@ -71,10 +71,9 @@ class model_configuration {
 
         // Add info about the model configuration.
         $obj->id = $this->id;
-        $obj->modelid = $this->model->id;
-        $obj->modelname = $this->model->name_safe;
-        $obj->modeltarget = $this->model->target;
-        $obj->versions = json_encode($this->versions);
+        $obj->modelid = $this->modelid;
+        $obj->modelname = $this->modelname;
+        $obj->modeltarget = $this->modeltarget;
 
         return $obj;
     }
@@ -90,7 +89,6 @@ class model_configuration {
 
         $obj = new stdClass();
         $obj->modelid = $model->id;
-        $obj->versions = json_encode([]);
 
         $DB->insert_record('tool_laaudit_model_configs', $obj);
     }

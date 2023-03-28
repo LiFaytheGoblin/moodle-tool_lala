@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'tool_laaudit';
-$plugin->release = '0.1.0';
-$plugin->version = 2023022300;
+$plugin->release = '0.1.1';
+$plugin->version = 2023032800;
 $plugin->requires = 2022112800;
 $plugin->maturity = MATURITY_ALPHA;

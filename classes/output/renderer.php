@@ -30,6 +30,26 @@ use plugin_renderer_base;
  * Renderer
  */
 class renderer extends plugin_renderer_base {
+    /**
+     * Defer to template.
+     *
+     * @param index_page $page
+     * @return string html for the page
+     */
+    public function render_evidence_item($page) {
+        $data = $page->export_for_template($this);
+        return parent::render_from_template('tool_laaudit/evidence_item', $data);
+    }
+    /**
+     * Defer to template.
+     *
+     * @param index_page $page
+     * @return string html for the page
+     */
+    public function render_evidence_set($page) {
+        $data = $page->export_for_template($this);
+        return parent::render_from_template('tool_laaudit/evidence_set', $data);
+    }
 
     /**
      * Defer to template.

@@ -61,7 +61,6 @@ class model_configuration implements templatable, renderable {
         $data->modelid = $this->modelconfig->modelid;
         $data->modelname = $this->modelconfig->modelname;
         $data->modeltarget = $this->modelconfig->modeltarget;
-        $data->versions = json_encode($this->modelconfig->versions);
 
         // Add buttons.
         $buttons = [];
@@ -70,6 +69,19 @@ class model_configuration implements templatable, renderable {
             $buttons[$key] = $button->export_for_template($output);
         }
         $data->buttons = $buttons;
+
+        // Add started evidence sets.
+        $startedevidencesets = [];
+        // for each model version:
+        //  is started or finished?
+        //  $evidenceset->export_for_template($output);
+        //  sort into started or finished
+        $data->startedevidencesets = $startedevidencesets;
+
+        // Add completed evidence sets.
+        $completedevidencesets = [];
+        // Todo: fill...
+        $data->completedevidencesets = $completedevidencesets;
 
         return $data;
     }

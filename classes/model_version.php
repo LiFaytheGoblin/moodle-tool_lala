@@ -65,7 +65,7 @@ class model_version {
 
         $config = $DB->get_record('tool_laaudit_model_configs', ['id' => $configid]);
         $model = $DB->get_record('analytics_models', ['id' => $config->modelid]);
-        $this->id = self::insert_new_from_model_into_db($model);
+        $this->id = self::insert_new_from_model_into_db($model, $configid);
 
         // Fill properties from DB.
 
@@ -81,21 +81,23 @@ class model_version {
         $this->indicators = $version->indicators;
     }
 
-    private static function insert_new_from_model_into_db($model) {
+    private static function insert_new_from_model_into_db($model, $configid) {
         global $DB;
 
         $obj = new stdClass();
 
+        $obj->configid = $configid;
+
         // Set defaults.
         $obj->name = "default";
-        $obj->timecreationstarted = new DateTime("now", core_date::get_server_timezone_object()); //todo: timestamp
+        $obj->timecreationstarted = time();
         $obj->timecreationfinished = 0;
 
         // Copy values from model
-        $obj->analysisinterval = $model->timesplitting || "...";
-        $obj->predictionsprocessor = $model->predictionsprocessor;
-        $obj->contextids = $model->contextids;
-        $obj->indicators = $model->indicators;
+        $obj->analysisinterval = isset($model->timesplitting)? $model->timesplitting : "None";
+        $obj->predictionsprocessor = isset($model->predictionsprocessor) ? $model->predictionsprocessor : "None";
+        $obj->contextids = isset($model->contextids) ? $model->contextids : "[]";
+        $obj->indicators = isset($model->indicators) ? $model->indicators : "[]";
 
         return $DB->insert_record('tool_laaudit_model_versions', $obj);
     }

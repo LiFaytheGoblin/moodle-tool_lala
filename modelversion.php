@@ -30,7 +30,6 @@ require_admin();
 
 $configid = optional_param('configid', 0, PARAM_INT);
 
-
 // Routes
 // POST /admin/tool/laaudit/modelversion.php?configid=<configid>
 
@@ -45,7 +44,7 @@ $PAGE->set_context($context);
 if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') { // POST /admin/tool/laaudit/modelversion.php?configid=<configid>
     $version = new model_version($configid);
     $version_obj = $version->get_model_version_obj();
-    echo(json_encode($version_obj));
-    // redirect($priorurl);
+    //echo(json_encode($version_obj));
+    redirect($priorurl);
 }
 

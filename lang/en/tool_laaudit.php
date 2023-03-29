@@ -42,3 +42,5 @@ $string['predictionsprocessor'] = 'predictions processor (ML backend)';
 $string['analysisinterval'] = 'analysis interval';
 $string['contexts'] = 'contexts';
 $string['indicators'] = 'indicators';
+$string['name'] = 'name';
+$string['serializedfilelocation'] = 'location of file containing serialized data';

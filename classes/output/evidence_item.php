@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Output for a list of single model configurations.
+ * Output for a single model version.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
@@ -27,22 +27,24 @@ namespace tool_laaudit\output;
 use renderer_base;
 use templatable;
 use renderable;
+use moodle_url;
+use help_icon;
+use single_button;
 use stdClass;
 
 /**
- * Class for the output for a list of single model configurations.
+ * Class for the output for a single model version.
  */
-class model_configurations implements templatable, renderable {
-    /** @var stdClass[] $modelconfigs of model configs */
-    protected $modelconfigs;
+class evidence_item implements templatable, renderable {
+    /** @var stdClass $version of a model config */
+    protected $item;
     /**
      * Constructor for this object.
      *
-     * @param stdClass $modelconfigs An array of model config objects
+     * @param stdClass $version The model version object
      */
-    public function __construct($modelconfigs) {
-        $this->modelconfigs = $modelconfigs;
-
+    public function __construct($item) {
+        $this->item = $tem;
     }
 
     /**
@@ -53,12 +55,12 @@ class model_configurations implements templatable, renderable {
      */
     public function export_for_template(renderer_base $output) {
         $data = new stdClass();
-        $data->modelconfigs = [];
 
-        foreach ($this->modelconfigs as $modelconfig) {
-            $modelconfig = new model_configuration($modelconfig);
-            $data->modelconfigs[] = $modelconfig->export_for_template($output);
-        }
+        $data->id = $this->item->id;
+        $data->name = $this->item->name;
+        $data->timecreationstarted = $this->item->timecreationstarted;
+        $data->timecreationfinished = $this->item->timecreationfinished;
+        $data->serializedfilelocation = $this->item->serializedfilelocation;
 
         return $data;
     }

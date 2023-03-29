@@ -46,9 +46,19 @@ class renderer extends plugin_renderer_base {
      * @param index_page $page
      * @return string html for the page
      */
-    public function render_evidence_set($page) {
+    public function render_model_version_description($page) {
         $data = $page->export_for_template($this);
-        return parent::render_from_template('tool_laaudit/evidence_set', $data);
+        return parent::render_from_template('tool_laaudit/model_version_description', $data);
+    }
+    /**
+     * Defer to template.
+     *
+     * @param index_page $page
+     * @return string html for the page
+     */
+    public function render_model_version($page) {
+        $data = $page->export_for_template($this);
+        return parent::render_from_template('tool_laaudit/model_version', $data);
     }
 
     /**

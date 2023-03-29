@@ -53,25 +53,19 @@ class model_version {
     private $indicators;
 
     /**
-     * Constructor.
+     * Constructor. Deserialize DB object.
      *
-     * @param int $configid
+     * @param int $id of the version
      * @return void
      */
-    public function __construct($configid) {
+    public function __construct($id) {
         global $DB;
 
-        // Create in DB.
-
-        $config = $DB->get_record('tool_laaudit_model_configs', ['id' => $configid]);
-        $model = $DB->get_record('analytics_models', ['id' => $config->modelid]);
-        $this->id = self::insert_new_from_model_into_db($model, $configid);
+        $version = $DB->get_record('tool_laaudit_model_versions', array('id' => $id), '*', MUST_EXIST);
 
         // Fill properties from DB.
-
-        $version = $DB->get_record('tool_laaudit_model_versions', array('id' => $this->id), '*', MUST_EXIST);
-
-        $this->configid = $configid;
+        $this->id = $version->id;
+        $this->configid = $version->configid;
         $this->name = $version->name;
         $this->timecreationstarted = $version->timecreationstarted;
         $this->timecreationfinished = $version->timecreationfinished;
@@ -81,7 +75,7 @@ class model_version {
         $this->indicators = $version->indicators;
     }
 
-    private static function insert_new_from_model_into_db($model, $configid) {
+    public static function create_and_get_for_config($configid, $modelid) {
         global $DB;
 
         $obj = new stdClass();
@@ -94,6 +88,7 @@ class model_version {
         $obj->timecreationfinished = 0;
 
         // Copy values from model
+        $model = $DB->get_record('analytics_models', array('id' => $modelid), 'timesplitting, predictionsprocessor, contextids, indicators', MUST_EXIST);
         $obj->analysisinterval = isset($model->timesplitting)? $model->timesplitting : "None";
         $obj->predictionsprocessor = isset($model->predictionsprocessor) ? $model->predictionsprocessor : "None";
         $obj->contextids = isset($model->contextids) ? $model->contextids : "[]";
@@ -119,6 +114,7 @@ class model_version {
         $obj->predictionsprocessor = $this->predictionsprocessor;
         $obj->contextids = $this->contextids;
         $obj->indicators = $this->indicators;
+        $obj->evidence = [];
 
         return $obj;
     }

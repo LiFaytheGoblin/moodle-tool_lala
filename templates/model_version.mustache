@@ -15,20 +15,20 @@
     @template tool_laaudit/evidence_set
     Template for evidence_set.
     Context variables required for this template:
-    - description: {}
+    - description: [{}]
     - evidence: [{}]
     Example context (json):
     {
-        "description": {
-            "versionid": 1,
-            "versionname": "AutoSet",
+        "description": [{
+            "id": 1,
+            "name": "AutoSet",
             "timecreationstarted": "1679987403",
             "indicators": ["someindicator"],
             "analysisinterval": "quarters",
             "predictionsprocessor": "php",
             "contextids": [1, 2, 3],
             "timecreationfinished": null
-        },
+        }],
         "evidence": [{
             "id": 1,
             "name": "training data",
@@ -38,16 +38,9 @@
         }]
       }
 }}
-<h5>{{description.versionname}}</h5>
-<ul class="description p-0 list-unstyled">
-    <li class="course-description-item config-info"><strong>{{#str}}versionid, tool_laaudit{{/str}}</strong> {{versionid}}</li>
-    <li class="course-description-item config-info"><strong>{{#str}}started, tool_laaudit{{/str}}</strong> {{timecreationstarted}}</li>
-    <li class="course-description-item config-info"><strong>{{#str}}finished, tool_laaudit{{/str}}</strong> {{timecreationfinished}}</li> <!-- Todo: only if available? -->
-    <li class="course-description-item config-info"><strong>{{#str}}predictionsprocessor, tool_laaudit{{/str}}</strong> {{predictionsprocessor}}</li>
-    <li class="course-description-item config-info"><strong>{{#str}}analysisinterval, tool_laaudit{{/str}}</strong> {{analysisinterval}}</li>
-    <li class="course-description-item config-info"><strong>{{#str}}contexts, tool_laaudit{{/str}}</strong> {{contextids}}</li> <!-- Todo: Works? -->
-    <li class="course-description-item config-info"><strong>{{#str}}indicators, tool_laaudit{{/str}}</strong> {{indicators}}</li> <!-- Todo: Works? -->
-</ul>
+{{#description}}
+    {{> tool_laaudit/model_version_description}}
+{{/description}}
 <ul class="description p-0 list-unstyled">
     {{#evidence}}
         <li>

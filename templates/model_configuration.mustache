@@ -89,10 +89,10 @@
 
         <div>
             <h4>Started Evidence Sets</h4>
-            <ul>
+            <ul class="p-0 list-unstyled">
                 {{#startedevidencesets}}
                     <li>
-                        {{> tool_laaudit/evidence_set}}
+                        {{> tool_laaudit/model_version}}
                     </li>
                 {{/startedevidencesets}}
             </ul>
@@ -100,10 +100,10 @@
 
         <div>
             <h4>Completed Evidence Sets</h4>
-            <ul>
+            <ul class="p-0 list-unstyled">
                 {{#completedevidencesets}}
                     <li>
-                        {{> tool_laaudit/evidence_set}}
+                        {{> tool_laaudit/model_version}}
                     </li>
                 {{/completedevidencesets}}
             </ul>

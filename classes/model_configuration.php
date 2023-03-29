@@ -33,32 +33,54 @@ use stdClass;
 class model_configuration {
     /** @var int $id id assigned to the configuration by the db. */
     private $id;
-    /** @var stdClass $model of the serialized model object. */
-    private $model;
-
-
+    /** @var int $modelid of the belonging analytics model. */
+    private $modelid;
+    /** @var string $modelname of the belonging analytics model. */
+    private $modelname;
+    /** @var string $modeltarget of the belonging analytics model. */
+    private $modeltarget;
+    /** @var int[] $versions created of the model config. */
+    private $versions;
     /**
-     * Constructor.
+     * Constructor. Deserialize DB object.
      *
      * @param model $model
      * @return void
      */
-    public function __construct($model) {
+    public function __construct($id) {
         global $DB;
-
-        // Create in DB.
-        $model_obj = $model->get_model_obj();
-        if (!$DB->record_exists('tool_laaudit_model_configs', array('modelid' => $model_obj->id))) {
-            self::insert_new_from_model_into_db($model_obj);
-        }
-
         // Fill properties from DB.
-        $modelconfig = $DB->get_record('tool_laaudit_model_configs', array('modelid' => $model_obj->id), '*', MUST_EXIST);
+        $modelconfig = $DB->get_record('tool_laaudit_model_configs', array('id' => $id), '*', MUST_EXIST);
 
         $this->id = $modelconfig->id;
-        $this->modelid = $model_obj->id;
-        $this->modelname = isset($model_obj->name) ? $model_obj->name : "model" . $this->modelid;
-        $this->modeltarget = $model_obj->target;
+        $this->modelid = $modelconfig->modelid;
+
+        $model = $DB->get_record('analytics_models', array('id' => $this->modelid), '*', MUST_EXIST);
+
+        $this->modelname = isset($model->name) ? $model->name : "model" . $this->modelid;
+        $this->modeltarget = $model->target;
+
+        $this->versions = $this->get_versions_from_db();
+    }
+
+    /**
+     * Create a new model configuration for a model id, or if it already exists, retrieve that config.
+     *
+     * @param int $modelid of an analytics model
+     * @return int id of created or retrieved object
+     */
+    public static function get_or_create_and_get_for_model($modelid) {
+        global $DB;
+
+        if ($DB->record_exists('tool_laaudit_model_configs', array('modelid' => $modelid))) {
+            $record = $DB->get_record('tool_laaudit_model_configs', array('modelid' => $modelid), 'id', MUST_EXIST);
+            return $record->id;
+        }
+
+        $obj = new stdClass();
+        $obj->modelid = $modelid;
+
+        return $DB->insert_record('tool_laaudit_model_configs', $obj);
     }
 
     /**
@@ -74,22 +96,31 @@ class model_configuration {
         $obj->modelid = $this->modelid;
         $obj->modelname = $this->modelname;
         $obj->modeltarget = $this->modeltarget;
+        $obj->versions = $this->versions;
 
         return $obj;
     }
 
     /**
-     * Create a new model configuration from a model object
+     * Add new auto-created version
      *
-     * @param stdClass $model model object
-     * @return void
+     * @return stdClass
      */
-    public static function insert_new_from_model_into_db($model) {
+    public function add_version() {
+        $versionid = model_version::create_and_get_for_config($this->id, $this->modelid);
+        $new_version = new model_version($versionid);
+        $this->versions[] = $new_version;
+    }
+
+    /**
+     * Retrieve versions from the DB and store in onbject properties
+     *
+     * @return stdClass[] versions
+     */
+    public function get_versions_from_db() {
         global $DB;
 
-        $obj = new stdClass();
-        $obj->modelid = $model->id;
-
-        $DB->insert_record('tool_laaudit_model_configs', $obj);
+        $records = $DB->get_records('tool_laaudit_model_versions', array('configid' => $this->id));
+        return $records;
     }
 }

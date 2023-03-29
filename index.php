@@ -29,7 +29,7 @@ require_admin();
 /////// CONTROLLER
 
 // Get all model configurations.
-$modelconfigobjs = tool_laaudit\model_configurations::get_all_model_config_objs();
+$modelconfigobjs = tool_laaudit\model_configurations::init_and_get_all_model_config_objs();
 
 /////// VIEW
 

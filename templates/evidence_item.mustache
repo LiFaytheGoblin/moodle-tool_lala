@@ -29,20 +29,10 @@
         "serializedfilelocation": "/evidencecollections/1"
       }
 }}
-<h5>{{description.versionname}}</h5>
+<h5>evidence{{id}}</h5>
 <ul class="description p-0 list-unstyled">
-    <li class="course-description-item config-info"><strong>{{#str}}versionid, tool_laaudit{{/str}}</strong> {{versionid}}</li>
+    <li class="course-description-item config-info"><strong>{{#str}}name, tool_laaudit{{/str}}</strong> {{name}}</li>
     <li class="course-description-item config-info"><strong>{{#str}}started, tool_laaudit{{/str}}</strong> {{timecreationstarted}}</li>
-    <li class="course-description-item config-info"><strong>{{#str}}finished, tool_laaudit{{/str}}</strong> {{timecreationfinished}}</li> <!-- Todo: only if available? -->
-    <li class="course-description-item config-info"><strong>{{#str}}predictionsprocessor, tool_laaudit{{/str}}</strong> {{predictionsprocessor}}</li>
-    <li class="course-description-item config-info"><strong>{{#str}}analysisinterval, tool_laaudit{{/str}}</strong> {{analysisinterval}}</li>
-    <li class="course-description-item config-info"><strong>{{#str}}contexts, tool_laaudit{{/str}}</strong> {{contextids}}</li> <!-- Todo: Works? -->
-    <li class="course-description-item config-info"><strong>{{#str}}indicators, tool_laaudit{{/str}}</strong> {{indicators}}</li> <!-- Todo: Works? -->
-</ul>
-<ul class="description p-0 list-unstyled">
-    {{#evidence}}
-        <li>
-            {{> tool_laaudit/evidence_item}}
-        </li>
-    {{/evidence}}
+    <li class="course-description-item config-info"><strong>{{#str}}finished, tool_laaudit{{/str}}</strong> {{timecreationfinished}}</li>
+    <li class="course-description-item config-info"><strong>{{#str}}serializedfilelocation, tool_laaudit{{/str}}</strong> {{serializedfilelocation}}</li>
 </ul>

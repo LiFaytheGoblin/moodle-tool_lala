@@ -84,11 +84,11 @@
         <ul class="description p-0 list-unstyled">
             <li class="course-description-item config-info"><strong>{{#str}}configid, tool_laaudit{{/str}}</strong> {{id}}</li>
             <li class="course-description-item config-info"><strong>{{#str}}modelid, tool_laaudit{{/str}}</strong> {{modelid}}</li>
-            <li class="course-description-item config-info"><strong>{{#str}}target, tool_laaudit{{/str}}</strong> {{modeltarget}}</li>
+            <li class="course-description-item config-info mb-3"><strong>{{#str}}target, tool_laaudit{{/str}}</strong> {{modeltarget}}</li>
         </ul>
 
         <div>
-            <h4>Started Evidence Sets</h4>
+            <h4><small>Started Evidence Sets</small></h4>
             <ul class="p-0 list-unstyled">
                 {{#startedevidencesets}}
                     <li>
@@ -99,7 +99,7 @@
         </div>
 
         <div>
-            <h4>Completed Evidence Sets</h4>
+            <h4><small>Completed Evidence Sets</small></h4>
             <ul class="p-0 list-unstyled">
                 {{#completedevidencesets}}
                     <li>

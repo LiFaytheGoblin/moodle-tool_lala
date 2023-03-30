@@ -24,6 +24,7 @@
 
 namespace tool_laaudit;
 
+use core_analytics\manager;
 use core_analytics\model;
 use core_date;
 use DateTime;
@@ -94,17 +95,18 @@ class model_version {
         if (self::valid_exists($model->timesplitting)) {
             $obj->analysisinterval = $model->timesplitting;
         } else {
-            // todo: set default
+            $analysis_intervals = manager::get_time_splitting_methods_for_evaluation();
+            $first_analysis_interval = array_keys($analysis_intervals)[0];
+            $obj->analysisinterval = $first_analysis_interval;
         }
         if (self::valid_exists($model->predictionsprocessor)) {
             $obj->predictionsprocessor = $model->predictionsprocessor;
         } else {
-            // todo: set default
+            $default = manager::default_mlbackend();
+            $obj->predictionsprocessor = $default;
         }
         if (self::valid_exists($model->contextids)) {
             $obj->contextids =  $model->contextids;
-        } else {
-            // todo: set default
         }
         $obj->indicators =  $model->indicators;
 

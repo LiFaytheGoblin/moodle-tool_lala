@@ -69,11 +69,12 @@ class model_version_description implements templatable, renderable {
         $data->timecreationfinishedicon = $finished ? 'end' : 'half';
         $data->timecreationfinished = $finished ? userdate((int) $this->version->timecreationfinished) : get_string('unfinished', 'tool_laaudit');
 
-        $data->analysisinterval = $this->version->analysisinterval;
+        $analysisintervalnameparts = explode('\\', $this->version->analysisinterval);
+        $data->analysisinterval = end($analysisintervalnameparts);
 
-        $data->predictionsprocessor = $this->version->predictionsprocessor;
+        $data->predictionsprocessor = explode('\\', $this->version->predictionsprocessor)[1];
 
-        $data->contextids = "";
+        $data->contextids = get_string('allcontexts', 'tool_laaudit');
         $contextids = json_decode($this->version->contextids);
         if (gettype($contextids) == 'array') {
             $data->contextids = implode(', ', $contextids);

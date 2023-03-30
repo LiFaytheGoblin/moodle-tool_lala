@@ -42,9 +42,8 @@ $PAGE->set_url($pageurl);
 $PAGE->set_context($context);
 
 if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') { // POST /admin/tool/laaudit/modelversion.php?configid=<configid>
-    $version = new model_version($configid);
-    $version_obj = $version->get_model_version_obj();
-    //echo(json_encode($version_obj));
+    $versionid = model_version::create_and_get_for_config($configid);
+    $version = new model_version($versionid);
     redirect($priorurl);
 }
 

@@ -102,17 +102,6 @@ class model_configuration {
     }
 
     /**
-     * Add new auto-created version
-     *
-     * @return stdClass
-     */
-    public function add_version() {
-        $versionid = model_version::create_and_get_for_config($this->id, $this->modelid);
-        $new_version = new model_version($versionid);
-        $this->versions[] = $new_version;
-    }
-
-    /**
      * Retrieve versions from the DB and store in onbject properties
      *
      * @return stdClass[] versions

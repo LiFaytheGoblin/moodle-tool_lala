@@ -75,7 +75,7 @@ class model_version {
         $this->indicators = $version->indicators;
     }
 
-    public static function create_and_get_for_config($configid, $modelid) {
+    public static function create_and_get_for_config($configid) {
         global $DB;
 
         $obj = new stdClass();
@@ -88,11 +88,21 @@ class model_version {
         $obj->timecreationfinished = 0;
 
         // Copy values from model
+        $modelconfig = $DB->get_record('tool_laaudit_model_configs', array('id' => $configid), 'modelid', MUST_EXIST);
+        $modelid = $modelconfig->modelid;
         $model = $DB->get_record('analytics_models', array('id' => $modelid), 'timesplitting, predictionsprocessor, contextids, indicators', MUST_EXIST);
-        $obj->analysisinterval = isset($model->timesplitting)? $model->timesplitting : "None";
-        $obj->predictionsprocessor = isset($model->predictionsprocessor) ? $model->predictionsprocessor : "None";
-        $obj->contextids = isset($model->contextids) ? $model->contextids : "[]";
-        $obj->indicators = isset($model->indicators) ? $model->indicators : "[]";
+        if (self::valid_exists($model->timesplitting)) {
+            $obj->analysisinterval = $model->timesplitting;
+        }
+        if (self::valid_exists($model->predictionsprocessor)) {
+            $obj->predictionsprocessor = $model->predictionsprocessor;
+        }
+        if (self::valid_exists($model->contextids)) {
+            $obj->contextids =  $model->contextids;
+        }
+        if (self::valid_exists($model->indicators)) {
+            $obj->indicators =  $model->indicators;
+        }
 
         return $DB->insert_record('tool_laaudit_model_versions', $obj);
     }
@@ -117,5 +127,9 @@ class model_version {
         $obj->evidence = [];
 
         return $obj;
+    }
+
+    private static function valid_exists($value) {
+        return isset($value) && $value != "" && $value != "[]";
     }
 }

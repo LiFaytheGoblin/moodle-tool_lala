@@ -54,19 +54,46 @@ class model_version_description implements templatable, renderable {
      * @return stdClass Said data.
      */
     public function export_for_template(renderer_base $output) {
+
         $data = new stdClass();
 
         // Add info about the model version.
         $data->id = $this->version->id;
+
         $data->name = $this->version->name;
+
         $data->timecreationstarted = userdate((int) $this->version->timecreationstarted);
+
+
         $finished = (int) $this->version->timecreationfinished > 0;
         $data->timecreationfinishedicon = $finished ? 'end' : 'half';
         $data->timecreationfinished = $finished ? userdate((int) $this->version->timecreationfinished) : get_string('unfinished', 'tool_laaudit');
+
         $data->analysisinterval = $this->version->analysisinterval;
+
         $data->predictionsprocessor = $this->version->predictionsprocessor;
-        $data->contextids = $this->version->contextids;
-        $data->indicators = $this->version->indicators;
+
+        $data->contextids = "";
+        $contextids = json_decode($this->version->contextids);
+        echo("contextids:");
+        echo($contextids);
+        echo(".");
+        if (gettype($contextids) == 'array') {
+            $data->contextids = implode(', ', $contextids);
+        } else if (gettype($contextids) == 'string') {
+            $data->contextids = $contextids;
+        }
+
+        $data->indicators = "";
+        $indicators = json_decode($this->version->indicators);
+        echo("indicators:");
+        echo($indicators);
+        echo(".");
+        if (gettype($indicators) == 'array') {
+            $data->indicators = implode(', ', $indicators);
+        } else if (gettype($indicators) == 'string') {
+            $data->indicators = $indicators;
+        }
 
         return $data;
     }

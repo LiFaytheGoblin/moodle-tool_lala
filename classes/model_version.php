@@ -93,16 +93,20 @@ class model_version {
         $model = $DB->get_record('analytics_models', array('id' => $modelid), 'timesplitting, predictionsprocessor, contextids, indicators', MUST_EXIST);
         if (self::valid_exists($model->timesplitting)) {
             $obj->analysisinterval = $model->timesplitting;
+        } else {
+            // todo: set default
         }
         if (self::valid_exists($model->predictionsprocessor)) {
             $obj->predictionsprocessor = $model->predictionsprocessor;
+        } else {
+            // todo: set default
         }
         if (self::valid_exists($model->contextids)) {
             $obj->contextids =  $model->contextids;
+        } else {
+            // todo: set default
         }
-        if (self::valid_exists($model->indicators)) {
-            $obj->indicators =  $model->indicators;
-        }
+        $obj->indicators =  $model->indicators;
 
         return $DB->insert_record('tool_laaudit_model_versions', $obj);
     }

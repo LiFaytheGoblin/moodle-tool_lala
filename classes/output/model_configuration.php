@@ -71,17 +71,12 @@ class model_configuration implements templatable, renderable {
         $data->buttons = $buttons;
 
         // Add started evidence sets.
-        $startedevidencesets = []; // Todo: Differentiate started and finished evidence sets
+        $versions = []; // Todo: Differentiate started and finished evidence sets? Sort?
         foreach($this->modelconfig->versions as $version) {
             $version_renderer= new model_version($version);
-            $startedevidencesets[] = $version_renderer->export_for_template($output);
+            $versions[] = $version_renderer->export_for_template($output);
         }
-        $data->startedevidencesets = $startedevidencesets;
-
-        // Add completed evidence sets.
-        $completedevidencesets = [];
-        // Todo: fill...
-        $data->completedevidencesets = $completedevidencesets;
+        $data->versions = $versions;
 
         return $data;
     }

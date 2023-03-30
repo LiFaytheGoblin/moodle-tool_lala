@@ -33,6 +33,7 @@ $string['automaticallycreateevidence'] = '+ automatically create new evidence se
 $string['configid'] = 'config-id';
 $string['modelid'] = 'model-id';
 $string['target'] = 'target';
+$string['version'] = 'version';
 $string['versions'] = 'versions';
 $string['versionid'] = 'version-id';
 $string['started'] = 'started';

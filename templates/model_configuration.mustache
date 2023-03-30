@@ -80,13 +80,30 @@
             <h3 class="activity-instance activity-title d-flex flex-column">{{modelname}}</h3>
             <div class="activity-info mt-1 mt-md-0">{{#buttons}}{{> core/single_button}}{{/buttons}}</div>
         </div>
-
-        <ul class="description p-0 list-unstyled">
-            <li class="course-description-item config-info"><strong>{{#str}}configid, tool_laaudit{{/str}}</strong> {{id}}</li>
-            <li class="course-description-item config-info"><strong>{{#str}}modelid, tool_laaudit{{/str}}</strong> {{modelid}}</li>
-            <li class="course-description-item config-info mb-3"><strong>{{#str}}target, tool_laaudit{{/str}}</strong> {{modeltarget}}</li>
-        </ul>
-
+        <div class="bg-light p-3 rounded small mb-3">
+            <ul class="p-0 list-unstyled list-group list-group-horizontal">
+                <li class="col-sm-4">
+                    <dl class="row mb-0">
+                        <dt  class="mb-0">
+                            <i class="icon fa fa-cogs" aria-hidden="true" title="{{#str}}modelid, tool_laaudit{{/str}}"></i>
+                        </dt>
+                        <dd  class="mb-0">
+                            {{modelid}}
+                        </dd>
+                    </dl>
+                </li>
+                <li class="col-sm">
+                    <dl class="row mb-0">
+                        <dt  class="mb-0 mr-2">
+                            <i class="fa fa-bullseye" aria-hidden="true" title="{{#str}}target, tool_laaudit{{/str}}"></i>
+                        </dt>
+                        <dd  class="mb-0">
+                            {{modeltarget}}
+                        </dd>
+                    </dl>
+                </li>
+            </ul>
+        </div>
         <div>
             <h4><small>Started Evidence Sets</small></h4>
             <ul class="p-0 list-unstyled">
@@ -97,7 +114,6 @@
                 {{/startedevidencesets}}
             </ul>
         </div>
-
         <div>
             <h4><small>Completed Evidence Sets</small></h4>
             <ul class="p-0 list-unstyled">

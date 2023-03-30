@@ -44,7 +44,6 @@ class model_configurations {
         $modelconfigs = [];
 
         foreach ($modelids as $modelid) {
-            echo($modelid);
             $config_id = model_configuration::get_or_create_and_get_for_model($modelid);
             $modelconfig = new model_configuration($config_id);
             $modelconfigs[] = $modelconfig->get_model_config_obj();

@@ -76,6 +76,11 @@ class model_version {
         $this->indicators = $version->indicators;
     }
 
+    /**
+     * Returns a stdClass with the model version data.
+     *
+     * @return stdClass
+     */
     public static function create_and_get_for_config($configid) {
         global $DB;
 

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * The main screen of the tool.
+ * The model version router
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
@@ -24,32 +24,26 @@
 
 require(__DIR__ . '/../../../config.php');
 
+use \tool_laaudit\model_version;
+
 require_admin();
 
-/////// CONTROLLER
+$configid = optional_param('configid', 0, PARAM_INT);
 
-// Get all model configurations.
-$modelconfigobjs = tool_laaudit\model_configurations::init_and_get_all_model_config_objs();
-
-/////// VIEW
+// Routes
+// POST /admin/tool/laaudit/modelversion.php?configid=<configid>
 
 // Set some page parameters.
-$pageurl = new moodle_url('/admin/tool/laaudit/index.php');
-$heading = get_string('pluginname', 'tool_laaudit');
+$priorurl = new moodle_url('/admin/tool/laaudit/index.php');
+$pageurl = new moodle_url('/admin/tool/laaudit/modelversion.php', array("configid" => $configid)); # POST /admin/tool/laaudit/modelversion.php?configid=1
 $context = context_system::instance();
 
-$PAGE->set_context($context);
 $PAGE->set_url($pageurl);
-$PAGE->set_pagelayout('standard');
-$PAGE->set_title(format_string($heading));
-$PAGE->set_heading($heading);
+$PAGE->set_context($context);
 
-// Output the page.
-$output = $PAGE->get_renderer('tool_laaudit');
+if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') { // POST /admin/tool/laaudit/modelversion.php?configid=<configid>
+    $versionid = model_version::create_and_get_for_config($configid);
+    $version = new model_version($versionid);
+    redirect($priorurl);
+}
 
-echo $output->header();
-
-$modelconfigsrenderable = new tool_laaudit\output\model_configurations($modelconfigobjs);
-echo $output->render($modelconfigsrenderable);
-
-echo $output->footer();

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Output for a list of single model configurations.
+ * Output for a single model version.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
@@ -27,22 +27,24 @@ namespace tool_laaudit\output;
 use renderer_base;
 use templatable;
 use renderable;
+use moodle_url;
+use help_icon;
+use single_button;
 use stdClass;
 
 /**
- * Class for the output for a list of single model configurations.
+ * Class for the output for a single model version.
  */
-class model_configurations implements templatable, renderable {
-    /** @var stdClass[] $modelconfigs of model configs */
-    protected $modelconfigs;
+class model_version implements templatable, renderable {
+    /** @var stdClass $version of a model config */
+    protected $version;
     /**
      * Constructor for this object.
      *
-     * @param stdClass $modelconfigs An array of model config objects
+     * @param stdClass $version The model version object
      */
-    public function __construct($modelconfigs) {
-        $this->modelconfigs = $modelconfigs;
-
+    public function __construct($version) {
+        $this->version = $version;
     }
 
     /**
@@ -53,12 +55,20 @@ class model_configurations implements templatable, renderable {
      */
     public function export_for_template(renderer_base $output) {
         $data = new stdClass();
-        $data->modelconfigs = [];
 
-        foreach ($this->modelconfigs as $modelconfig) {
-            $modelconfig = new model_configuration($modelconfig);
-            $data->modelconfigs[] = $modelconfig->export_for_template($output);
-        }
+        // Add info about the model version.
+        $data->description = [];
+        $description_renderer = new model_version_description($this->version);
+        $data->description[] = $description_renderer->export_for_template($output);
+
+        // Todo: Add evidence items.
+        $evidenceitems = [];
+        /*
+        foreach($evidenceitems as $key=> $evidenceitem) {
+            $evidenceitem_renderer = new stdClass(); //new evidence_item($evidenceitem);
+            $evidenceitems[$key] = $evidenceitem_renderer->export_for_template($output);
+        }*/
+        $data->evidence = $evidenceitems;
 
         return $data;
     }

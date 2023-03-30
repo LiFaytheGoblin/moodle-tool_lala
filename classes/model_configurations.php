@@ -37,13 +37,16 @@ class model_configurations {
      *
      * @return array of model config objects
      */
-    public static function get_all_model_config_objs() {
-        $models = manager::get_all_models();
+    public static function init_and_get_all_model_config_objs() {
+        global $DB;
+
+        $modelids = $DB->get_fieldset_select('analytics_models', 'id', '1=1'); // Todo: only check non-static models?
         $modelconfigs = [];
 
-        foreach ($models as $model) {
-            // Todo: only check non-static models?
-            $modelconfig = new model_configuration($model);
+        foreach ($modelids as $modelid) {
+            echo($modelid);
+            $config_id = model_configuration::get_or_create_and_get_for_model($modelid);
+            $modelconfig = new model_configuration($config_id);
             $modelconfigs[] = $modelconfig->get_model_config_obj();
         }
 

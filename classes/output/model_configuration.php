@@ -61,15 +61,22 @@ class model_configuration implements templatable, renderable {
         $data->modelid = $this->modelconfig->modelid;
         $data->modelname = $this->modelconfig->modelname;
         $data->modeltarget = $this->modelconfig->modeltarget;
-        $data->versions = json_encode($this->modelconfig->versions);
 
         // Add buttons.
         $buttons = [];
-        $buttons[] = new single_button(new moodle_url(""), get_string('automaticallycreateevidence', 'tool_laaudit'), 'post');
+        $buttons[] = new single_button(new moodle_url("modelversion.php", array('configid' => $this->modelconfig->id)), get_string('automaticallycreateevidence', 'tool_laaudit'), 'post');
         foreach ($buttons as $key => $button) {
             $buttons[$key] = $button->export_for_template($output);
         }
         $data->buttons = $buttons;
+
+        // Add started evidence sets.
+        $versions = []; // Todo: Differentiate started and finished evidence sets? Sort?
+        foreach($this->modelconfig->versions as $version) {
+            $version_renderer= new model_version($version);
+            $versions[] = $version_renderer->export_for_template($output);
+        }
+        $data->versions = $versions;
 
         return $data;
     }

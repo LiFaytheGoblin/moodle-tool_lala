@@ -21,17 +21,37 @@
     - target: string - name of the target associated with the model config
     - versions: currently an array of version ids (int)
     - buttons: [{}]
+    - versions: [{}]
     Example context (json):
     {
             "id": 1,
             "modelid": 4,
             "modelname": "model4",
             "modeltarget": "Prevent devs at risk",
-            "versions": [1, 2, 3],
             "buttons": [{
                 "method" : "post",
                 "url" : "/config/1/version",
                 "label" : "automatically create new evidence collection"
+            }],
+            "versions": [{
+                "description": {
+                    "id": 1,
+                    "name": "AutoSet",
+                    "timecreationstarted": "1679987403",
+                    "indicators": ["someindicator"],
+                    "analysisinterval": "quarters",
+                    "predictionsprocessor": "php",
+                    "contextids": [1, 2, 3],
+                    "timecreationfinished": null,
+                    "timecreationfinishedicon": "half"
+                },
+                "evidence": [{
+                    "id": 1,
+                    "name": "training data",
+                    "timecreationstarted": "1679987403",
+                    "timecreationfinished": "1679987953",
+                    "serializedfilelocation": "/evidencecollections/1"
+                }]
             }]
     }
 }}
@@ -41,12 +61,38 @@
             <h3 class="activity-instance activity-title d-flex flex-column">{{modelname}}</h3>
             <div class="activity-info mt-1 mt-md-0">{{#buttons}}{{> core/single_button}}{{/buttons}}</div>
         </div>
-
-        <ul class="description p-0 list-unstyled">
-            <li class="course-description-item config-info"><strong>{{#str}}configid, tool_laaudit{{/str}}</strong> {{id}}</li>
-            <li class="course-description-item config-info"><strong>{{#str}}modelid, tool_laaudit{{/str}}</strong> {{modelid}}</li>
-            <li class="course-description-item config-info"><strong>{{#str}}target, tool_laaudit{{/str}}</strong> {{modeltarget}}</li>
-            <li class="course-description-item config-info"><strong>{{#str}}versions, tool_laaudit{{/str}}</strong> {{versions}}</li>
-        </ul>
+        <div class="bg-light p-3 rounded small mb-3">
+            <ul class="p-0 list-unstyled list-group list-group-horizontal">
+                <li class="col-sm-2">
+                    <dl class="row mb-0">
+                        <dt  class="mb-0 col-sm-0">
+                            <i class="icon fa fa-cogs" aria-hidden="true" title="{{#str}}modelid, tool_laaudit{{/str}}"></i>
+                        </dt>
+                        <dd  class="mb-0 col-sm">
+                            {{modelid}}
+                        </dd>
+                    </dl>
+                </li>
+                <li class="col-sm">
+                    <dl class="row mb-0">
+                        <dt  class="mb-0 mr-2 col-sm-0">
+                            <i class="fa fa-bullseye" aria-hidden="true" title="{{#str}}target, tool_laaudit{{/str}}"></i>
+                        </dt>
+                        <dd  class="mb-0 col-sm">
+                            {{modeltarget}}
+                        </dd>
+                    </dl>
+                </li>
+            </ul>
+        </div>
+        <div>
+            <ul class="p-0 list-unstyled">
+                {{#versions}}
+                    <li>
+                        {{> tool_laaudit/model_version}}
+                    </li>
+                {{/versions}}
+            </ul>
+        </div>
     </div>
 </li>

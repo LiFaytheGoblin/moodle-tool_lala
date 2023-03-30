@@ -23,6 +23,7 @@
     - predictionsprocessor
     - contextids
     - timecreationfinished
+    - timecreationfinishedicon
     Example context (json):
     {
             "id": 1,
@@ -32,7 +33,8 @@
             "analysisinterval": "quarters",
             "predictionsprocessor": "php",
             "contextids": [1, 2, 3],
-            "timecreationfinished": null
+            "timecreationfinished": null,
+            timecreationfinishedicon: 'half'
       }
 }}
 <h5><small>{{name}}</small></h5>
@@ -51,7 +53,7 @@
         <li class="col-sm">
             <dl class="row mb-0">
                 <dt  class="mb-0">
-                    <i class="icon fa fa-hourglass-end" aria-hidden="true" title="{{#str}}finished, tool_laaudit{{/str}}"></i>
+                    <i class="icon fa fa-hourglass-{{timecreationfinishedicon}}" aria-hidden="true" title="{{#str}}finished, tool_laaudit{{/str}}"></i>
                 </dt>
                 <dd  class="mb-0">
                     {{timecreationfinished}}

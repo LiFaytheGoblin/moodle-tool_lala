@@ -59,8 +59,10 @@ class model_version_description implements templatable, renderable {
         // Add info about the model version.
         $data->id = $this->version->id;
         $data->name = $this->version->name;
-        $data->timecreationstarted = $this->version->timecreationstarted;
-        $data->timecreationfinished = $this->version->timecreationfinished;
+        $data->timecreationstarted = userdate((int) $this->version->timecreationstarted);
+        $finished = (int) $this->version->timecreationfinished > 0;
+        $data->timecreationfinishedicon = $finished ? 'end' : 'half';
+        $data->timecreationfinished = $finished ? userdate((int) $this->version->timecreationfinished) : get_string('unfinished', 'tool_laaudit');
         $data->analysisinterval = $this->version->analysisinterval;
         $data->predictionsprocessor = $this->version->predictionsprocessor;
         $data->contextids = $this->version->contextids;

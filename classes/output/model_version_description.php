@@ -75,9 +75,6 @@ class model_version_description implements templatable, renderable {
 
         $data->contextids = "";
         $contextids = json_decode($this->version->contextids);
-        echo("contextids:");
-        echo($contextids);
-        echo(".");
         if (gettype($contextids) == 'array') {
             $data->contextids = implode(', ', $contextids);
         } else if (gettype($contextids) == 'string') {
@@ -86,9 +83,6 @@ class model_version_description implements templatable, renderable {
 
         $data->indicators = "";
         $indicators = json_decode($this->version->indicators);
-        echo("indicators:");
-        echo($indicators);
-        echo(".");
         if (gettype($indicators) == 'array') {
             $data->indicators = implode(', ', $indicators);
         } else if (gettype($indicators) == 'string') {

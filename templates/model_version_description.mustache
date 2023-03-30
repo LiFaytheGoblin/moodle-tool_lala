@@ -40,44 +40,44 @@
 <h5><small>{{name}}</small></h5>
 <div class="bg-light p-3 rounded small mb-3">
     <ul class="p-0 list-unstyled list-group list-group-horizontal">
-        <li class="col-sm-4">
+        <li class="col-sm-5">
             <dl class="row mb-0">
                 <dt  class="mb-0">
-                    <i class="icon fa fa-hourglass-start" aria-hidden="true" title="{{#str}}started, tool_laaudit{{/str}}"></i>
+                    <i class="icon fa fa-hourglass-start col-sm-0" aria-hidden="true" title="{{#str}}started, tool_laaudit{{/str}}"></i>
                 </dt>
-                <dd  class="mb-0">
+                <dd  class="mb-0 col-sm">
                     {{timecreationstarted}}
                 </dd>
             </dl>
         </li>
         <li class="col-sm">
             <dl class="row mb-0">
-                <dt  class="mb-0">
+                <dt  class="mb-0 col-sm-0">
                     <i class="icon fa fa-hourglass-{{timecreationfinishedicon}}" aria-hidden="true" title="{{#str}}finished, tool_laaudit{{/str}}"></i>
                 </dt>
-                <dd  class="mb-0">
+                <dd  class="mb-0 col-sm">
                     {{timecreationfinished}}
                 </dd>
             </dl>
         </li> <!-- Todo: only if available? -->
     </ul>
     <ul class="p-0 list-unstyled list-group list-group-horizontal">
-        <li class="col-sm-4">
+        <li class="col-sm-5">
             <dl class="row  mb-0">
-                <dt   class="mb-0">
+                <dt   class="mb-0 col-sm-0">
                     <i class="icon fa fa-server" aria-hidden="true" title="{{#str}}predictionsprocessor, tool_laaudit{{/str}}"></i>
                 </dt>
-                <dd   class="mb-0">
+                <dd   class="mb-0 col-sm">
                     {{predictionsprocessor}}
                 </dd>
             </dl>
         </li>
         <li class="col-sm">
             <dl class="row  mb-0">
-                <dt  class="mb-0">
+                <dt  class="mb-0 col-sm-0">
                     <i class="icon fa fa-arrows-h" aria-hidden="true" title="{{#str}}analysisinterval, tool_laaudit{{/str}}"></i>
                 </dt>
-                <dd  class="mb-0">
+                <dd  class="mb-0 col-sm">
                     {{analysisinterval}}
                 </dd>
             </dl>
@@ -86,19 +86,19 @@
     <ul>
         <li>
             <dl class="row  mb-0">
-                <dt class="mb-0">
+                <dt class="mb-0 col-sm-0">
                     <i class="icon fa fa-graduation-cap" aria-hidden="true" title="{{#str}}contexts, tool_laaudit{{/str}}"></i>
                 </dt>
-                <dd class="mb-0">
+                <dd class="mb-0 col-sm">
                     {{contextids}}
                 </dd>
             </dl>
         </li>
         <dl class="row  mb-0">
-            <dt class="mb-0">
+            <dt class="mb-0 col-sm-0">
                 <i class="icon fa fa-bar-chart" aria-hidden="true" title="{{#str}}indicators, tool_laaudit{{/str}}"></i>
             </dt>
-            <dd class="mb-0">
+            <dd class="mb-0 col-sm">
                 {{indicators}}
             </dd>
         </dl>

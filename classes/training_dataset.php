@@ -1,6 +1,9 @@
 <?php
 
-namespace tool_laaudit\output;
+namespace tool_laaudit;
 
-class training_dataset extends evidence {
+class training_dataset extends dataset {
+    function collect($data = null) {
+        // TODO: Implement collect() method.
+    }
 }

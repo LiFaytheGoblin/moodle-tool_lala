@@ -62,7 +62,7 @@ if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $version->add('dataset');
     $version->add('training_dataset'); // needs split info
     $version->add('test_dataset'); // needs split info, related to training dataset
-    $version->add('features');
+    $version->add('features_dataset'); // create features dataset for training and testing data - unsure split or merge
     $version->add('model');
     $version->add('predictions_dataset');
 

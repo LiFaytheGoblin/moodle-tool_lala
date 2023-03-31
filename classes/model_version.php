@@ -149,15 +149,17 @@ class model_version {
 
     public function add($evidencekey, $data = null) {
         // check whether this is already in the evidence
-        if (evidence_exists($evidencekey)) {
+        if (array_key_exists($evidencekey, $this->evidence)) {
+            echo("Evidence already exists.");
             return;
         }
-        // create evidence for the data
-        $class = 'tool_laaudit'.$evidencekey;
 
         if (isset($this->$evidencekey) && !isset($data)) { //if we already have data from previous calculations, use it
             $data = $this->$evidencekey;
         }
+
+        // create evidence for the data
+        $class = 'tool_laaudit\\'.$evidencekey;
 
         $evidence = call_user_func_array($class.'::create_and_get_for_version', array($this->id, $data));
 

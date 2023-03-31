@@ -2,11 +2,7 @@
 
 namespace tool_laaudit;
 
-class model extends evidence {
-    function serialize() {
-        // TODO: Implement serialize() method.
-    }
-
+class predictions_dataset extends dataset {
     function collect($data = null) {
         // TODO: Implement collect() method.
     }

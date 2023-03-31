@@ -2,7 +2,7 @@
 
 namespace tool_laaudit;
 
-class model extends evidence {
+class dataset extends evidence {
     function serialize() {
         // TODO: Implement serialize() method.
     }

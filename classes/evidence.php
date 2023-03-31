@@ -22,7 +22,9 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_laaudit\output;
+namespace tool_laaudit;
+
+use stdClass;
 
 abstract class evidence {
     /** @var int $id id assigned to the configuration by the db. */
@@ -73,7 +75,7 @@ abstract class evidence {
         $obj->name = get_called_class();
         $obj->timecollectionstarted = time();
 
-        $id = $DB->insert_record('tool_laaudit_model_versions', $obj);
+        $id = $DB->insert_record('tool_laaudit_evidence', $obj);
 
         $evidence = new static($id);
         $evidence->collect($data);

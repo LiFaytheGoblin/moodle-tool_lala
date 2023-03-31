@@ -41,9 +41,51 @@ $context = context_system::instance();
 $PAGE->set_url($pageurl);
 $PAGE->set_context($context);
 
-if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') { // POST /admin/tool/laaudit/modelversion.php?configid=<configid>
-    $versionid = model_version::create_and_get_for_config($configid);
+if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $versionid = model_version::create_scaffold_and_get_for_config($configid);
+
+    // if route contains auto param, do it automatically
     $version = new model_version($versionid);
+
+    // how to include user selection of data while also allowing for dynamic collection?
+    //dynamic approach?
+    // maybe more like:
+    // $version->add('dataset');
+    // $version->set_training_and_test_data_split_by_analysis_interval(); //this already creates the training and testing datasets
+    // later it could also be $version->add('training_dataset', $data); and $version->add('test_dataset', $data)
+    // catch the case where training/testing dataset is trying to be added but none has been added as a property yet
+    // $version->add('training_dataset');
+    // $version->add('testing_dataset');
+    // $version->add(new dataset($data));
+
+    // how do I get the evidence collection logic dynamically into the evidence classes?! They need data from the version...
+    $version->add('dataset');
+    $version->add('training_dataset'); // needs split info
+    $version->add('test_dataset'); // needs split info, related to training dataset
+    $version->add('features');
+    $version->add('model');
+    $version->add('predictions_dataset');
+
+    //other approach:
+
+    $version->set_data();
+
+    $version->set_training_and_test_data_split_by_analysis_interval();
+    //$training_data = $version->get_training_data(); // store as evidence
+    //$test_data = $version->get_test_data(); // store as evidence
+
+    $version->calculate_features();
+
+    // store as evidence:
+    //$features_train = $version->get_features_training(); //with param or not? these kind of functions should probably go into a static method/ helper method?
+    //$features_test = $version->get_features_test();
+
+    $version->train(); //input are the indicators right? differentiate for download between features and training/test data sets of raw samples
+    //$model = $version->get_model_data(); // weights and configuration, store as evidence
+
+    $version->predict();
+    //$prediction_data = $version->get_prediction_data(); // store as evidence
+
     redirect($priorurl);
 }
 

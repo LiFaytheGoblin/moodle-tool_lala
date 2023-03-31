@@ -37,6 +37,8 @@ abstract class evidence {
     private $timecollectionended;
     /** @var string $serializedfilelocation path of the evidence. */
     private $serializedfilelocation;
+    /** @var string $data raw data of the evidence. */
+    private $data;
     /**
      * Constructor. Deserialize DB object.
      *
@@ -60,47 +62,48 @@ abstract class evidence {
     /**
      * Returns a stdClass with the evidence data.
      * @param int $versionid of the version
-     * @return stdClass
+     * @return stdClass of the created evidence
      */
-    public static function create_and_get_for_version($versionid) {
+    public static function create_and_get_for_version($versionid, $data = null) {
         global $DB;
 
         $obj = new stdClass();
 
         $obj->versionid = $versionid;
-
-        $obj->name = ""; //classname
+        $obj->name = get_called_class();
         $obj->timecollectionstarted = time();
 
-        return $DB->insert_record('tool_laaudit_model_versions', $obj);
+        $id = $DB->insert_record('tool_laaudit_model_versions', $obj);
+
+        $evidence = new static($id);
+        $evidence->collect($data);
+        $evidence->serialize();
+
+        $DB->set_field('tool_laaudit_evidence', 'serializedfilelocation', $evidence->get_serializedfilelocation(), array('id' => $id));
+
+        // note down end
+        $DB->set_field('tool_laaudit_evidence', 'timecollectionended', time(), array('id' => $id));
+
+        return $evidence;
     }
 
     /**
-     * Triggers collection of the evidence data.
-     */
-    public function trigger_evidence_collection_and_update() {
-        global $DB;
-
-        $data = $this->collect();
-        $serializeddata = serialize($data);
-        // todo: store data and retrieve location
-        $this->serializedfilelocation = "";
-        $this->timecollectionended = time();
-
-        $DB->set_field('tool_laaudit_evidence', 'serializedfilelocation', $this->serializedfilelocation, array('id' => $this->id));
-        $DB->set_field('tool_laaudit_evidence', 'timecollectionended', $this->timecollectionended, array('id' => $this->id));
-    }
-
-    /**
-     * Returns the evidence data.
-     * @return data data
-     */
-    abstract function collect();
-
-    /**
-     * Returns the serialized evidence data.
-     * @param any $data produced by the evidence
+     * Serializes the raw data and stores it in a file. Sets the serializedfilelocation.
      * @return file serialized data
      */
-    abstract function serialize($data);
+    abstract function serialize();
+
+    abstract function collect($data = null); //either auto collection, or setting the data directly. where to get the necessary info from tho? maybe pass model_version?
+
+    public function get_serializedfilelocation() {
+        return $this->serializedfilelocation;
+    }
+
+    public function get_raw_data() {
+        return $this->data;
+    }
+
+    public function get_id() {
+        return $this->id;
+    }
 }

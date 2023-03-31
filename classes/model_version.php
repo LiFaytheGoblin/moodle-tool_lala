@@ -52,6 +52,8 @@ class model_version {
     private $contextids;
     /** @var string $indicators used by the model version */
     private $indicators;
+    /** @var evidence[] $evidence used by the model version */
+    private $evidence;
 
     /**
      * Constructor. Deserialize DB object.
@@ -74,6 +76,7 @@ class model_version {
         $this->predictionsprocessor = $version->predictionsprocessor;
         $this->contextids = $version->contextids;
         $this->indicators = $version->indicators;
+        $this->evidence = []; // todo: get evidence from evidence table
     }
 
     /**
@@ -81,7 +84,7 @@ class model_version {
      *
      * @return stdClass
      */
-    public static function create_and_get_for_config($configid) {
+    public static function create_scaffold_and_get_for_config($configid) {
         global $DB;
 
         $obj = new stdClass();
@@ -142,5 +145,29 @@ class model_version {
 
     private static function valid_exists($value) {
         return isset($value) && $value != "" && $value != "[]";
+    }
+
+    public function add($evidencekey, $data = null) {
+        // check whether this is already in the evidence
+        if (evidence_exists($evidencekey)) {
+            return;
+        }
+        // create evidence for the data
+        $class = 'tool_laaudit'.$evidencekey;
+
+        if (isset($this->$evidencekey) && !isset($data)) { //if we already have data from previous calculations, use it
+            $data = $this->$evidencekey;
+        }
+
+        $evidence = call_user_func_array($class.'::create_and_get_for_version', array($this->id, $data));
+
+        // add to evidence array
+        $this->evidence[$evidencekey] = $evidence->get_id();
+        $this->$evidencekey = $evidence->get_raw_data();
+
+        // update db
+        global $DB;
+
+        $DB->set_field('tool_laaudit_evidence', 'evidence', $this->evidence, array('id' => $this->id));
     }
 }

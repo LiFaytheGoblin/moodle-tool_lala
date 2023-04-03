@@ -36,7 +36,7 @@ abstract class evidence {
     /** @var string $timecollectionstarted of the evidence. */
     private $timecollectionstarted;
     /** @var string $timecollectionended of the evidence. */
-    private $timecollectionended;
+    private $timecollectionfinished;
     /** @var string $serializedfilelocation path of the evidence. */
     private $serializedfilelocation;
     /** @var string $data raw data of the evidence. */
@@ -50,14 +50,14 @@ abstract class evidence {
     public function __construct($id) {
         global $DB;
 
-        $evidence = $DB->get_record('tool_laaudit_model_evidence', array('id' => $id), '*', MUST_EXIST);
+        $evidence = $DB->get_record('tool_laaudit_evidence', array('id' => $id), '*', MUST_EXIST);
 
         // Fill properties from DB.
         $this->id = $evidence->id;
         $this->versionid = $evidence->versionid;
         $this->name = $evidence->name;
         $this->timecollectionstarted = $evidence->timecollectionstarted;
-        $this->timecollectionended = $evidence->timecollectionended;
+        $this->timecollectionfinished = $evidence->timecollectionfinished;
         $this->serializedfilelocation = $evidence->serializedfilelocation;
     }
 
@@ -84,7 +84,7 @@ abstract class evidence {
         $DB->set_field('tool_laaudit_evidence', 'serializedfilelocation', $evidence->get_serializedfilelocation(), array('id' => $id));
 
         // note down end
-        $DB->set_field('tool_laaudit_evidence', 'timecollectionended', time(), array('id' => $id));
+        $DB->set_field('tool_laaudit_evidence', 'timecollectionfinished', time(), array('id' => $id));
 
         return $evidence;
     }

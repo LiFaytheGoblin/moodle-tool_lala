@@ -138,7 +138,7 @@ class model_version {
         $obj->predictionsprocessor = $this->predictionsprocessor;
         $obj->contextids = $this->contextids;
         $obj->indicators = $this->indicators;
-        $obj->evidence = $this->evidence;
+        $obj->evidence = $this->evidence; // Todo: Return more than the ids
 
         return $obj;
     }
@@ -148,6 +148,9 @@ class model_version {
     }
 
     public function add($evidencekey, $data = null) {
+        // $version->add('testing_dataset');
+        // $version->add(new dataset($data));
+
         // check whether this is already in the evidence
         if (array_key_exists($evidencekey, $this->evidence)) {
             echo("Evidence already exists.");
@@ -166,11 +169,6 @@ class model_version {
         // add to evidence array
         $this->evidence[$evidencekey] = $evidence->get_id();
         $this->$evidencekey = $evidence->get_raw_data();
-
-        // update db
-        global $DB;
-
-        $DB->set_field('tool_laaudit_evidence', 'evidence', $this->evidence, array('id' => $this->id));
     }
 
     private function get_evidence_from_db() {
@@ -178,5 +176,23 @@ class model_version {
 
         $records = $DB->get_records('tool_laaudit_evidence', array('versionid' => $this->id));
         return $records;
+    }
+
+    public function set_data() {
+        $this->add('dataset'); // could also pass the class directly
+    }
+
+    public function calculate_features() {
+        $this->add('features_dataset'); // create features dataset for training and testing data - unsure split or merge
+    }
+
+    public function train() {
+        $this->add('training_dataset'); // needs split info
+        $this->add('model'); // weights
+    }
+
+    public function predict() {
+        $this->add('test_dataset'); // needs split info, related to training dataset
+        $this->add('predictions_dataset');
     }
 }

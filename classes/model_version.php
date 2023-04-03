@@ -76,7 +76,7 @@ class model_version {
         $this->predictionsprocessor = $version->predictionsprocessor;
         $this->contextids = $version->contextids;
         $this->indicators = $version->indicators;
-        $this->evidence = []; // todo: get evidence from evidence table
+        $this->evidence = $this->get_evidence_from_db();
     }
 
     /**
@@ -138,7 +138,7 @@ class model_version {
         $obj->predictionsprocessor = $this->predictionsprocessor;
         $obj->contextids = $this->contextids;
         $obj->indicators = $this->indicators;
-        $obj->evidence = [];
+        $obj->evidence = $this->evidence;
 
         return $obj;
     }
@@ -171,5 +171,12 @@ class model_version {
         global $DB;
 
         $DB->set_field('tool_laaudit_evidence', 'evidence', $this->evidence, array('id' => $this->id));
+    }
+
+    private function get_evidence_from_db() {
+        global $DB;
+
+        $records = $DB->get_records('tool_laaudit_evidence', array('versionid' => $this->id));
+        return $records;
     }
 }

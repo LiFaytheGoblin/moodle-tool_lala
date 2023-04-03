@@ -16,6 +16,8 @@
 
 /**
  * The model configuration class, built on top of the analytics/model class.
+ * The accompanying db table is needed to preserve a record of the model configuration
+ * even if the model has been deleted.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>

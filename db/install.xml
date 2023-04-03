@@ -8,7 +8,6 @@
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="modelid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="versions" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Versions of the model configuration, e.g. with different time-splitting method etc." />
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -30,6 +29,20 @@
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
                 <KEY NAME="configid" TYPE="foreign" FIELDS="configid" REFTABLE="tool_laaudit_model_configs" REFFIELDS="id"/>
+            </KEYS>
+        </TABLE>
+        <TABLE NAME="tool_laaudit_evidence" COMMENT="References to the files and information about the evidence produced by the plugin">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="versionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="default" SEQUENCE="false"/>
+                <FIELD NAME="timecollectionstarted" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="timecollectionfinished" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="serializedfilelocation" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="path to the serialized file on this server"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+                <KEY NAME="versionid" TYPE="foreign" FIELDS="versionid" REFTABLE="tool_laaudit_model_versions" REFFIELDS="id"/>
             </KEYS>
         </TABLE>
     </TABLES>

@@ -35,7 +35,7 @@ abstract class evidence {
     private $name;
     /** @var string $timecollectionstarted of the evidence. */
     private $timecollectionstarted;
-    /** @var string $timecollectionended of the evidence. */
+    /** @var string $timecollectionfinished of the evidence. */
     private $timecollectionfinished;
     /** @var string $serializedfilelocation path of the evidence. */
     private $serializedfilelocation;

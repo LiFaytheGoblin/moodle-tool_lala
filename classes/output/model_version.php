@@ -61,13 +61,11 @@ class model_version implements templatable, renderable {
         $description_renderer = new model_version_description($this->version);
         $data->description[] = $description_renderer->export_for_template($output);
 
-        // Todo: Add evidence items.
         $evidenceitems = [];
-        /*
-        foreach($evidenceitems as $key=> $evidenceitem) {
-            $evidenceitem_renderer = new stdClass(); //new evidence_item($evidenceitem);
-            $evidenceitems[$key] = $evidenceitem_renderer->export_for_template($output);
-        }*/
+        foreach($this->version->evidence as $evidenceitem) {
+            $evidence_renderer= new evidence_item($evidenceitem);
+            $evidenceitems[] = $evidence_renderer->export_for_template($output);
+        }
         $data->evidence = $evidenceitems;
 
         return $data;

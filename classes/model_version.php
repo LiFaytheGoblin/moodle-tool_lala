@@ -175,7 +175,14 @@ class model_version {
         global $DB;
 
         $records = $DB->get_records('tool_laaudit_evidence', array('versionid' => $this->id));
-        return $records;
+        //return $records;
+        $testres = new stdClass();
+        $testres->id = 10;
+        $testres->versionid = 5;
+        $testres->name = "tool_laaudit\dataset";
+        $testres->timecollectionstarted =1680508368;
+        $testres->timecollectionfinished=1680508368;
+        return [$testres];
     }
 
     public function set_data() {

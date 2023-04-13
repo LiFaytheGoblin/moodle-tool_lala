@@ -62,7 +62,7 @@ class model_configuration {
         $this->modelname = isset($model->name) ? $model->name : "model" . $this->modelid;
         $this->modeltarget = $model->target;
 
-        $this->versions = $this->get_versions_from_db();
+        $this->versions = $this->get_versions_from_db(); //the model versions from db do not contain the evidence right away
     }
 
     /**
@@ -104,14 +104,20 @@ class model_configuration {
     }
 
     /**
-     * Retrieve versions from the DB and store in onbject properties
+     * Retrieve versions from the DB and store in object properties
      *
      * @return stdClass[] versions
      */
     public function get_versions_from_db() {
         global $DB;
 
-        $records = $DB->get_records('tool_laaudit_model_versions', array('configid' => $this->id));
-        return $records;
+        $versionids = $DB->get_fieldset_select('tool_laaudit_model_versions', 'id', '1=1');
+
+        $versions = [];
+        foreach ($versionids as $versionid) {
+            $version = new model_version($versionid);
+            $versions[] = $version->get_model_version_obj();
+        }
+        return $versions;
     }
 }

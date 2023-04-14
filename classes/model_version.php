@@ -138,7 +138,7 @@ class model_version {
         $obj->predictionsprocessor = $this->predictionsprocessor;
         $obj->contextids = $this->contextids;
         $obj->indicators = $this->indicators;
-        $obj->evidence = $this->evidence; // Todo: Return more than the ids
+        $obj->evidence = $this->evidence;
 
         return $obj;
     }
@@ -194,5 +194,12 @@ class model_version {
     public function predict() {
         $this->add('test_dataset'); // needs split info, related to training dataset
         $this->add('predictions_dataset');
+    }
+
+    public function finish() {
+        global $DB;
+
+        $this->timecreationfinished = time();
+        $DB->set_field('tool_laaudit_model_versions', 'timecreationfinished', $this->timecreationfinished, array('id' => $this->id));
     }
 }

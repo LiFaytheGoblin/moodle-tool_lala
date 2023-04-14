@@ -43,7 +43,6 @@ $PAGE->set_context($context);
 
 if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $versionid = model_version::create_scaffold_and_get_for_config($configid);
-    echo($versionid);
 
     $version = new model_version($versionid);
 
@@ -52,6 +51,8 @@ if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $version->calculate_features();
     $version->train(); //input are the indicators right? differentiate for download between features and training/test data sets of raw samples
     $version->predict();
+
+    $version->finish();
 
     redirect($priorurl);
 }

@@ -41,10 +41,10 @@
 {{#description}}
     {{> tool_laaudit/model_version_description}}
 {{/description}}
-<ul class="description p-0 list-unstyled">
-    {{#evidence}}
-        <li>
+<div class="container mx-0 mb-3">
+    <ul class="row row-cols-3 list-unstyled">
+        {{#evidence}}
             {{> tool_laaudit/evidence_item}}
-        </li>
-    {{/evidence}}
-</ul>
+        {{/evidence}}
+    </ul>
+</div>

@@ -17,22 +17,53 @@
     Context variables required for this template:
     - id: 1
     - name: "training data"
-    - timecreationstarted: "1679987403"
-    - timecreationfinished: "1679987953"
+    - timecollectionstarted: "1679987403"
+    - timecollectionfinished: "1679987953"
     - serializedfilelocation:
     Example context (json): "/evidencecollections/1"
     {
         "id": 1,
         "name": "training data",
-        "timecreationstarted": "1679987403",
-        "timecreationfinished": "1679987953",
+        "timecollectionstarted": "1679987403",
+        "timecollectionfinished": "1679987953",
         "serializedfilelocation": "/evidencecollections/1"
       }
 }}
-<h5>evidence{{id}}</h5>
-<ul class="description p-0 list-unstyled">
-    <li class="course-description-item config-info"><strong>{{#str}}name, tool_laaudit{{/str}}</strong> {{name}}</li>
-    <li class="course-description-item config-info"><strong>{{#str}}started, tool_laaudit{{/str}}</strong> {{timecreationstarted}}</li>
-    <li class="course-description-item config-info"><strong>{{#str}}finished, tool_laaudit{{/str}}</strong> {{timecreationfinished}}</li>
-    <li class="course-description-item config-info"><strong>{{#str}}serializedfilelocation, tool_laaudit{{/str}}</strong> {{serializedfilelocation}}</li>
-</ul>
+<li>
+    <div class="border p-2 rounded small m-1">
+    <ul class="list-unstyled">
+        <li class="col-sm">
+            <a href="{{serializedfilelocation}}" title="Download from {{serializedfilelocation}}">
+                <dl class="row mb-0">
+                    <dt  class="mb-0 col-sm-0">
+                        <i class="icon fa fa-download" aria-hidden="true" title="{{#str}}serializedfilelocation, tool_laaudit{{/str}}"></i>
+                    </dt>
+                    <dd  class="m-0 p-0 col-sm">
+                        {{name}}
+                    </dd>
+                </dl>
+            </a>
+        </li>
+        <li class="col-sm">
+            <dl class="row mb-0">
+                <dt  class="mb-0 col-sm-0">
+                    <i class="icon fa fa-hourglass-start" aria-hidden="true" title="{{#str}}started, tool_laaudit{{/str}}"></i>
+                </dt>
+                <dd  class="m-0 p-0 col-sm">
+                    {{timecollectionstarted}}
+                </dd>
+            </dl>
+        </li>
+        <li class="col-sm">
+            <dl class="row mb-0">
+                <dt  class="mb-0 col-sm-0">
+                    <i class="icon fa fa-hourglass-end" aria-hidden="true" title="{{#str}}finished, tool_laaudit{{/str}}"></i>
+                </dt>
+                <dd  class="mb-0 p-0 col-sm">
+                    {{timecollectionfinished}}
+                </dd>
+            </dl>
+        </li>
+    </ul>
+    </div>
+</li>

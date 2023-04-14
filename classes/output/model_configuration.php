@@ -64,7 +64,8 @@ class model_configuration implements templatable, renderable {
 
         // Add buttons.
         $buttons = [];
-        $buttons[] = new single_button(new moodle_url("modelversion.php", array('configid' => $this->modelconfig->id)), get_string('automaticallycreateversion', 'tool_laaudit'), 'post');
+        $buttons[] = new single_button(new moodle_url("modelversion.php", array('configid' => $this->modelconfig->id)),
+                get_string('automaticallycreateversion', 'tool_laaudit'), 'post');
         foreach ($buttons as $key => $button) {
             $buttons[$key] = $button->export_for_template($output);
         }
@@ -72,9 +73,9 @@ class model_configuration implements templatable, renderable {
 
         // Add started evidence sets.
         $versions = []; // Todo: Differentiate started and finished evidence sets? Sort?
-        foreach($this->modelconfig->versions as $version) {
-            $version_renderer= new model_version($version);
-            $versions[] = $version_renderer->export_for_template($output);
+        foreach ($this->modelconfig->versions as $version) {
+            $versionrenderer = new model_version($version);
+            $versions[] = $versionrenderer->export_for_template($output);
         }
         $data->versions = $versions;
 

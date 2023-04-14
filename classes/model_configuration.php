@@ -62,7 +62,7 @@ class model_configuration {
         $this->modelname = isset($model->name) ? $model->name : "model" . $this->modelid;
         $this->modeltarget = $model->target;
 
-        $this->versions = $this->get_versions_from_db(); //the model versions from db do not contain the evidence right away
+        $this->versions = $this->get_versions_from_db();
     }
 
     /**

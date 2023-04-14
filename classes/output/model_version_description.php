@@ -64,10 +64,10 @@ class model_version_description implements templatable, renderable {
 
         $data->timecreationstarted = userdate((int) $this->version->timecreationstarted);
 
-
         $finished = (int) $this->version->timecreationfinished > 0;
         $data->timecreationfinishedicon = $finished ? 'end' : 'half';
-        $data->timecreationfinished = $finished ? userdate((int) $this->version->timecreationfinished) : get_string('unfinished', 'tool_laaudit');
+        $data->timecreationfinished = $finished ?
+                userdate((int) $this->version->timecreationfinished) : get_string('unfinished', 'tool_laaudit');
 
         $analysisintervalnameparts = explode('\\', $this->version->analysisinterval);
         $data->analysisinterval = end($analysisintervalnameparts);

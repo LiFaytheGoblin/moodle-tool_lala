@@ -35,7 +35,7 @@ $configid = optional_param('configid', 0, PARAM_INT);
 
 // Set some page parameters.
 $priorurl = new moodle_url('/admin/tool/laaudit/index.php');
-$pageurl = new moodle_url('/admin/tool/laaudit/modelversion.php', array("configid" => $configid)); # POST /admin/tool/laaudit/modelversion.php?configid=1
+$pageurl = new moodle_url('/admin/tool/laaudit/modelversion.php', array("configid" => $configid));
 $context = context_system::instance();
 
 $PAGE->set_url($pageurl);
@@ -46,10 +46,10 @@ if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $version = new model_version($versionid);
 
-    // if route contains auto param, do it automatically
+    // If route contains auto param, do it automatically.
     $version->set_data();
     $version->calculate_features();
-    $version->train(); //input are the indicators right? differentiate for download between features and training/test data sets of raw samples
+    $version->train();
     $version->predict();
 
     $version->finish();

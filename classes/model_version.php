@@ -82,6 +82,7 @@ class model_version {
     /**
      * Returns a stdClass with the model version data.
      *
+     * @param int $configid
      * @return stdClass
      */
     public static function create_scaffold_and_get_for_config($configid) {
@@ -96,16 +97,17 @@ class model_version {
         $obj->timecreationstarted = time();
         $obj->timecreationfinished = 0;
 
-        // Copy values from model
+        // Copy values from model.
         $modelconfig = $DB->get_record('tool_laaudit_model_configs', array('id' => $configid), 'modelid', MUST_EXIST);
         $modelid = $modelconfig->modelid;
-        $model = $DB->get_record('analytics_models', array('id' => $modelid), 'timesplitting, predictionsprocessor, contextids, indicators', MUST_EXIST);
+        $model = $DB->get_record('analytics_models', array('id' => $modelid),
+                'timesplitting, predictionsprocessor, contextids, indicators', MUST_EXIST);
         if (self::valid_exists($model->timesplitting)) {
             $obj->analysisinterval = $model->timesplitting;
         } else {
-            $analysis_intervals = manager::get_time_splitting_methods_for_evaluation();
-            $first_analysis_interval = array_keys($analysis_intervals)[0];
-            $obj->analysisinterval = $first_analysis_interval;
+            $analysisintervals = manager::get_time_splitting_methods_for_evaluation();
+            $firstanalysisinterval = array_keys($analysisintervals)[0];
+            $obj->analysisinterval = $firstanalysisinterval;
         }
         if (self::valid_exists($model->predictionsprocessor)) {
             $obj->predictionsprocessor = $model->predictionsprocessor;
@@ -114,9 +116,9 @@ class model_version {
             $obj->predictionsprocessor = $default;
         }
         if (self::valid_exists($model->contextids)) {
-            $obj->contextids =  $model->contextids;
+            $obj->contextids = $model->contextids;
         }
-        $obj->indicators =  $model->indicators;
+        $obj->indicators = $model->indicators;
 
         return $DB->insert_record('tool_laaudit_model_versions', $obj);
     }
@@ -143,34 +145,48 @@ class model_version {
         return $obj;
     }
 
+    /**
+     * Helper method: Short check to verify whether the provided value is valid, and thus a valid list exists.
+     *
+     * @param string $value to check
+     * @return boolean
+     */
     private static function valid_exists($value) {
         return isset($value) && $value != "" && $value != "[]";
     }
 
+    /**
+     * Add some evidence to the version. This will continue developping the version.
+     *
+     * @param string $evidencekey what type of evidence should be collected next.
+     * @param data $data possibly pre-existing data
+     * @return void
+     */
     public function add($evidencekey, $data = null) {
-        // $version->add('testing_dataset');
-        // $version->add(new dataset($data));
-
-        // check whether this is already in the evidence
         if (array_key_exists($evidencekey, $this->evidence)) {
             echo("Evidence already exists.");
             return;
         }
 
-        if (isset($this->$evidencekey) && !isset($data)) { //if we already have data from previous calculations, use it
+        if (isset($this->$evidencekey) && !isset($data)) { // If we already have data from previous calculations, use it.
             $data = $this->$evidencekey;
         }
 
-        // create evidence for the data
+        // Create evidence for the data.
         $class = 'tool_laaudit\\'.$evidencekey;
 
         $evidence = call_user_func_array($class.'::create_and_get_for_version', array($this->id, $data));
 
-        // add to evidence array
+        // Add to evidence array.
         $this->evidence[$evidencekey] = $evidence->get_id();
         $this->$evidencekey = $evidence->get_raw_data();
     }
 
+    /**
+     * Retrieve the evidence for this version from the database
+     *
+     * @return stdClass[] of evidence records
+     */
     private function get_evidence_from_db() {
         global $DB;
 
@@ -178,28 +194,54 @@ class model_version {
         return $records;
     }
 
+    /**
+     * Interface method for add()
+     *
+     * @return void
+     */
     public function set_data() {
-        $this->add('dataset'); // could also pass the class directly
+        $this->add('dataset');
     }
 
+    /**
+     * Interface method for add()
+     *
+     * @return void
+     */
     public function calculate_features() {
-        $this->add('features_dataset'); // create features dataset for training and testing data - unsure split or merge
+        $this->add('features_dataset'); // Create features dataset for training and testing data - unsure split or merge.
     }
 
+    /**
+     * Interface method for add()
+     *
+     * @return void
+     */
     public function train() {
-        $this->add('training_dataset'); // needs split info
-        $this->add('model'); // weights
+        $this->add('training_dataset'); // Needs split info.
+        $this->add('model');
     }
 
+    /**
+     * Interface method for add()
+     *
+     * @return void
+     */
     public function predict() {
-        $this->add('test_dataset'); // needs split info, related to training dataset
+        $this->add('test_dataset'); // Needs split info, related to training dataset.
         $this->add('predictions_dataset');
     }
 
+    /**
+     * Mark the version as finished.
+     *
+     * @return void
+     */
     public function finish() {
         global $DB;
 
         $this->timecreationfinished = time();
-        $DB->set_field('tool_laaudit_model_versions', 'timecreationfinished', $this->timecreationfinished, array('id' => $this->id));
+        $DB->set_field('tool_laaudit_model_versions', 'timecreationfinished', $this->timecreationfinished,
+                array('id' => $this->id));
     }
 }

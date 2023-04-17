@@ -44,6 +44,8 @@ class model_version {
     private $timecreationfinished;
     /** @var int $configid of the model config this version belongs to */
     private $configid;
+    /** @var int $modelid of the model this version belongs to */
+    private $modelid;
     /** @var string $analysisinterval used for the model version */
     private $analysisinterval;
     /** @var string $predictionsprocessor used by the model version */
@@ -77,6 +79,10 @@ class model_version {
         $this->contextids = $version->contextids;
         $this->indicators = $version->indicators;
         $this->evidence = $this->get_evidence_from_db();
+        $this->modelid =  $DB->get_fieldset_select('tool_laaudit_model_configs', 'modelid', 'id='.$this->configid)[0]; //get_fielset_select('tool_laaudit_model_configs', 'modelid', array('id' => $this->configid));
+        if (!isset($this->modelid)) {
+            $this->modelid = 0; // Todo: Model was maybe deleted. Catch this case!
+        }
     }
 
     /**
@@ -175,7 +181,8 @@ class model_version {
         // Create evidence for the data.
         $class = 'tool_laaudit\\'.$evidencekey;
 
-        $evidence = call_user_func_array($class.'::create_and_get_for_version', array($this->id, $data));
+        $modelid =
+        $evidence = call_user_func_array($class.'::create_and_get_for_version', array($this->id, $data, $this->modelid));
 
         // Add to evidence array.
         $this->evidence[$evidencekey] = $evidence->get_id();

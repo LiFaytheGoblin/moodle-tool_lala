@@ -70,7 +70,7 @@ abstract class evidence {
      * @param data $data possibly pre-existing data
      * @return stdClass of the created evidence
      */
-    public static function create_and_get_for_version($versionid, $data = null) {
+    public static function create_and_get_for_version($versionid, $data = null, $modelid = null) {
         global $DB;
 
         $obj = new stdClass();
@@ -82,7 +82,7 @@ abstract class evidence {
         $id = $DB->insert_record('tool_laaudit_evidence', $obj);
 
         $evidence = new static($id);
-        $evidence->collect($data);
+        $evidence->collect($data, $modelid);
         $evidence->serialize();
 
         $DB->set_field('tool_laaudit_evidence', 'serializedfilelocation', $evidence->get_serializedfilelocation(),
@@ -104,7 +104,7 @@ abstract class evidence {
      * @param data $data possibly already existing data
      * @return data serialized data
      */
-    abstract protected function collect($data = null);
+    abstract protected function collect($data = null, $modelid = null);
     // Either auto collection, or setting the data directly. where to get the necessary info from tho? maybe pass model_version?
 
     /**

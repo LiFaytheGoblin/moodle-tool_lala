@@ -30,7 +30,7 @@ class model extends evidence {
         // TODO: Implement serialize() method.
     }
 
-    protected function collect($data = null) {
+    protected function collect($data = null, $modelid = null) {
         // TODO: Implement collect() method.
     }
 }

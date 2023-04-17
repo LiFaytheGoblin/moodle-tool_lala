@@ -223,8 +223,16 @@ class model_version {
 
         $predictor = $model->get_predictions_processor();
 
-        $datasets = $this->analyser->get_labelled_data($model->get_contexts());
+        $contexts = $model->get_contexts();
+
+        $datasets = $this->analyser->get_labelled_data($contexts);
+        if(sizeof($datasets) < 1) {
+            throw new \exception('Found no data that can be used for creating a model.');
+        }
+        echo(json_encode($datasets));
+
         $this->dataset = array_values($datasets)[0];
+        $evidence->store($this->dataset);
 
         $evidence->finish();
     }
@@ -253,12 +261,14 @@ class model_version {
             throw new \moodle_exception('errornoindicators', 'analytics');
         }
 
-        // Convert analysisintervals from string[] to instances?
-        $analysisintervals = [""]; // Todo: insert from version
+        // Convert analysisintervals from string[] to instances
+        $instance = \core_analytics\manager::get_time_splitting($this->analysisinterval);
+        $analysisintervalinstances = [$instance];
+
         $options = array('evaluation'=>true, 'mode'=>'configuration'); // Todo: Correct?
 
         $analyzerclassname = $target->get_analyser_class();
-        $this->analyser = new $analyzerclassname($this->modelid, $target, $this->indicatorinstances, $analysisintervals, $options);
+        $this->analyser = new $analyzerclassname($this->modelid, $target, $this->indicatorinstances, $analysisintervalinstances, $options);
     }
 
     /**

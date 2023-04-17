@@ -26,64 +26,28 @@
 
 namespace tool_laaudit;
 
-use core_analytics;
-
 class dataset extends evidence_redone {
-    /**
-     * @var int|null
-     */
-    private $modelid;
-    /**
-     * @var core_analytics\local\analyser
-     */
-    private $analyser;
 
-    protected function serialize() {
-        // TODO: Implement serialize() method.
+    public function store($data) {
+        $this->data = $data;
+
+        $fileinfo = $this->get_file_info();
+
+        $fs = get_file_storage();
+        $filestring = serialize($data);
+        $fs->create_file_from_string($fileinfo, $filestring);
+
+        $serializedfilelocation = ''; // Todo: find out real location to serve to user
+
+        $this->set_serializedfilelocation($serializedfilelocation);
     }
 
-    protected function collect($data = null, $modelid = null) {
-        // TODO: Implement collect() method.
-        // Create a model object from the accompanying analytics model
-        $this->modelid = $modelid;
-        $model = new \core_analytics\model($modelid);
-
-        // Init analyzer.
-        $this->init_analyzer($model);
-
-        $this->heavy_duty_mode();
-
-        $predictor = $model->get_predictions_processor();
-
-        $datasets = $this->analyser->get_labelled_data($model->get_contexts()); // There should be only one in here.
-
+    private function serialize($data) {
+        // Todo: correct.
+        return json_encode($data);
     }
 
-    protected function init_analyzer($model) {
-        $target = $model->get_target();
-        if (empty($target)) {
-            throw new \moodle_exception('errornotarget', 'analytics');
-        }
-        $indicators = []; // Todo: insert from version
-        if (empty($indicators)) {
-            throw new \moodle_exception('errornoindicators', 'analytics');
-        }
-        $analysisintervals = [""]; // Todo: insert from version
-        $options = array('evaluation'=>true, 'mode'=>'configuration'); // Todo: Correct?
-
-        $analyzerclassname = $target->get_analyser_class();
-        $this->analyser = new $analyzerclassname($this->modelid, $target, $indicators, $analysisintervals, $options);
-    }
-
-    /**
-     * Increases system memory and time limits.
-     *
-     * @return void
-     */
-    private function heavy_duty_mode() {
-        if (ini_get('memory_limit') != -1) {
-            raise_memory_limit(MEMORY_HUGE);
-        }
-        \core_php_time_limit::raise();
+    protected function get_file_type() {
+        return 'csv';
     }
 }

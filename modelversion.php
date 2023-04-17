@@ -48,9 +48,9 @@ if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // If route contains auto param, do it automatically.
     $version->set_data();
-    $version->calculate_features();
-    $version->train();
-    $version->predict();
+    //$version->calculate_features();
+    //$version->train();
+    //$version->predict();
 
     $version->finish();
 

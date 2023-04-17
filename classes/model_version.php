@@ -181,7 +181,6 @@ class model_version {
         // Create evidence for the data.
         $class = 'tool_laaudit\\'.$evidencekey;
 
-        $modelid =
         $evidence = call_user_func_array($class.'::create_and_get_for_version', array($this->id, $data, $this->modelid));
 
         // Add to evidence array.
@@ -207,7 +206,71 @@ class model_version {
      * @return void
      */
     public function set_data() {
-        $this->add('dataset');
+        // $this->add('dataset');
+
+        // Prepare evidence object.
+        $evidence = dataset::create_and_get_for_version($this->id);
+        // Add to evidence array.
+        $this->evidence['dataset'] = $evidence->get_id();
+
+        // Create a model object from the accompanying analytics model
+        $model = new \core_analytics\model($this->modelid);
+
+        // Init analyzer.
+        $this->init_analyzer($model);
+
+        $this->heavy_duty_mode();
+
+        $predictor = $model->get_predictions_processor();
+
+        $datasets = $this->analyser->get_labelled_data($model->get_contexts());
+        $this->dataset = array_values($datasets)[0];
+
+        $evidence->finish();
+    }
+
+    protected function init_analyzer($model) {
+        $target = $model->get_target();
+        if (empty($target)) {
+            throw new \moodle_exception('errornotarget', 'analytics');
+        }
+
+        // Convert indicators from string[] to \core_analytics\local\indicator\base[]
+        $fullclassnames = json_decode($this->indicators);
+        if (!is_array($fullclassnames)) {
+            throw new \coding_exception('Version ' . $this->id . ' indicators can not be read');
+        }
+        $this->indicatorinstances = array();
+        foreach ($fullclassnames as $fullclassname) {
+            $instance = \core_analytics\manager::get_indicator($fullclassname);
+            if ($instance) {
+                $this->indicatorinstances[$fullclassname] = $instance;
+            } else {
+                debugging('Can\'t load ' . $fullclassname . ' indicator', DEBUG_DEVELOPER);
+            }
+        }
+        if (empty($this->indicatorinstances)) {
+            throw new \moodle_exception('errornoindicators', 'analytics');
+        }
+
+        // Convert analysisintervals from string[] to instances?
+        $analysisintervals = [""]; // Todo: insert from version
+        $options = array('evaluation'=>true, 'mode'=>'configuration'); // Todo: Correct?
+
+        $analyzerclassname = $target->get_analyser_class();
+        $this->analyser = new $analyzerclassname($this->modelid, $target, $this->indicatorinstances, $analysisintervals, $options);
+    }
+
+    /**
+     * Increases system memory and time limits.
+     *
+     * @return void
+     */
+    private function heavy_duty_mode() {
+        if (ini_get('memory_limit') != -1) {
+            raise_memory_limit(MEMORY_HUGE);
+        }
+        \core_php_time_limit::raise();
     }
 
     /**

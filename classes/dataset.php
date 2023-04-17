@@ -28,7 +28,7 @@ namespace tool_laaudit;
 
 use core_analytics;
 
-class dataset extends evidence {
+class dataset extends evidence_redone {
     /**
      * @var int|null
      */

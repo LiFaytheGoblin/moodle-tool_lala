@@ -26,6 +26,8 @@
 
 namespace tool_laaudit;
 
+use \moodle_url;
+
 class dataset extends evidence_redone {
 
     public function store($data) {
@@ -35,11 +37,19 @@ class dataset extends evidence_redone {
 
         $fs = get_file_storage();
         $filestring = serialize($data);
-        $fs->create_file_from_string($fileinfo, $filestring);
+        $storedfile = $fs->create_file_from_string($fileinfo, $filestring);
 
-        $serializedfilelocation = ''; // Todo: find out real location to serve to user
+        $serializedfilelocation = moodle_url::make_pluginfile_url(
+                $storedfile->get_contextid(),
+                $storedfile->get_component(),
+                $storedfile->get_filearea(),
+                $storedfile->get_itemid(),
+                $storedfile->get_filepath(),
+                $storedfile->get_filename(),
+                true
+        );
 
-        $this->set_serializedfilelocation($serializedfilelocation);
+        $this->set_serializedfilelocation($serializedfilelocation->out());
     }
 
     private function serialize($data) {

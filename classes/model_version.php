@@ -229,7 +229,6 @@ class model_version {
         if(sizeof($datasets) < 1) {
             throw new \exception('Found no data that can be used for creating a model.');
         }
-        echo(json_encode($datasets));
 
         $this->dataset = array_values($datasets)[0];
         $evidence->store($this->dataset);

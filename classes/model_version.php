@@ -197,6 +197,7 @@ class model_version {
         global $DB;
 
         $records = $DB->get_records('tool_laaudit_evidence', array('versionid' => $this->id));
+
         return $records;
     }
 

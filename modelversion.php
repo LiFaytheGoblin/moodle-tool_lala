@@ -54,6 +54,6 @@ if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $version->finish();
 
-    //redirect($priorurl);
+    redirect($priorurl);
 }
 

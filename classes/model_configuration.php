@@ -111,7 +111,7 @@ class model_configuration {
     public function get_versions_from_db() {
         global $DB;
 
-        $versionids = $DB->get_fieldset_select('tool_laaudit_model_versions', 'id', '1=1');
+        $versionids = $DB->get_fieldset_select('tool_laaudit_model_versions', 'id', 'configid='.$this->id);
 
         $versions = [];
         foreach ($versionids as $versionid) {

@@ -45,8 +45,6 @@ function tool_laaudit_pluginfile(
         bool $forcedownload,
         array $options = []
 ): bool {
-    global $DB;
-
     // Check the contextlevel is as expected - if your plugin is a block, this becomes CONTEXT_BLOCK, etc.
     if ($context->contextlevel != CONTEXT_SYSTEM) {
         return false;
@@ -75,12 +73,9 @@ function tool_laaudit_pluginfile(
         // $args contains the remaining elements of the filepath.
         $filepath = '/' . implode('/', $args) . '/';
     }
-    echo($filepath);
-    echo($filename);
 
     $fs = get_file_storage();
     $file = $fs->get_file($context->id, 'tool_laaudit', $filearea, $itemid, $filepath, $filename);
-    echo($file->get_content());
     if (!$file) {
         // The file does not exist.
         return false;
@@ -88,4 +83,5 @@ function tool_laaudit_pluginfile(
 
     // We can now send the file back to the browser - in this case with a cache lifetime of 1 day and no filtering.
     send_stored_file($file, 86400, 0, $forcedownload, $options);
+    return true;
 }

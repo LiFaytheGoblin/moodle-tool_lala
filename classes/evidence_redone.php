@@ -26,6 +26,7 @@ namespace tool_laaudit;
 
 use stdClass;
 use context_system;
+use moodle_url;
 
 /**
  * Class for the evidence element.
@@ -110,8 +111,20 @@ abstract class evidence_redone {
      * @param string path location
      * @return void
      */
-    protected function set_serializedfilelocation($url) {
-        $this->serializedfilelocation = $url;
+    protected function set_serializedfilelocation() {
+        $fileinfo = $this->get_file_info();
+
+        $serializedfile_url = moodle_url::make_pluginfile_url(
+                $fileinfo['contextid'],
+                $fileinfo['component'],
+                $fileinfo['filearea'],
+                $fileinfo['itemid'],
+                $fileinfo['filepath'],
+                $fileinfo['filename'],
+                true
+        );
+
+        $this->serializedfilelocation = $serializedfile_url->out();
 
         global $DB;
         $DB->set_field('tool_laaudit_evidence', 'serializedfilelocation', $this->serializedfilelocation,  array('id' => $this->id));
@@ -167,8 +180,6 @@ abstract class evidence_redone {
                 'filename'  => $this->get_file_name() . '.' . $this->get_file_type(),
         ];
     }
-
-
 
     public function finish() {
         global $DB;

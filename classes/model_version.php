@@ -239,28 +239,18 @@ class model_version {
         }
         */
         $datasets = [];
-        $c = 0;
         $analysables_iterator = $this->analyser->get_analysables_iterator(null, $contexts);
+        // Todo: also store fitting headings
         foreach($analysables_iterator as $analysable) {
             if(!is_bool($analysable)) {
-                //$datasets[] = $analysable->get_id(); //this is e.g. user but it could also be another class, and then get_id() doesn't work anymore!
-                $sample = $this->analyser->get_all_samples($analysable)[0];
-                $sampleid = array_keys($sample)[0];
+                $sampleid = $analysable->get_id();
+                // now also get the features
+                // and target value
                 $datasets[] = $sampleid;
-                $c++;
             }
-
-            //echo($analysable);
-            //echo($analysable->get_id());
-            //$datasets[] = $analysable; //->get_id();
-            //
-            //
-
         }
 
-        echo(json_encode($datasets));
-
-        return $datasets;//array_values($datasets)[0];
+        return $datasets;
     }
 
     protected function init_analyzer($model) {

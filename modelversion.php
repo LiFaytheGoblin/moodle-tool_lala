@@ -47,7 +47,7 @@ if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $version = new model_version($versionid);
 
     // If route contains auto param, do it automatically.
-    $version->set_data();
+    $version->gather_dataset();
     //$version->calculate_features();
     //$version->train();
     //$version->predict();

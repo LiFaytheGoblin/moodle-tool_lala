@@ -206,14 +206,20 @@ class model_version {
      *
      * @return void
      */
-    public function set_data() {
-        // $this->add('dataset');
-
+    public function gather_dataset() {
         // Prepare evidence object.
         $evidence = dataset::create_and_get_for_version($this->id);
         // Add to evidence array.
         $this->evidence['dataset'] = $evidence->get_id();
 
+        $this->dataset = $this->get_dataset(); // TODO: needs to be field? Or can this be local?
+
+        $evidence->store($this->dataset);
+
+        $evidence->finish();
+    }
+
+    protected function get_dataset() {
         // Create a model object from the accompanying analytics model
         $model = new \core_analytics\model($this->modelid);
 
@@ -222,19 +228,39 @@ class model_version {
 
         $this->heavy_duty_mode();
 
-        $predictor = $model->get_predictions_processor();
+        $predictor = $model->get_predictions_processor(); // Todo: Necessary?
 
         $contexts = $model->get_contexts();
 
-        $datasets = $this->analyser->get_labelled_data($contexts);
+        /*
+        $datasets = $this->analyser->get_all_samples(); //get_unlabelled_data($contexts);
         if(sizeof($datasets) < 1) {
             throw new \exception('Found no data that can be used for creating a model.');
         }
+        */
+        $datasets = [];
+        $c = 0;
+        $analysables_iterator = $this->analyser->get_analysables_iterator(null, $contexts);
+        foreach($analysables_iterator as $analysable) {
+            if(!is_bool($analysable)) {
+                //$datasets[] = $analysable->get_id(); //this is e.g. user but it could also be another class, and then get_id() doesn't work anymore!
+                $sample = $this->analyser->get_all_samples($analysable)[0];
+                $sampleid = array_keys($sample)[0];
+                $datasets[] = $sampleid;
+                $c++;
+            }
 
-        $this->dataset = array_values($datasets)[0];
-        $evidence->store($this->dataset);
+            //echo($analysable);
+            //echo($analysable->get_id());
+            //$datasets[] = $analysable; //->get_id();
+            //
+            //
 
-        $evidence->finish();
+        }
+
+        echo(json_encode($datasets));
+
+        return $datasets;//array_values($datasets)[0];
     }
 
     protected function init_analyzer($model) {

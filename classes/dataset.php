@@ -43,7 +43,7 @@ class dataset extends evidence_redone {
 
     private function serialize($data) {
         // Todo: correct.
-        return $data->get_content();
+        return implode("\n", $data); //->get_content();
     }
 
     protected function get_file_type() {

@@ -42,8 +42,24 @@ class dataset extends evidence_redone {
     }
 
     private function serialize($data) {
-        // Todo: correct.
-        return implode("\n", $data); //->get_content();
+        $str = "";
+        $indicatornamesstring = null;
+        foreach($data as $results) {
+            $ids = array_keys($results);
+            foreach($ids as $id) {
+                if ($id == "0") { // These are the indicator names
+                    $indicatornamesstring = implode(",", $results[$id]);
+                    continue;
+                }
+                $indicatorvaluesstr = implode(",", $results[$id]);
+                $str = $str.$id.",".$indicatorvaluesstr."\n";
+            }
+        }
+
+        $heading = "sampleid,".$indicatornamesstring."\n";
+        $str = $heading.$str;
+
+        return $str;
     }
 
     protected function get_file_type() {

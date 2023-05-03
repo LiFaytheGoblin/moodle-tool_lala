@@ -26,6 +26,8 @@ namespace tool_laaudit;
 
 use core_analytics\manager;
 use core_analytics\model;
+use core_analytics\analysis;
+use core_analytics\local\analysis\result_array;
 use core_date;
 use DateTime;
 use stdClass;
@@ -232,25 +234,22 @@ class model_version {
 
         $contexts = $model->get_contexts();
 
-        /*
-        $datasets = $this->analyser->get_all_samples(); //get_unlabelled_data($contexts);
-        if(sizeof($datasets) < 1) {
-            throw new \exception('Found no data that can be used for creating a model.');
-        }
-        */
-        $datasets = [];
         $analysables_iterator = $this->analyser->get_analysables_iterator(null, $contexts);
         // Todo: also store fitting headings
+        $result_array = new result_array($this->modelid, true, []);
+        $analysis = new analysis($this->analyser, true, $result_array);
         foreach($analysables_iterator as $analysable) {
-            if(!is_bool($analysable)) {
-                $sampleid = $analysable->get_id();
-                // now also get the features
-                // and target value
-                $datasets[] = $sampleid;
+            if (!$analysable) {
+                continue;
             }
+
+            $analysableresults = $analysis->process_analysable($analysable);
+            $result_array->add_analysable_results($analysableresults);
         }
 
-        return $datasets;
+        $allresults = $result_array->get();
+
+        return $allresults;
     }
 
     protected function init_analyzer($model) {

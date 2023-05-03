@@ -22,6 +22,7 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+
 namespace tool_laaudit;
 
 use core_analytics\manager;
@@ -223,7 +224,7 @@ class model_version {
 
     protected function get_dataset() {
         // Create a model object from the accompanying analytics model
-        $model = new \core_analytics\model($this->modelid);
+        $model = new model($this->modelid);
 
         // Init analyzer.
         $this->init_analyzer($model);
@@ -249,20 +250,18 @@ class model_version {
 
         $allresults = $result_array->get();
 
+        if (sizeof($allresults) < 1) {
+            throw new \moodle_exception('nodata', 'analytics');
+        }
+
         return $allresults;
     }
 
     protected function init_analyzer($model) {
         $target = $model->get_target();
-        if (empty($target)) {
-            throw new \moodle_exception('errornotarget', 'analytics');
-        }
+        $fullclassnames = json_decode($this->indicators); // Convert indicators from string[] to \core_analytics\local\indicator\base[]
 
-        // Convert indicators from string[] to \core_analytics\local\indicator\base[]
-        $fullclassnames = json_decode($this->indicators);
-        if (!is_array($fullclassnames)) {
-            throw new \coding_exception('Version ' . $this->id . ' indicators can not be read');
-        }
+
         $this->indicatorinstances = array();
         foreach ($fullclassnames as $fullclassname) {
             $instance = \core_analytics\manager::get_indicator($fullclassname);

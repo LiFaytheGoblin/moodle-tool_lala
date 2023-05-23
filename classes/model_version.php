@@ -167,33 +167,6 @@ class model_version {
     }
 
     /**
-     * Add some evidence to the version. This will continue developping the version.
-     *
-     * @param string $evidencekey what type of evidence should be collected next.
-     * @param data $data possibly pre-existing data
-     * @return void
-     */
-    public function add($evidencekey, $data = null) {
-        if (array_key_exists($evidencekey, $this->evidence)) {
-            echo("Evidence already exists.");
-            return;
-        }
-
-        if (isset($this->$evidencekey) && !isset($data)) { // If we already have data from previous calculations, use it.
-            $data = $this->$evidencekey;
-        }
-
-        // Create evidence for the data.
-        $class = 'tool_laaudit\\'.$evidencekey;
-
-        $evidence = call_user_func_array($class.'::create_and_get_for_version', array($this->id, $data, $this->modelid));
-
-        // Add to evidence array.
-        $this->evidence[$evidencekey] = $evidence->get_id();
-        $this->$evidencekey = $evidence->get_raw_data();
-    }
-
-    /**
      * Retrieve the evidence for this version from the database
      *
      * @return stdClass[] of evidence records

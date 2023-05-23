@@ -41,7 +41,12 @@ class model_configuration {
     private $modelname;
     /** @var string $modeltarget of the belonging analytics model. */
     private $modeltarget;
+    /** @var string $modelanalysabletype that will be used for calculating features for the model. */
+    private $modelanalysabletype;
     /** @var int[] $versions created of the model config. */
+
+
+
     private $versions;
     /**
      * Constructor. Deserialize DB object.
@@ -59,8 +64,13 @@ class model_configuration {
 
         $model = $DB->get_record('analytics_models', array('id' => $this->modelid), '*', MUST_EXIST);
 
-        $this->modelname = isset($model->name) ? $model->name : "model" . $this->modelid;
+        $this->modelname = $model->name ?? "model" . $this->modelid;
         $this->modeltarget = $model->target;
+
+        $model = new model($this->modelid);
+        $target = $model->get_target();
+        $this->modelanalysabletype = $target->get_analyser_class();
+        echo($this->modelanalysabletype);
 
         $this->versions = $this->get_versions_from_db();
     }
@@ -98,6 +108,7 @@ class model_configuration {
         $obj->modelid = $this->modelid;
         $obj->modelname = $this->modelname;
         $obj->modeltarget = $this->modeltarget;
+        $obj->modelanalysabletype = $this->modelanalysabletype;
         $obj->versions = $this->versions;
 
         return $obj;

@@ -47,3 +47,5 @@ $string['name'] = 'name';
 $string['serializedfilelocation'] = 'location of file containing serialized data';
 $string['unfinished'] = 'not finished yet';
 $string['allcontexts'] = 'all contexts';
+$string['analysable'] = 'analysable';
+$string['modelconfig'] = 'model configuration';

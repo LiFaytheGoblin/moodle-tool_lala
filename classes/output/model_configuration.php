@@ -59,7 +59,12 @@ class model_configuration implements templatable, renderable {
         $data->id = $this->modelconfig->id;
         $data->modelid = $this->modelconfig->modelid;
         $data->modelname = $this->modelconfig->modelname;
-        $data->modeltarget = $this->modelconfig->modeltarget;
+
+        $modeltargetnameparts = explode('\\', $this->modelconfig->modeltarget);
+        $data->modeltarget = end($modeltargetnameparts);
+
+        $modelanalysabletypenameparts = explode('\\', $this->modelconfig->modelanalysabletype);
+        $data->modelanalysabletype = end($modelanalysabletypenameparts);
 
         // Add buttons.
         $buttons = [];

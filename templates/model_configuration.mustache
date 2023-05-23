@@ -19,6 +19,7 @@
     - modelname: string - name of the model config
     - modelid: int - model id
     - target: string - name of the target associated with the model config
+    - modelanalysabletype: string - name of the analysable type associated with the model config
     - versions: currently an array of version ids (int)
     - buttons: [{}]
     - versions: [{}]
@@ -28,6 +29,7 @@
             "modelid": 4,
             "modelname": "model4",
             "modeltarget": "Prevent devs at risk",
+            "modelanalysabletype": "user_enrolments",
             "buttons": [{
                 "method" : "post",
                 "url" : "/config/1/version",
@@ -58,28 +60,33 @@
 <li class="activity activity-wrapper">
     <div class="activity-item">
         <div class="activity-basis d-flex w-100 align-items-center flex-column flex-md-row align-self-start">
-            <h3 class="activity-instance activity-title d-flex flex-column">{{modelname}}</h3>
+            <h3 class="activity-instance activity-title">
+                <span title="{{#str}}modelconfig, tool_laaudit{{/str}}">{{modelname}}</span>
+                <span class="badge rounded-pill bg-light ml-2 position-absolute start-0" title="{{#str}}modelid, tool_laaudit{{/str}}">
+                    <i class="icon fa fa-key" aria-hidden="true"></i>{{modelid}}
+                </span>
+            </h3>
             <div class="activity-info mt-1 mt-md-0">{{#buttons}}{{> core/single_button}}{{/buttons}}</div>
         </div>
         <div class="bg-light p-3 rounded small mb-3">
             <ul class="p-0 list-unstyled list-group list-group-horizontal">
-                <li class="col-sm-2">
-                    <dl class="row mb-0">
-                        <dt  class="mb-0 col-sm-0">
-                            <i class="icon fa fa-cogs" aria-hidden="true" title="{{#str}}modelid, tool_laaudit{{/str}}"></i>
-                        </dt>
-                        <dd  class="mb-0 px-1 col-sm">
-                            {{modelid}}
-                        </dd>
-                    </dl>
-                </li>
-                <li class="col-sm">
+                <li class="col-sm-5" title="{{#str}}target, tool_laaudit{{/str}}">
                     <dl class="row mb-0">
                         <dt  class="mb-0 mr-2 col-sm-0">
-                            <i class="fa fa-bullseye" aria-hidden="true" title="{{#str}}target, tool_laaudit{{/str}}"></i>
+                            <i class="fa fa-bullseye" aria-hidden="true"></i>
                         </dt>
                         <dd  class="mb-0 px-1 col-sm">
                             {{modeltarget}}
+                        </dd>
+                    </dl>
+                </li>
+                <li class="col-sm" title="{{#str}}analysable, tool_laaudit{{/str}}">
+                    <dl class="row mb-0">
+                        <dt  class="mb-0 mr-2 col-sm-0">
+                            <i class="fa fa-binoculars" aria-hidden="true"></i>
+                        </dt>
+                        <dd  class="mb-0 px-1 col-sm">
+                            {{modelanalysabletype}}
                         </dd>
                     </dl>
                 </li>

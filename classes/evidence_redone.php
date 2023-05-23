@@ -187,4 +187,10 @@ abstract class evidence_redone {
         $this->timecollectionfinished = time();
         $DB->set_field('tool_laaudit_evidence', 'timecollectionfinished', $this->timecollectionfinished, array('id' => $this->id));
     }
+
+    public function abort() {
+        global $DB;
+
+        $DB->delete_records('tool_laaudit_evidence', array('id' => $this->id));
+    }
 }

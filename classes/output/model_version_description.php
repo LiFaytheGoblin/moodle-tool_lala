@@ -87,6 +87,9 @@ class model_version_description implements templatable, renderable {
             $data->indicators = $indicators;
         }
 
+        $data->haserror = isset($this->version->error);
+        $data->errormessage = $this->version->error;
+
         return $data;
     }
 }

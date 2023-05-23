@@ -81,6 +81,7 @@ class model_version {
         $this->predictionsprocessor = $version->predictionsprocessor;
         $this->contextids = $version->contextids;
         $this->indicators = $version->indicators;
+        $this->error = $version->error;
         $this->evidence = $this->get_evidence_from_db();
         $this->modelid =  $DB->get_fieldset_select('tool_laaudit_model_configs', 'modelid', 'id='.$this->configid)[0]; //get_fielset_select('tool_laaudit_model_configs', 'modelid', array('id' => $this->configid));
         if (!isset($this->modelid)) {
@@ -150,6 +151,7 @@ class model_version {
         $obj->contextids = $this->contextids;
         $obj->indicators = $this->indicators;
         $obj->evidence = $this->evidence;
+        $obj->error = $this->error;
 
         return $obj;
     }
@@ -215,7 +217,13 @@ class model_version {
         // Add to evidence array.
         $this->evidence['dataset'] = $evidence->get_id();
 
-        $this->dataset = $this->get_dataset(); // TODO: needs to be field? Or can this be local?
+        try {
+            $this->dataset = $this->get_dataset(); // TODO: needs to be field? Or can this be local?
+        } catch (\moodle_exception $e) {
+            $evidence->abort();
+            $this->register_error($e);
+            throw $e;
+        }
 
         $evidence->store($this->dataset);
 
@@ -236,7 +244,7 @@ class model_version {
         $contexts = $model->get_contexts();
 
         $analysables_iterator = $this->analyser->get_analysables_iterator(null, $contexts);
-        // Todo: also store fitting headings
+
         $result_array = new result_array($this->modelid, true, []);
         $analysis = new analysis($this->analyser, true, $result_array);
         foreach($analysables_iterator as $analysable) {
@@ -337,5 +345,11 @@ class model_version {
         $this->timecreationfinished = time();
         $DB->set_field('tool_laaudit_model_versions', 'timecreationfinished', $this->timecreationfinished,
                 array('id' => $this->id));
+    }
+
+    private function register_error(\moodle_exception|\Exception $e) {
+        global $DB;
+
+        $DB->set_field('tool_laaudit_model_versions', 'error', $e->getMessage(), array('id' => $this->id));
     }
 }

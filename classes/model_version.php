@@ -310,18 +310,8 @@ class model_version {
      *
      * @return void
      */
-    public function calculate_features() {
-        $this->add('features_dataset'); // Create features dataset for training and testing data - unsure split or merge.
-    }
-
-    /**
-     * Interface method for add()
-     *
-     * @return void
-     */
     public function train() {
-        $this->add('training_dataset'); // Needs split info.
-        $this->add('model');
+
     }
 
     /**
@@ -330,8 +320,7 @@ class model_version {
      * @return void
      */
     public function predict() {
-        $this->add('test_dataset'); // Needs split info, related to training dataset.
-        $this->add('predictions_dataset');
+
     }
 
     /**

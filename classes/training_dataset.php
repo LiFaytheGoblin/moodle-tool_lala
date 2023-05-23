@@ -26,7 +26,4 @@
 namespace tool_laaudit;
 
 class training_dataset extends dataset {
-    protected function collect($data = null) {
-        // TODO: Implement collect() method.
-    }
 }

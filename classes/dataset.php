@@ -27,7 +27,7 @@
 namespace tool_laaudit;
 
 
-class dataset extends evidence_redone {
+class dataset extends evidence {
 
     public function store($data) {
         $this->data = $data;

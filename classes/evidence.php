@@ -25,15 +25,17 @@
 namespace tool_laaudit;
 
 use stdClass;
+use context_system;
+use moodle_url;
 
 /**
  * Class for the evidence element.
  */
 abstract class evidence {
-    /** @var int $id id assigned to the configuration by the db. */
-    private $id;
+    /** @var int $id id assigned to the evidence by the db. */
+    protected $id;
     /** @var int $versionid id of the belonging model version. */
-    private $versionid;
+    protected $versionid;
     /** @var string $name of the evidence. */
     private $name;
     /** @var string $timecollectionstarted of the evidence. */
@@ -70,42 +72,31 @@ abstract class evidence {
      * @param data $data possibly pre-existing data
      * @return stdClass of the created evidence
      */
-    public static function create_and_get_for_version($versionid, $data = null, $modelid = null) {
+    public static function create_and_get_for_version($versionid) {
         global $DB;
 
         $obj = new stdClass();
 
         $obj->versionid = $versionid;
-        $obj->name = get_called_class();
+        $classname = get_called_class();
+        $classnameparts = explode('\\', $classname);
+        $obj->name = end($classnameparts);
         $obj->timecollectionstarted = time();
 
         $id = $DB->insert_record('tool_laaudit_evidence', $obj);
 
         $evidence = new static($id);
-        $evidence->collect($data, $modelid);
-        $evidence->serialize();
-
-        $DB->set_field('tool_laaudit_evidence', 'serializedfilelocation', $evidence->get_serializedfilelocation(),
-                array('id' => $id));
-
-        $DB->set_field('tool_laaudit_evidence', 'timecollectionfinished', time(), array('id' => $id));
 
         return $evidence;
     }
 
     /**
      * Serializes the raw data and stores it in a file. Sets the serializedfilelocation property of the class.
-     * @return file serialized data
+     * @return void
      */
-    abstract protected function serialize();
+    abstract public function store($data);
 
-    /**
-     * Collects the raw data. Sets the data property of the class.
-     * @param data $data possibly already existing data
-     * @return data serialized data
-     */
-    abstract protected function collect($data = null, $modelid = null);
-    // Either auto collection, or setting the data directly. where to get the necessary info from tho? maybe pass model_version?
+    abstract protected function get_file_type();
 
     /**
      * Returns the path where the serialized data is located as a file on the server, for later download.
@@ -113,6 +104,30 @@ abstract class evidence {
      */
     public function get_serializedfilelocation() {
         return $this->serializedfilelocation;
+    }
+
+    /**
+     * Sets the path where the serialized data is located as a file on the server, for later download.
+     * @param string path location
+     * @return void
+     */
+    protected function set_serializedfilelocation() {
+        $fileinfo = $this->get_file_info();
+
+        $serializedfile_url = moodle_url::make_pluginfile_url(
+                $fileinfo['contextid'],
+                $fileinfo['component'],
+                $fileinfo['filearea'],
+                $fileinfo['itemid'],
+                $fileinfo['filepath'],
+                $fileinfo['filename'],
+                true
+        );
+
+        $this->serializedfilelocation = $serializedfile_url->out();
+
+        global $DB;
+        $DB->set_field('tool_laaudit_evidence', 'serializedfilelocation', $this->serializedfilelocation,  array('id' => $this->id));
     }
 
     /**
@@ -129,5 +144,53 @@ abstract class evidence {
      */
     public function get_id() {
         return $this->id;
+    }
+
+    /**
+     * Returns the name of the evidence item. Used by the evidence items.
+     * @return string name
+     */
+    public function get_name() {
+        return $this->name;
+    }
+
+    /**
+     * Returns the id of the version to which the evidence item belongs. Used by the evidence items.
+     * @return int versionid
+     */
+    public function get_versionid() {
+        return $this->versionid;
+    }
+
+    protected function get_file_path() {
+        return '/evidence/';
+    }
+
+    protected function get_file_name() {
+        return 'modelversion' . $this->versionid . '-evidence' . $this->name . $this->id;
+    }
+
+    protected function get_file_info() {
+        return [
+                'contextid' => context_system::instance()->id,
+                'component' => 'tool_laaudit',
+                'filearea'  => 'tool_laaudit',
+                'itemid'    => $this->id,
+                'filepath'  => $this->get_file_path(),
+                'filename'  => $this->get_file_name() . '.' . $this->get_file_type(),
+        ];
+    }
+
+    public function finish() {
+        global $DB;
+
+        $this->timecollectionfinished = time();
+        $DB->set_field('tool_laaudit_evidence', 'timecollectionfinished', $this->timecollectionfinished, array('id' => $this->id));
+    }
+
+    public function abort() {
+        global $DB;
+
+        $DB->delete_records('tool_laaudit_evidence', array('id' => $this->id));
     }
 }

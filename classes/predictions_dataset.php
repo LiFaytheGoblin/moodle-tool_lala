@@ -26,7 +26,5 @@
 namespace tool_laaudit;
 
 class predictions_dataset extends dataset {
-    protected function collect($data = null) {
-        // TODO: Implement collect() method.
-    }
+
 }

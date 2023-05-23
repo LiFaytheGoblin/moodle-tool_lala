@@ -26,11 +26,11 @@
 namespace tool_laaudit;
 
 class model extends evidence {
-    protected function serialize() {
-        // TODO: Implement serialize() method.
+    public function store($data) {
+        // TODO: Implement store() method.
     }
 
-    protected function collect($data = null, $modelid = null) {
-        // TODO: Implement collect() method.
+    protected function get_file_type() {
+        // TODO: Implement get_file_type() method.
     }
 }

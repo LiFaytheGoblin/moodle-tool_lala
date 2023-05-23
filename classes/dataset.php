@@ -52,7 +52,8 @@ class dataset extends evidence_redone {
                     continue;
                 }
                 $indicatorvaluesstr = implode(",", $results[$id]);
-                $str = $str.$id.",".$indicatorvaluesstr."\n";
+                $simpleid = explode("-", $id)[0];
+                $str = $str.$simpleid.",".$indicatorvaluesstr."\n";
             }
         }
 

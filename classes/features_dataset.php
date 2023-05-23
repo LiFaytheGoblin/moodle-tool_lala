@@ -15,7 +15,8 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * The model configuration list class.
+ * The features dataset class, inheriting from the dataset class.
+ * Calculates features for model input and stores them as evidence
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
@@ -23,32 +24,8 @@
  */
 
 namespace tool_laaudit;
-
-use core_analytics\manager;
-use single_button;
-
-/**
- * Class for the list of model configurations.
- */
-class model_configurations {
-
-    /**
-     * Collect all model configuration objects
-     *
-     * @return array of model config objects
-     */
-    public static function init_and_get_all_model_config_objs() {
-        global $DB;
-
-        $modelids = $DB->get_fieldset_select('analytics_models', 'id', '1=1'); // Todo: only check non-static models?
-        $modelconfigs = [];
-
-        foreach ($modelids as $modelid) {
-            $configid = model_configuration::get_or_create_and_get_for_model($modelid);
-            $modelconfig = new model_configuration($configid);
-            $modelconfigs[] = $modelconfig->get_model_config_obj();
-        }
-
-        return $modelconfigs;
+class features_dataset extends dataset {
+    protected function collect($data = null) {
+        // TODO: Implement collect() method.
     }
 }

@@ -16,6 +16,8 @@
 
 /**
  * The model configuration class, built on top of the analytics/model class.
+ * The accompanying db table is needed to preserve a record of the model configuration
+ * even if the model has been deleted.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
@@ -39,7 +41,12 @@ class model_configuration {
     private $modelname;
     /** @var string $modeltarget of the belonging analytics model. */
     private $modeltarget;
+    /** @var string $modelanalysabletype that will be used for calculating features for the model. */
+    private $modelanalysabletype;
     /** @var int[] $versions created of the model config. */
+
+
+
     private $versions;
     /**
      * Constructor. Deserialize DB object.
@@ -55,10 +62,15 @@ class model_configuration {
         $this->id = $modelconfig->id;
         $this->modelid = $modelconfig->modelid;
 
-        $model = $DB->get_record('analytics_models', array('id' => $this->modelid), '*', MUST_EXIST);
+        $modelobj = $DB->get_record('analytics_models', array('id' => $this->modelid), '*', MUST_EXIST);
+        $this->modeltarget = $modelobj->target;
 
-        $this->modelname = isset($model->name) ? $model->name : "model" . $this->modelid;
-        $this->modeltarget = $model->target;
+        $model = new model($this->modelid);
+
+        $this->modelname = $model->get_name() ?? "model" . $this->modelid;
+
+        $target = $model->get_target();
+        $this->modelanalysabletype = $target->get_analyser_class();
 
         $this->versions = $this->get_versions_from_db();
     }
@@ -96,20 +108,27 @@ class model_configuration {
         $obj->modelid = $this->modelid;
         $obj->modelname = $this->modelname;
         $obj->modeltarget = $this->modeltarget;
+        $obj->modelanalysabletype = $this->modelanalysabletype;
         $obj->versions = $this->versions;
 
         return $obj;
     }
 
     /**
-     * Retrieve versions from the DB and store in onbject properties
+     * Retrieve versions from the DB and store in object properties
      *
      * @return stdClass[] versions
      */
     public function get_versions_from_db() {
         global $DB;
 
-        $records = $DB->get_records('tool_laaudit_model_versions', array('configid' => $this->id));
-        return $records;
+        $versionids = $DB->get_fieldset_select('tool_laaudit_model_versions', 'id', 'configid='.$this->id);
+
+        $versions = [];
+        foreach ($versionids as $versionid) {
+            $version = new model_version($versionid);
+            $versions[] = $version->get_model_version_obj();
+        }
+        return $versions;
     }
 }

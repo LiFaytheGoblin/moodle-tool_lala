@@ -22,10 +22,13 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+
 namespace tool_laaudit;
 
 use core_analytics\manager;
 use core_analytics\model;
+use core_analytics\analysis;
+use core_analytics\local\analysis\result_array;
 use core_date;
 use DateTime;
 use stdClass;
@@ -44,6 +47,8 @@ class model_version {
     private $timecreationfinished;
     /** @var int $configid of the model config this version belongs to */
     private $configid;
+    /** @var int $modelid of the model this version belongs to */
+    private $modelid;
     /** @var string $analysisinterval used for the model version */
     private $analysisinterval;
     /** @var string $predictionsprocessor used by the model version */
@@ -52,6 +57,8 @@ class model_version {
     private $contextids;
     /** @var string $indicators used by the model version */
     private $indicators;
+    /** @var evidence[] $evidence used by the model version */
+    private $evidence;
 
     /**
      * Constructor. Deserialize DB object.
@@ -74,9 +81,21 @@ class model_version {
         $this->predictionsprocessor = $version->predictionsprocessor;
         $this->contextids = $version->contextids;
         $this->indicators = $version->indicators;
+        $this->error = $version->error;
+        $this->evidence = $this->get_evidence_from_db();
+        $this->modelid =  $DB->get_fieldset_select('tool_laaudit_model_configs', 'modelid', 'id='.$this->configid)[0]; //get_fielset_select('tool_laaudit_model_configs', 'modelid', array('id' => $this->configid));
+        if (!isset($this->modelid)) {
+            $this->modelid = 0; // Todo: Model was maybe deleted. Catch this case!
+        }
     }
 
-    public static function create_and_get_for_config($configid) {
+    /**
+     * Returns a stdClass with the model version data.
+     *
+     * @param int $configid
+     * @return stdClass
+     */
+    public static function create_scaffold_and_get_for_config($configid) {
         global $DB;
 
         $obj = new stdClass();
@@ -88,16 +107,17 @@ class model_version {
         $obj->timecreationstarted = time();
         $obj->timecreationfinished = 0;
 
-        // Copy values from model
+        // Copy values from model.
         $modelconfig = $DB->get_record('tool_laaudit_model_configs', array('id' => $configid), 'modelid', MUST_EXIST);
         $modelid = $modelconfig->modelid;
-        $model = $DB->get_record('analytics_models', array('id' => $modelid), 'timesplitting, predictionsprocessor, contextids, indicators', MUST_EXIST);
+        $model = $DB->get_record('analytics_models', array('id' => $modelid),
+                'timesplitting, predictionsprocessor, contextids, indicators', MUST_EXIST);
         if (self::valid_exists($model->timesplitting)) {
             $obj->analysisinterval = $model->timesplitting;
         } else {
-            $analysis_intervals = manager::get_time_splitting_methods_for_evaluation();
-            $first_analysis_interval = array_keys($analysis_intervals)[0];
-            $obj->analysisinterval = $first_analysis_interval;
+            $analysisintervals = manager::get_time_splitting_methods_for_evaluation();
+            $firstanalysisinterval = array_keys($analysisintervals)[0];
+            $obj->analysisinterval = $firstanalysisinterval;
         }
         if (self::valid_exists($model->predictionsprocessor)) {
             $obj->predictionsprocessor = $model->predictionsprocessor;
@@ -106,9 +126,9 @@ class model_version {
             $obj->predictionsprocessor = $default;
         }
         if (self::valid_exists($model->contextids)) {
-            $obj->contextids =  $model->contextids;
+            $obj->contextids = $model->contextids;
         }
-        $obj->indicators =  $model->indicators;
+        $obj->indicators = $model->indicators;
 
         return $DB->insert_record('tool_laaudit_model_versions', $obj);
     }
@@ -130,12 +150,168 @@ class model_version {
         $obj->predictionsprocessor = $this->predictionsprocessor;
         $obj->contextids = $this->contextids;
         $obj->indicators = $this->indicators;
-        $obj->evidence = [];
+        $obj->evidence = $this->evidence;
+        $obj->error = $this->error;
 
         return $obj;
     }
 
+    /**
+     * Helper method: Short check to verify whether the provided value is valid, and thus a valid list exists.
+     *
+     * @param string $value to check
+     * @return boolean
+     */
     private static function valid_exists($value) {
         return isset($value) && $value != "" && $value != "[]";
+    }
+
+    /**
+     * Retrieve the evidence for this version from the database
+     *
+     * @return stdClass[] of evidence records
+     */
+    private function get_evidence_from_db() {
+        global $DB;
+
+        $records = $DB->get_records('tool_laaudit_evidence', array('versionid' => $this->id));
+
+        return $records;
+    }
+
+    /**
+     * Interface method for add()
+     *
+     * @return void
+     */
+    public function gather_dataset() {
+        // Prepare evidence object.
+        $evidence = dataset::create_and_get_for_version($this->id);
+        // Add to evidence array.
+        $this->evidence['dataset'] = $evidence->get_id();
+
+        try {
+            $this->dataset = $this->get_dataset(); // TODO: needs to be field? Or can this be local?
+        } catch (\moodle_exception $e) {
+            $evidence->abort();
+            $this->register_error($e);
+            throw $e;
+        }
+
+        $evidence->store($this->dataset);
+
+        $evidence->finish();
+    }
+
+    protected function get_dataset() {
+        // Create a model object from the accompanying analytics model
+        $model = new model($this->modelid);
+
+        // Init analyzer.
+        $this->init_analyzer($model);
+
+        $this->heavy_duty_mode();
+
+        $predictor = $model->get_predictions_processor(); // Todo: Necessary?
+
+        $contexts = $model->get_contexts();
+
+        $analysables_iterator = $this->analyser->get_analysables_iterator(null, $contexts);
+
+        $result_array = new result_array($this->modelid, true, []);
+        $analysis = new analysis($this->analyser, true, $result_array);
+        foreach($analysables_iterator as $analysable) {
+            if (!$analysable) {
+                continue;
+            }
+
+            $analysableresults = $analysis->process_analysable($analysable);
+            $result_array->add_analysable_results($analysableresults);
+        }
+
+        $allresults = $result_array->get();
+
+        if (sizeof($allresults) < 1) {
+            throw new \moodle_exception('nodata', 'analytics');
+        }
+
+        return $allresults;
+    }
+
+    protected function init_analyzer($model) {
+        $target = $model->get_target();
+        $fullclassnames = json_decode($this->indicators); // Convert indicators from string[] to \core_analytics\local\indicator\base[]
+
+
+        $this->indicatorinstances = array();
+        foreach ($fullclassnames as $fullclassname) {
+            $instance = \core_analytics\manager::get_indicator($fullclassname);
+            if ($instance) {
+                $this->indicatorinstances[$fullclassname] = $instance;
+            } else {
+                debugging('Can\'t load ' . $fullclassname . ' indicator', DEBUG_DEVELOPER);
+            }
+        }
+        if (empty($this->indicatorinstances)) {
+            throw new \moodle_exception('errornoindicators', 'analytics');
+        }
+
+        // Convert analysisintervals from string[] to instances
+        $instance = \core_analytics\manager::get_time_splitting($this->analysisinterval);
+        $analysisintervalinstances = [$instance];
+
+        $options = array('evaluation'=>true, 'mode'=>'configuration'); // Todo: Correct?
+
+        $analyzerclassname = $target->get_analyser_class();
+        $this->analyser = new $analyzerclassname($this->modelid, $target, $this->indicatorinstances, $analysisintervalinstances, $options);
+    }
+
+    /**
+     * Increases system memory and time limits.
+     *
+     * @return void
+     */
+    private function heavy_duty_mode() {
+        if (ini_get('memory_limit') != -1) {
+            raise_memory_limit(MEMORY_HUGE);
+        }
+        \core_php_time_limit::raise();
+    }
+
+    /**
+     * Interface method for add()
+     *
+     * @return void
+     */
+    public function train() {
+
+    }
+
+    /**
+     * Interface method for add()
+     *
+     * @return void
+     */
+    public function predict() {
+
+    }
+
+    /**
+     * Mark the version as finished.
+     *
+     * @return void
+     */
+    public function finish() {
+        global $DB;
+
+        $this->timecreationfinished = time();
+        $DB->set_field('tool_laaudit_model_versions', 'timecreationfinished', $this->timecreationfinished,
+                array('id' => $this->id));
+    }
+
+    private function register_error(\moodle_exception|\Exception $e) {
+        global $DB;
+
+        $DB->set_field('tool_laaudit_model_versions', 'error', $e->getMessage(), array('id' => $this->id));
     }
 }

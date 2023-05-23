@@ -35,15 +35,24 @@ $configid = optional_param('configid', 0, PARAM_INT);
 
 // Set some page parameters.
 $priorurl = new moodle_url('/admin/tool/laaudit/index.php');
-$pageurl = new moodle_url('/admin/tool/laaudit/modelversion.php', array("configid" => $configid)); # POST /admin/tool/laaudit/modelversion.php?configid=1
+$pageurl = new moodle_url('/admin/tool/laaudit/modelversion.php', array("configid" => $configid));
 $context = context_system::instance();
 
 $PAGE->set_url($pageurl);
 $PAGE->set_context($context);
 
-if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') { // POST /admin/tool/laaudit/modelversion.php?configid=<configid>
-    $versionid = model_version::create_and_get_for_config($configid);
+if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $versionid = model_version::create_scaffold_and_get_for_config($configid);
+
     $version = new model_version($versionid);
+
+    // If route contains auto param, do it automatically.
+    $version->gather_dataset();
+    //$version->train();
+    //$version->predict();
+
+    $version->finish();
+
     redirect($priorurl);
 }
 

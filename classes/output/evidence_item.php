@@ -36,15 +36,15 @@ use stdClass;
  * Class for the output for a single model version.
  */
 class evidence_item implements templatable, renderable {
-    /** @var stdClass $version of a model config */
+    /** @var stdClass $item of evidence of a model version */
     protected $item;
     /**
      * Constructor for this object.
      *
-     * @param stdClass $version The model version object
+     * @param stdClass $item The evidence item object
      */
     public function __construct($item) {
-        $this->item = $tem;
+        $this->item = $item;
     }
 
     /**
@@ -57,9 +57,13 @@ class evidence_item implements templatable, renderable {
         $data = new stdClass();
 
         $data->id = $this->item->id;
-        $data->name = $this->item->name;
-        $data->timecreationstarted = $this->item->timecreationstarted;
-        $data->timecreationfinished = $this->item->timecreationfinished;
+
+        $nameparts = explode('\\', $this->item->name);
+        $name = end($nameparts);
+        $data->name = $name;
+
+        $data->timecollectionstarted = userdate((int) $this->item->timecollectionstarted);
+        $data->timecollectionfinished = userdate((int)$this->item->timecollectionfinished);
         $data->serializedfilelocation = $this->item->serializedfilelocation;
 
         return $data;

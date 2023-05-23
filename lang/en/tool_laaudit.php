@@ -29,7 +29,7 @@ $string['pluginname'] = 'Let(\')s audit Learning Analytics';
 $string['nomodelconfigurations'] = 'No model configurations found. Create some models using the Learning Analytics functionality, before you can train them and collect evidence for auditing them.';
 $string['nomodelversions'] = 'You have not created any models for this configuration yet. Thus, no evidence for auditing is available.';
 $string['learnaboutauditing'] = 'Learn about model auditing';
-$string['automaticallycreateevidence'] = '+ automatically create new evidence set';
+$string['automaticallycreateversion'] = '+ automatically create new version';
 $string['configid'] = 'config-id';
 $string['modelid'] = 'model-id';
 $string['target'] = 'target';
@@ -47,3 +47,7 @@ $string['name'] = 'name';
 $string['serializedfilelocation'] = 'location of file containing serialized data';
 $string['unfinished'] = 'not finished yet';
 $string['allcontexts'] = 'all contexts';
+$string['analysable'] = 'analysable';
+$string['model'] = 'model';
+$string['error'] = 'error';
+

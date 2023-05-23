@@ -27,9 +27,6 @@ namespace tool_laaudit\output;
 use renderer_base;
 use templatable;
 use renderable;
-use moodle_url;
-use help_icon;
-use single_button;
 use stdClass;
 
 /**
@@ -64,10 +61,10 @@ class model_version_description implements templatable, renderable {
 
         $data->timecreationstarted = userdate((int) $this->version->timecreationstarted);
 
-
         $finished = (int) $this->version->timecreationfinished > 0;
         $data->timecreationfinishedicon = $finished ? 'end' : 'half';
-        $data->timecreationfinished = $finished ? userdate((int) $this->version->timecreationfinished) : get_string('unfinished', 'tool_laaudit');
+        $data->timecreationfinished = $finished ?
+                userdate((int) $this->version->timecreationfinished) : get_string('unfinished', 'tool_laaudit');
 
         $analysisintervalnameparts = explode('\\', $this->version->analysisinterval);
         $data->analysisinterval = end($analysisintervalnameparts);
@@ -89,6 +86,9 @@ class model_version_description implements templatable, renderable {
         } else if (gettype($indicators) == 'string') {
             $data->indicators = $indicators;
         }
+
+        $data->haserror = isset($this->version->error);
+        $data->errormessage = $this->version->error;
 
         return $data;
     }

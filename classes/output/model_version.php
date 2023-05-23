@@ -27,9 +27,6 @@ namespace tool_laaudit\output;
 use renderer_base;
 use templatable;
 use renderable;
-use moodle_url;
-use help_icon;
-use single_button;
 use stdClass;
 
 /**
@@ -58,16 +55,14 @@ class model_version implements templatable, renderable {
 
         // Add info about the model version.
         $data->description = [];
-        $description_renderer = new model_version_description($this->version);
-        $data->description[] = $description_renderer->export_for_template($output);
+        $descriptionrenderer = new model_version_description($this->version);
+        $data->description[] = $descriptionrenderer->export_for_template($output);
 
-        // Todo: Add evidence items.
         $evidenceitems = [];
-        /*
-        foreach($evidenceitems as $key=> $evidenceitem) {
-            $evidenceitem_renderer = new stdClass(); //new evidence_item($evidenceitem);
-            $evidenceitems[$key] = $evidenceitem_renderer->export_for_template($output);
-        }*/
+        foreach ($this->version->evidence as $evidenceitem) {
+            $evidencerenderer = new evidence_item($evidenceitem);
+            $evidenceitems[] = $evidencerenderer->export_for_template($output);
+        }
         $data->evidence = $evidenceitems;
 
         return $data;

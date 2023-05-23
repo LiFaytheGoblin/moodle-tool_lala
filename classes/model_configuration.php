@@ -62,15 +62,15 @@ class model_configuration {
         $this->id = $modelconfig->id;
         $this->modelid = $modelconfig->modelid;
 
-        $model = $DB->get_record('analytics_models', array('id' => $this->modelid), '*', MUST_EXIST);
-
-        $this->modelname = $model->name ?? "model" . $this->modelid;
-        $this->modeltarget = $model->target;
+        $modelobj = $DB->get_record('analytics_models', array('id' => $this->modelid), '*', MUST_EXIST);
+        $this->modeltarget = $modelobj->target;
 
         $model = new model($this->modelid);
+
+        $this->modelname = $model->get_name() ?? "model" . $this->modelid;
+
         $target = $model->get_target();
         $this->modelanalysabletype = $target->get_analyser_class();
-        echo($this->modelanalysabletype);
 
         $this->versions = $this->get_versions_from_db();
     }

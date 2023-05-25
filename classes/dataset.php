@@ -26,60 +26,35 @@
 
 namespace tool_laaudit;
 
+use core_analytics\local\analysis\result_array;
+use core_analytics\analysis;
 
 class dataset extends evidence {
-
-    public function store($data) {
-        $this->data = $data;
-
-        $fileinfo = $this->get_file_info();
-
-        $fs = get_file_storage();
-        $filestring = $this->serialize($data);
-        $fs->create_file_from_string($fileinfo, $filestring);
-
-        $this->set_serializedfilelocation();
-    }
-
-    private function serialize($data) {
-        $str = "";
-        $indicatornamesstring = null;
-        foreach($data as $results) {
-            $ids = array_keys($results);
-            foreach($ids as $id) {
-                if ($id == "0") { // These are the indicator names (and target)
-                    $indicatornamesstring = implode(",", $results[$id]);
-                    continue;
-                }
-                $indicatorvaluesstr = implode(",", $results[$id]);
-                $simpleid = explode("-", $id)[0];
-                $str = $str.$simpleid.",".$indicatorvaluesstr."\n";
-            }
-        }
-
-        $heading = "sampleid,".$indicatornamesstring."\n";
-        $str = $heading.$str;
-
-        return $str;
-    }
-
-    protected function get_file_type() {
-        return 'csv';
-    }
 
     /**
      * Retrieve all available analysables with calculated features and label.
      *
      * @param $options = [$modelid, $analyser, $contexts]
-     * @return result_array
+     * @return void
      */
     public function collect($options) {
+        if(!isset($options['contexts'])) {
+            throw new \Exception('Missing contexts');
+        }
+        if(!isset($options['analyser'])) {
+            throw new \Exception('Missing analyser');
+        }
+        if(!isset($options['modelid'])) {
+            throw new \Exception('Missing model id');
+        }
+
         $this->heavy_duty_mode();
 
-        $analysables_iterator = $options->analyser->get_analysables_iterator(null, $options->contexts);
+        $analysables_iterator = $options['analyser']->get_analysables_iterator(null, $options['contexts']);
 
-        $result_array = new result_array($options->modelid, true, []);
-        $analysis = new analysis($options->analyser, true, $result_array);
+        $result_array = new result_array($options['modelid'], true, []);
+
+        $analysis = new analysis($options['analyser'], true, $result_array);
         foreach($analysables_iterator as $analysable) {
             if (!$analysable) {
                 continue;
@@ -94,7 +69,7 @@ class dataset extends evidence {
             throw new \moodle_exception('nodata', 'analytics');
         }
 
-        return $allresults;
+        $this->data = $allresults;
     }
 
     /**
@@ -107,5 +82,39 @@ class dataset extends evidence {
             raise_memory_limit(MEMORY_HUGE);
         }
         \core_php_time_limit::raise();
+    }
+
+    public function serialize() {
+        $str = "";
+        $indicatornamesstring = null;
+        foreach($this->data as $results) {
+            $ids = array_keys($results);
+            foreach($ids as $id) {
+                if ($id == "0") { // These are the indicator names (and target)
+                    $indicatornamesstring = implode(",", $results[$id]);
+                    continue;
+                }
+                $indicatorvaluesstr = implode(",", $results[$id]);
+                $simpleid = explode("-", $id)[0];
+                $str = $str.$simpleid.",".$indicatorvaluesstr."\n";
+            }
+        }
+
+        $heading = "sampleid,".$indicatornamesstring."\n";
+        $this->filestring = $heading.$str;
+    }
+
+    public function store() {
+        $fileinfo = $this->get_file_info();
+
+        $fs = get_file_storage();
+
+        $fs->create_file_from_string($fileinfo, $this->filestring);
+
+        $this->set_serializedfilelocation();
+    }
+
+    protected function get_file_type() {
+        return 'csv';
     }
 }

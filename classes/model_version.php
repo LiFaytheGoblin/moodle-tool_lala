@@ -28,7 +28,6 @@ namespace tool_laaudit;
 use core_analytics\manager;
 use core_analytics\model;
 use core_analytics\analysis;
-use core_analytics\local\analysis\result_array;
 use core_date;
 use DateTime;
 use stdClass;
@@ -217,62 +216,67 @@ class model_version {
      * @return void
      */
     public function gather_dataset() {
-        $evidence = dataset::create_and_get_for_version($this->id); // Prepare evidence object.
+        $evidence = dataset::create_scaffold_and_get_for_version($this->id); // Prepare evidence object.
 
         $this->evidence['dataset'] = $evidence->get_id(); // Add to evidence array.
 
+        $options = array('modelid'=>$this->modelid, 'analyser'=>$this->analyser, 'contexts'=>$this->contexts);
         try {
-            $this->dataset = $evidence->collect([$this->modelid, $this->analyser, $this->contexts]);
+            $evidence->collect($options);
         } catch (\moodle_exception $e) {
             $evidence->abort();
             $this->register_error($e);
             throw $e;
         }
 
-        $evidence->store($this->dataset);
+        $this->dataset = $evidence->get_raw_data();
+
+        $evidence->serialize();
+
+        $evidence->store();
 
         $evidence->finish();
     }
 
     public function split_training_test_data($testsize = 0.2) {
-        // Prepare evidence object.
-        $evidence_training = training_dataset::create_and_get_for_version($this->id);
-        $evidence_test = test_dataset::create_and_get_for_version($this->id);
-        // Add to evidence array.
+
+
+
+        $data = $this->dataset;
+        //Todo: shuffle
+
+        $options = array('data'=>$data, 'testsize'=>$testsize);
+
+        // Gather training set
+        $evidence_training = training_dataset::create_scaffold_and_get_for_version($this->id);
         $this->evidence['training_dataset'] = $evidence_training->get_id();
-        $this->evidence['test_dataset'] = $evidence_test->get_id();
-
-        $samples = []; //Todo
-        $targets = []; //Todo
-
-        $arraydataset = new ArrayDataset($samples, $targets);
-        $data = new RandomSplit($arraydataset, $testsize);
-        $this->trainx = $data->getTrainSamples();
-        $this->trainy = $data->getTrainLabels();
-
-        $this->testx = $data->getTestSamples();
-        $this->testy = $data->getTestLabels();
-        //is result_array but should be stored file? we need to get from this the metadata
-        // aka samples/indicators and target values
-        // should be an ArrayDataset (https://github.com/moodle/moodle/blob/2e1c6fd43e9334598f793a548685f7ef75ba2ec5/lib/mlbackend/php/phpml/src/Phpml/Dataset/ArrayDataset.php#L9)
-        // so that we can use the RandomSplit helper (https://github.com/moodle/moodle/blob/2e1c6fd43e9334598f793a548685f7ef75ba2ec5/lib/mlbackend/php/phpml/src/Phpml/CrossValidation/RandomSplit.php#L9)
-
-        //next: check whether there is enough data - at least two samples per target -> should this happen here, or before? or in an extra step?
 
         try {
-            /*$this->training_dataset = $this->get_training_dataset();
-            $this->test_dataset = $this->get_test_dataset(); // TODO: needs to be field? Or can this be local?
-            */
+            $evidence_training->collect($options);
         } catch (\moodle_exception $e) {
-            /*$evidence_training->abort();
+            $evidence_training->abort();
             $this->register_error($e);
             throw $e;
-            */
         }
 
-        //$evidence->store($this->dataset);
-
+        $this->trainingdataset = $evidence_training->get_raw_data();
+        $evidence_training->store();
         $evidence_training->finish();
+
+        // Gather test set
+        $evidence_test = test_dataset::create_scaffold_and_get_for_version($this->id);
+        $this->evidence['test_dataset'] = $evidence_test->get_id();
+
+        try {
+            $evidence_test->collect($options);
+        } catch (\moodle_exception $e) {
+            $evidence_test->abort();
+            $this->register_error($e);
+            throw $e;
+        }
+
+        $this->testdataset = $evidence_test->get_raw_data();
+        $evidence_test->store();
         $evidence_test->finish();
     }
 
@@ -282,6 +286,8 @@ class model_version {
      * @return void
      */
     public function train() {
+        //next: check whether there is enough data - at least two samples per target -> should this happen here, or before? or in an extra step?
+
         $predictor = $this->model->get_predictions_processor(); // Todo: Necessary?
         $this->classifier = $predictor->instantiate_algorithm();
         $this->classifier->train($this->trainx, $this->trainy);
@@ -314,7 +320,4 @@ class model_version {
 
         $DB->set_field('tool_laaudit_model_versions', 'error', $e->getMessage(), array('id' => $this->id));
     }
-
-
-
 }

@@ -44,8 +44,10 @@ abstract class evidence {
     private $timecollectionfinished;
     /** @var string $serializedfilelocation path of the evidence. */
     private $serializedfilelocation;
-    /** @var string $data raw data of the evidence. */
-    private $data;
+    /** @var data $data raw data of the evidence. */
+    protected $data;
+    /** @var string $filestring serialized data of the evidence. */
+    protected $filestring;
     /**
      * Constructor. Deserialize DB object.
      *
@@ -69,10 +71,9 @@ abstract class evidence {
     /**
      * Returns a stdClass with the evidence data.
      * @param int $versionid of the version
-     * @param data $data possibly pre-existing data
-     * @return stdClass of the created evidence
+     * @return evidence of the created evidence
      */
-    public static function create_and_get_for_version($versionid) {
+    public static function create_scaffold_and_get_for_version($versionid) {
         global $DB;
 
         $obj = new stdClass();
@@ -91,17 +92,28 @@ abstract class evidence {
     }
 
     /**
-     * Serializes the raw data and stores it in a file. Sets the serializedfilelocation property of the class.
+     * Collects the raw data.
+     * @param stdClass depending on the implementation
      * @return void
      */
     abstract public function collect($options);
 
     /**
-     * Serializes the raw data and stores it in a file. Sets the serializedfilelocation property of the class.
+     * Serializes the raw data.
      * @return void
      */
-    abstract public function store($data);
+    abstract public function serialize();
 
+    /**
+     * Stores a serialized data string in a file. Sets the serializedfilelocation property of the class.
+     * @return void
+     */
+    abstract public function store();
+
+    /**
+     * Returns the type of the stored file, e.g. "csv".
+     * @return string
+     */
     abstract protected function get_file_type();
 
     /**

@@ -47,7 +47,7 @@ class dataset extends evidence {
         foreach($data as $results) {
             $ids = array_keys($results);
             foreach($ids as $id) {
-                if ($id == "0") { // These are the indicator names
+                if ($id == "0") { // These are the indicator names (and target)
                     $indicatornamesstring = implode(",", $results[$id]);
                     continue;
                 }
@@ -65,5 +65,47 @@ class dataset extends evidence {
 
     protected function get_file_type() {
         return 'csv';
+    }
+
+    /**
+     * Retrieve all available analysables with calculated features and label.
+     *
+     * @param $options = [$modelid, $analyser, $contexts]
+     * @return result_array
+     */
+    public function collect($options) {
+        $this->heavy_duty_mode();
+
+        $analysables_iterator = $options->analyser->get_analysables_iterator(null, $options->contexts);
+
+        $result_array = new result_array($options->modelid, true, []);
+        $analysis = new analysis($options->analyser, true, $result_array);
+        foreach($analysables_iterator as $analysable) {
+            if (!$analysable) {
+                continue;
+            }
+            $analysableresults = $analysis->process_analysable($analysable);
+            $result_array->add_analysable_results($analysableresults);
+        }
+
+        $allresults = $result_array->get();
+
+        if (sizeof($allresults) < 1) {
+            throw new \moodle_exception('nodata', 'analytics');
+        }
+
+        return $allresults;
+    }
+
+    /**
+     * Increases system memory and time limits.
+     *
+     * @return void
+     */
+    private function heavy_duty_mode() {
+        if (ini_get('memory_limit') != -1) {
+            raise_memory_limit(MEMORY_HUGE);
+        }
+        \core_php_time_limit::raise();
     }
 }

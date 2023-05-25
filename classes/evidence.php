@@ -94,6 +94,12 @@ abstract class evidence {
      * Serializes the raw data and stores it in a file. Sets the serializedfilelocation property of the class.
      * @return void
      */
+    abstract public function collect($options);
+
+    /**
+     * Serializes the raw data and stores it in a file. Sets the serializedfilelocation property of the class.
+     * @return void
+     */
     abstract public function store($data);
 
     abstract protected function get_file_type();

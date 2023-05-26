@@ -66,7 +66,7 @@ class model_version {
     private $trainingdataset;
     /** @var array test dataset */
     private $testdataset;
-    /** @var model $model this version belongs to */
+    /** @var \core_analytics\model $model this version belongs to */
     private $model;
     /** @var \Phpml\Classification\Linear\LogisticRegression $trainedmodel for this version */
     private $trainedmodel;
@@ -293,7 +293,7 @@ class model_version {
      * @return void
      */
     public function train() {
-        $evidence = model::create_scaffold_and_get_for_version($this->id);
+        $evidence = \tool_laaudit\model::create_scaffold_and_get_for_version($this->id);
         $this->evidence['model'] = $evidence->get_id();
 
         $options = array('data'=>$this->trainingdataset, 'predictor'=>$this->predictor);

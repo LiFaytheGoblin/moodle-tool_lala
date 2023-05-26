@@ -42,9 +42,26 @@ class model extends evidence {
             throw new \Exception('Missing predictor');
         }
         // todo: get from training data
+
+        // get only samples and targets
+        $datawithoutheader = [];
+        foreach($options['data'] as $arr) {
+            $datawithoutheader = array_slice($arr, 1, null, true);
+
+            break;
+        }
+
         $trainx = [];
         $trainy = [];
+        $n_columns = 0;
+        foreach($datawithoutheader as $row) {
+            $xs = array_slice($row, 0, $n_columns - 1);
+            $y = end($row);
 
+            $trainx[] = $xs;
+            $trainy[] = $y;
+        }
+        
         //next: check whether there is enough data - at least two samples per target?
 
         // currently always returns a logistic regression classifier

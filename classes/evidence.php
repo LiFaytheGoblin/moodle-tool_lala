@@ -150,10 +150,18 @@ abstract class evidence {
 
     /**
      * Returns the raw data of the evidence. Used by the model version.
-     * @return data serialized data
+     * @return data raw data
      */
     public function get_raw_data() {
         return $this->data;
+    }
+
+    /**
+     * Returns the serialized data of the evidence.
+     * @return string serialized data
+     */
+    public function get_serialized_data() {
+        return $this->filestring;
     }
 
     /**

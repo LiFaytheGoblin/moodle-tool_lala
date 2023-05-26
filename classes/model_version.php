@@ -239,9 +239,6 @@ class model_version {
     }
 
     public function split_training_test_data($testsize = 0.2) {
-
-
-
         $data = $this->dataset;
         //Todo: shuffle
 
@@ -260,6 +257,7 @@ class model_version {
         }
 
         $this->trainingdataset = $evidence_training->get_raw_data();
+        $evidence_training->serialize();
         $evidence_training->store();
         $evidence_training->finish();
 
@@ -276,6 +274,7 @@ class model_version {
         }
 
         $this->testdataset = $evidence_test->get_raw_data();
+        $evidence_test->serialize();
         $evidence_test->store();
         $evidence_test->finish();
     }

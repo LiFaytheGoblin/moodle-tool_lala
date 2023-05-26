@@ -50,7 +50,7 @@ if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $version->gather_dataset();
     $version->split_training_test_data();
     $version->train();
-    //$version->predict();
+    $version->predict();
 
     $version->finish();
 

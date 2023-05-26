@@ -26,5 +26,17 @@
 namespace tool_laaudit;
 
 class predictions_dataset extends dataset {
+    function collect($options) {
+        if(!isset($options['model'])) {
+            throw new \Exception('Missing trained model');
+        }
 
+        // we need to keep the sample ids
+        $testx = []; //todo
+        $predictedlabels = $options['model']->predict($testx);
+
+        $testy = [];
+        // build dataset
+        $this->data = [];
+    }
 }

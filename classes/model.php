@@ -25,6 +25,8 @@
 
 namespace tool_laaudit;
 
+use \Phpml\Classification\Linear\LogisticRegression;
+
 class model extends evidence {
     public function store() {
         // TODO: Implement store() method.
@@ -41,19 +43,17 @@ class model extends evidence {
         if(!isset($options['predictor'])) {
             throw new \Exception('Missing predictor');
         }
-        // todo: get from training data
 
         // get only samples and targets
         $datawithoutheader = [];
         foreach($options['data'] as $arr) {
             $datawithoutheader = array_slice($arr, 1, null, true);
-
             break;
         }
 
         $trainx = [];
         $trainy = [];
-        $n_columns = 0;
+        $n_columns = sizeof(end($datawithoutheader));
         foreach($datawithoutheader as $row) {
             $xs = array_slice($row, 0, $n_columns - 1);
             $y = end($row);
@@ -61,12 +61,13 @@ class model extends evidence {
             $trainx[] = $xs;
             $trainy[] = $y;
         }
-        
+
         //next: check whether there is enough data - at least two samples per target?
 
-        // currently always returns a logistic regression classifier
+        // currently always uses a logistic regression classifier
         // (https://github.com/moodle/moodle/blob/MOODLE_402_STABLE/lib/mlbackend/php/classes/processor.php#L548)
-        $this->data = $options['predictor']->instantiate_algorithm();
+        $iterations = $options['predictor']::TRAIN_ITERATIONS;
+        $this->data = new LogisticRegression($iterations, true, LogisticRegression::CONJUGATE_GRAD_TRAINING, 'log');
         $this->data->train($trainx, $trainy);
     }
 

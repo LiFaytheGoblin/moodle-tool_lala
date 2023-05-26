@@ -317,11 +317,22 @@ class model_version {
      * @return void
      */
     public function predict() {
-        $testx = []; //todo
-        $predictedlabels = $this->trainedmodel->predict($testx);
+        $evidence = predictions_dataset::create_scaffold_and_get_for_version($this->id);
+        $this->evidence['predictions_dataset'] = $evidence->get_id();
 
-        $testy = [];
-        // build dataset
+        $options = array('model'=>$this->trainedmodel);
+        try {
+            $evidence->collect($options);
+        } catch (\moodle_exception $e) {
+            $evidence->abort();
+            $this->register_error($e);
+            throw $e;
+        }
+
+        $this->trainedmodel = $evidence->get_raw_data();
+        $evidence->serialize();
+        $evidence->store();
+        $evidence->finish();
     }
 
     /**

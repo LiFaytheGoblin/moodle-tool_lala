@@ -26,11 +26,34 @@
 namespace tool_laaudit;
 
 class model extends evidence {
-    public function store($data) {
+    public function store() {
         // TODO: Implement store() method.
     }
 
     protected function get_file_type() {
-        // TODO: Implement get_file_type() method.
+        return 'zip';
+    }
+
+    public function collect($options) {
+        if(!isset($options['data'])) {
+            throw new \Exception('Missing training data');
+        }
+        if(!isset($options['predictor'])) {
+            throw new \Exception('Missing predictor');
+        }
+        // todo: get from training data
+        $trainx = [];
+        $trainy = [];
+
+        //next: check whether there is enough data - at least two samples per target?
+
+        // currently always returns a logistic regression classifier
+        // (https://github.com/moodle/moodle/blob/MOODLE_402_STABLE/lib/mlbackend/php/classes/processor.php#L548)
+        $this->data = $options['predictor']->instantiate_algorithm();
+        $this->data->train($trainx, $trainy);
+    }
+
+    public function serialize() {
+        // TODO: Implement serialize() method.
     }
 }

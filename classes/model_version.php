@@ -60,16 +60,24 @@ class model_version {
     private $evidence;
     /** @var string $error that occurred first when creating this model version and gathering evidence */
     private $error;
-    /** @var dataset dataset */
+    /** @var array dataset */
     private $dataset;
+    /** @var array training dataset */
+    private $trainingdataset;
+    /** @var array test dataset */
+    private $testdataset;
     /** @var model $model this version belongs to */
     private $model;
-    /** @var analyser $analyser for this version */
+    /** @var \Phpml\Classification\Linear\LogisticRegression $trainedmodel for this version */
+    private $trainedmodel;
+    /** @var stdClass $analyser for this version */
     private $analyser;
-    /** @var target $target for this version */
+    /** @var stdClass $target for this version */
     private $target;
     /** @var context[] $contexts for this version */
     private $contexts;
+    /** @var \core_analytics\predictor $predictor for this version */
+    private $predictor;
 
     /**
      * Constructor. Deserialize DB object.
@@ -106,6 +114,7 @@ class model_version {
         $this->model = new model($this->modelid);
         $this->target = $this->model->get_target();
         $this->contexts = $this->model->get_contexts();
+        $this->predictor = $this->model->get_predictions_processor();
 
         // Convert indicators from string[] to instances
         $fullclassnames = json_decode($this->indicators);
@@ -239,8 +248,7 @@ class model_version {
     }
 
     public function split_training_test_data($testsize = 0.2) {
-        $data = $this->dataset;
-        //Todo: shuffle
+        $data = $this->shuffle_dataset($this->dataset);
 
         $options = array('data'=>$data, 'testsize'=>$testsize);
 
@@ -285,11 +293,22 @@ class model_version {
      * @return void
      */
     public function train() {
-        //next: check whether there is enough data - at least two samples per target -> should this happen here, or before? or in an extra step?
+        $evidence = model::create_scaffold_and_get_for_version($this->id);
+        $this->evidence['model'] = $evidence->get_id();
 
-        $predictor = $this->model->get_predictions_processor(); // Todo: Necessary?
-        $this->classifier = $predictor->instantiate_algorithm();
-        $this->classifier->train($this->trainx, $this->trainy);
+        $options = array('data'=>$this->trainingdataset, 'predictor'=>$this->predictor);
+        try {
+            $evidence->collect($options);
+        } catch (\moodle_exception $e) {
+            $evidence->abort();
+            $this->register_error($e);
+            throw $e;
+        }
+
+        $this->trainedmodel = $evidence->get_raw_data();
+        $evidence->serialize();
+        $evidence->store();
+        $evidence->finish();
     }
 
     /**
@@ -298,7 +317,11 @@ class model_version {
      * @return void
      */
     public function predict() {
-        $predictedlabels = $this->classifier->predict($this->testx);
+        $testx = []; //todo
+        $predictedlabels = $this->trainedmodel->predict($testx);
+
+        $testy = [];
+        // build dataset
     }
 
     /**
@@ -314,9 +337,42 @@ class model_version {
                 array('id' => $this->id));
     }
 
+    /**
+     * Register a thrown error in the error column of the model version table.
+     *
+     * @param \Exception the thrown exception
+     * @return void
+     */
     private function register_error(\moodle_exception|\Exception $e) {
         global $DB;
 
         $DB->set_field('tool_laaudit_model_versions', 'error', $e->getMessage(), array('id' => $this->id));
+    }
+
+    /**
+     * Shuffle a data set while preserving the key and the header.
+     *
+     * @param array $dataset
+     * @return array
+     */
+    private function shuffle_dataset($dataset) {
+        $key = array_keys((array) $dataset)[0];
+        $datawithheader = [];
+        foreach($dataset as $arr) { // each analysisinterval has an object
+            $header = array_slice($arr, 0, 1, true);
+            $remainingdata = array_slice($arr, 1, null, true);
+
+            $sampleids = array_keys($remainingdata);
+            shuffle($sampleids);
+            $shuffled_data = [];
+            foreach($sampleids as $id) {
+                $shuffled_data[$id] = $remainingdata[$id]; // assign to each key in the random order the value from the original array
+            }
+
+            $datawithheader[$key] = $header + $shuffled_data;
+            break;
+        }
+
+        return $datawithheader;
     }
 }

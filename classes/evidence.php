@@ -108,7 +108,15 @@ abstract class evidence {
      * Stores a serialized data string in a file. Sets the serializedfilelocation property of the class.
      * @return void
      */
-    abstract public function store();
+    public function store() {
+        $fileinfo = $this->get_file_info();
+
+        $fs = get_file_storage();
+
+        $fs->create_file_from_string($fileinfo, $this->filestring);
+
+        $this->set_serializedfilelocation();
+    }
 
     /**
      * Returns the type of the stored file, e.g. "csv".

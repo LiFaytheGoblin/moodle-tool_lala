@@ -104,16 +104,6 @@ class dataset extends evidence {
         $this->filestring = $heading.$str;
     }
 
-    public function store() {
-        $fileinfo = $this->get_file_info();
-
-        $fs = get_file_storage();
-
-        $fs->create_file_from_string($fileinfo, $this->filestring);
-
-        $this->set_serializedfilelocation();
-    }
-
     protected function get_file_type() {
         return 'csv';
     }

@@ -329,7 +329,7 @@ class model_version {
             throw $e;
         }
 
-        $this->trainedmodel = $evidence->get_raw_data();
+        $this->predictionsdataset = $evidence->get_raw_data();
         $evidence->serialize();
         $evidence->store();
         $evidence->finish();

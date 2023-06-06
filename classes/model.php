@@ -28,12 +28,9 @@ namespace tool_laaudit;
 use \Phpml\Classification\Linear\LogisticRegression;
 
 class model extends evidence {
-    public function store() {
-        // TODO: Implement store() method.
-    }
 
     protected function get_file_type() {
-        return 'zip';
+        return 'ser';
     }
 
     public function collect($options) {
@@ -72,6 +69,7 @@ class model extends evidence {
     }
 
     public function serialize() {
-        // TODO: Implement serialize() method.
+        $str = serialize($this->data);
+        $this->filestring = $str;
     }
 }

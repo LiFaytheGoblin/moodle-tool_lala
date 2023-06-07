@@ -44,12 +44,9 @@ class model_configuration {
     /** @var string $modelanalysabletype that will be used for calculating features for the model. */
     private $modelanalysabletype;
     /** @var int[] $versions created of the model config. */
-
-
-
     private $versions;
     /**
-     * Constructor. Deserialize DB object.
+     * Constructor. Import from DB.
      *
      * @param model $model
      * @return void
@@ -76,6 +73,24 @@ class model_configuration {
     }
 
     /**
+     * Retrieve versions from the DB and store in object properties
+     *
+     * @return stdClass[] versions
+     */
+    public function get_versions_from_db() {
+        global $DB;
+
+        $versionids = $DB->get_fieldset_select('tool_laaudit_model_versions', 'id', 'configid='.$this->id);
+
+        $versions = [];
+        foreach ($versionids as $versionid) {
+            $version = new model_version($versionid);
+            $versions[] = $version->get_model_version_obj();
+        }
+        return $versions;
+    }
+
+    /**
      * Create a new model configuration for a model id, or if it already exists, retrieve that config.
      *
      * @param int $modelid of an analytics model
@@ -96,7 +111,7 @@ class model_configuration {
     }
 
     /**
-     * Returns a plain stdClass with the model config data (id, modelid, versions) plus modelname and modeltarget.
+     * Returns a plain stdClass with the model config data.
      *
      * @return stdClass
      */
@@ -112,23 +127,5 @@ class model_configuration {
         $obj->versions = $this->versions;
 
         return $obj;
-    }
-
-    /**
-     * Retrieve versions from the DB and store in object properties
-     *
-     * @return stdClass[] versions
-     */
-    public function get_versions_from_db() {
-        global $DB;
-
-        $versionids = $DB->get_fieldset_select('tool_laaudit_model_versions', 'id', 'configid='.$this->id);
-
-        $versions = [];
-        foreach ($versionids as $versionid) {
-            $version = new model_version($versionid);
-            $versions[] = $version->get_model_version_obj();
-        }
-        return $versions;
     }
 }

@@ -33,7 +33,7 @@ use single_button;
 class model_configurations {
 
     /**
-     * Collect all model configuration objects
+     * Collect all model configuration objects.
      *
      * @return array of model config objects
      */

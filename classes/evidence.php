@@ -100,6 +100,8 @@ abstract class evidence {
 
     /**
      * Serializes the raw data.
+     * Store the serialization string in the filestring field.
+     *
      * @return void
      */
     abstract public function serialize();
@@ -119,17 +121,43 @@ abstract class evidence {
     }
 
     /**
-     * Returns the type of the stored file, e.g. "csv".
-     * @return string
+     * Returns the id of the evidence item. Used by the model version.
+     * @return int id
      */
-    abstract protected function get_file_type();
+    public function get_id() {
+        return $this->id;
+    }
 
     /**
-     * Returns the path where the serialized data is located as a file on the server, for later download.
-     * @return string path location
+     * Returns the name of the evidence item. Used by the evidence items.
+     * @return string name
      */
-    public function get_serializedfilelocation() {
-        return $this->serializedfilelocation;
+    public function get_name() {
+        return $this->name;
+    }
+
+    /**
+     * Returns the id of the version to which the evidence item belongs. Used by the evidence items.
+     * @return int versionid
+     */
+    public function get_versionid() {
+        return $this->versionid;
+    }
+
+    /**
+     * Returns the raw data of the evidence. Used by the model version.
+     * @return data raw data
+     */
+    public function get_raw_data() {
+        return $this->data;
+    }
+
+    /**
+     * Returns the serialized data of the evidence.
+     * @return string serialized data
+     */
+    public function get_serialized_data() {
+        return $this->filestring;
     }
 
     /**
@@ -157,64 +185,38 @@ abstract class evidence {
     }
 
     /**
-     * Returns the raw data of the evidence. Used by the model version.
-     * @return data raw data
+     * Returns the location of the serialized data as a file on the server, for later download.
+     * @return string path location
      */
-    public function get_raw_data() {
-        return $this->data;
+    public function get_serializedfilelocation() {
+        return $this->serializedfilelocation;
     }
 
     /**
-     * Returns the serialized data of the evidence.
-     * @return string serialized data
+     * Returns info on the serialized data file on the server.
+     * @return array
      */
-    public function get_serialized_data() {
-        return $this->filestring;
-    }
-
-    /**
-     * Returns the id of the evidence item. Used by the model version.
-     * @return int id
-     */
-    public function get_id() {
-        return $this->id;
-    }
-
-    /**
-     * Returns the name of the evidence item. Used by the evidence items.
-     * @return string name
-     */
-    public function get_name() {
-        return $this->name;
-    }
-
-    /**
-     * Returns the id of the version to which the evidence item belongs. Used by the evidence items.
-     * @return int versionid
-     */
-    public function get_versionid() {
-        return $this->versionid;
-    }
-
-    protected function get_file_path() {
-        return '/evidence/';
-    }
-
-    protected function get_file_name() {
-        return 'modelversion' . $this->versionid . '-evidence' . $this->name . $this->id;
-    }
-
     protected function get_file_info() {
         return [
                 'contextid' => context_system::instance()->id,
                 'component' => 'tool_laaudit',
                 'filearea'  => 'tool_laaudit',
                 'itemid'    => $this->id,
-                'filepath'  => $this->get_file_path(),
-                'filename'  => $this->get_file_name() . '.' . $this->get_file_type(),
+                'filepath'  => '/evidence/',
+                'filename'  => 'modelversion' . $this->versionid . '-evidence' . $this->name . $this->id . '.' . $this->get_file_type(),
         ];
     }
 
+    /**
+     * Returns the type of the stored file, e.g. "csv".
+     * @return string
+     */
+    abstract protected function get_file_type();
+
+    /**
+     * Mark this evidence collection as finished in the data base.
+     * @return void
+     */
     public function finish() {
         global $DB;
 
@@ -222,6 +224,10 @@ abstract class evidence {
         $DB->set_field('tool_laaudit_evidence', 'timecollectionfinished', $this->timecollectionfinished, array('id' => $this->id));
     }
 
+    /**
+     * Abort this evidence collection, e.g. if an error occurs, by deleting the evidence from the database.
+     * @return void
+     */
     public function abort() {
         global $DB;
 

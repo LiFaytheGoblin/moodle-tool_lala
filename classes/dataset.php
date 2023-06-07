@@ -32,7 +32,8 @@ use core_analytics\analysis;
 class dataset extends evidence {
 
     /**
-     * Retrieve all available analysables with calculated features and label.
+     * Retrieve all available analysable samples, calculate features and label.
+     * Store resulting data (sampleid, features, label) in the data field.
      *
      * @param $options = [$modelid, $analyser, $contexts]
      * @return void
@@ -73,17 +74,11 @@ class dataset extends evidence {
     }
 
     /**
-     * Increases system memory and time limits.
+     * Serialize the contents of the data field.
+     * Store the serialization string in the filestring field.
      *
      * @return void
      */
-    private function heavy_duty_mode() {
-        if (ini_get('memory_limit') != -1) {
-            raise_memory_limit(MEMORY_HUGE);
-        }
-        \core_php_time_limit::raise();
-    }
-
     public function serialize() {
         $str = "";
         $columns = null;
@@ -104,7 +99,12 @@ class dataset extends evidence {
         $this->filestring = $heading.$str;
     }
 
-    protected function get_file_type() {
+    /**
+     * Returns the type of the stored file.
+     *
+     * @return string the file type of the serialized data.
+     */
+    public function get_file_type() {
         return 'csv';
     }
 
@@ -133,5 +133,17 @@ class dataset extends evidence {
         }
 
         return $datawithheader;
+    }
+
+    /**
+     * Increases system memory and time limits.
+     *
+     * @return void
+     */
+    private function heavy_duty_mode() {
+        if (ini_get('memory_limit') != -1) {
+            raise_memory_limit(MEMORY_HUGE);
+        }
+        \core_php_time_limit::raise();
     }
 }

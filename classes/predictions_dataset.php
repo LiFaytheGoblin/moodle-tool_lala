@@ -26,6 +26,13 @@
 namespace tool_laaudit;
 
 class predictions_dataset extends dataset {
+    /**
+     * Retrieve predictions for certain $data from a $model.
+     * Store resulting data (sampleid, target, prediction) in the data field.
+     *
+     * @param $options = [$model, $data]
+     * @return void
+     */
     function collect($options) {
         if(!isset($options['model'])) {
             throw new \Exception('Missing trained model');

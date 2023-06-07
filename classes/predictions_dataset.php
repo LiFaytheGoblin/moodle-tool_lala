@@ -45,11 +45,9 @@ class predictions_dataset extends dataset {
         }
 
         // Get the test data without analysisinterval container and header.
-        $header = [];
         $testdata = [];
         $analysisintervalkey = array_keys((array) ($options['data']))[0];
         foreach ($options['data'] as $arr) {
-            $header = $arr['0'];
             $testdata = array_slice($arr, 1, null, true);
             break;
         }
@@ -68,11 +66,11 @@ class predictions_dataset extends dataset {
         $predictedlabels = $options['model']->predict($testx);
 
         // Build dataset back together and get the structure Moodle usually works with.
-        $header[] = 'prediction';
+        $header = ['target', 'prediction'];
         $mergeddata = [];
         $mergeddata['0'] = $header;
         foreach ($sampleids as $key => $sampleid) {
-            $mergeddata[$sampleid] = array_merge($testx[$key], [$testy[$key], $predictedlabels[$key]]);
+            $mergeddata[$sampleid] = [$testy[$key], $predictedlabels[$key]];
         }
 
         $res = [];

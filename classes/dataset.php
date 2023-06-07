@@ -26,29 +26,72 @@
 
 namespace tool_laaudit;
 
+use core_analytics\local\analysis\result_array;
+use core_analytics\analysis;
 
 class dataset extends evidence {
 
-    public function store($data) {
-        $this->data = $data;
+    /**
+     * Retrieve all available analysables with calculated features and label.
+     *
+     * @param $options = [$modelid, $analyser, $contexts]
+     * @return void
+     */
+    public function collect($options) {
+        if(!isset($options['contexts'])) {
+            throw new \Exception('Missing contexts');
+        }
+        if(!isset($options['analyser'])) {
+            throw new \Exception('Missing analyser');
+        }
+        if(!isset($options['modelid'])) {
+            throw new \Exception('Missing model id');
+        }
 
-        $fileinfo = $this->get_file_info();
+        $this->heavy_duty_mode();
 
-        $fs = get_file_storage();
-        $filestring = $this->serialize($data);
-        $fs->create_file_from_string($fileinfo, $filestring);
+        $analysables_iterator = $options['analyser']->get_analysables_iterator(null, $options['contexts']);
 
-        $this->set_serializedfilelocation();
+        $result_array = new result_array($options['modelid'], true, []);
+
+        $analysis = new analysis($options['analyser'], true, $result_array);
+        foreach($analysables_iterator as $analysable) {
+            if (!$analysable) {
+                continue;
+            }
+            $analysableresults = $analysis->process_analysable($analysable);
+            $result_array->add_analysable_results($analysableresults);
+        }
+
+        $allresults = $result_array->get();
+
+        if (sizeof($allresults) < 1) {
+            throw new \moodle_exception('nodata', 'analytics');
+        }
+
+        $this->data = $allresults;
     }
 
-    private function serialize($data) {
+    /**
+     * Increases system memory and time limits.
+     *
+     * @return void
+     */
+    private function heavy_duty_mode() {
+        if (ini_get('memory_limit') != -1) {
+            raise_memory_limit(MEMORY_HUGE);
+        }
+        \core_php_time_limit::raise();
+    }
+
+    public function serialize() {
         $str = "";
-        $indicatornamesstring = null;
-        foreach($data as $results) {
+        $columns = null;
+        foreach($this->data as $results) {
             $ids = array_keys($results);
             foreach($ids as $id) {
-                if ($id == "0") { // These are the indicator names
-                    $indicatornamesstring = implode(",", $results[$id]);
+                if ($id == "0") { // These are the indicator names (and target)
+                    $columns = implode(",", $results[$id]);
                     continue;
                 }
                 $indicatorvaluesstr = implode(",", $results[$id]);
@@ -57,10 +100,8 @@ class dataset extends evidence {
             }
         }
 
-        $heading = "sampleid,".$indicatornamesstring."\n";
-        $str = $heading.$str;
-
-        return $str;
+        $heading = "sampleid,".$columns."\n";
+        $this->filestring = $heading.$str;
     }
 
     protected function get_file_type() {

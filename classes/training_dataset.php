@@ -26,4 +26,29 @@
 namespace tool_laaudit;
 
 class training_dataset extends dataset {
+    public function collect($options) {
+        if(!isset($options['data'])) {
+            throw new \Exception('Missing split dataset');
+        }
+        if(!isset($options['testsize'])) {
+            throw new \Exception('Missing test size');
+        }
+
+        $key = array_keys((array) ($options['data']))[0];
+        $trainingdatawithheader = [];
+        foreach($options['data'] as $arr) { // each analysisinterval has an object
+            $totaldatapoints = sizeof($arr) - 1;
+            $testdatapoints = round($options['testsize'] * $totaldatapoints);
+
+            $lowerlimit = $testdatapoints + 1;
+
+            $header = array_slice($arr, 0, 1, true);
+            $trainingdata = array_slice($arr, $lowerlimit, null, true);
+
+            $trainingdatawithheader[$key] = $header + $trainingdata;
+            break;
+        }
+
+        $this->data = $trainingdatawithheader;
+    }
 }

@@ -28,7 +28,6 @@ namespace tool_laaudit;
 use core_analytics\manager;
 use core_analytics\model;
 use core_analytics\analysis;
-use core_analytics\local\analysis\result_array;
 use core_date;
 use DateTime;
 use stdClass;
@@ -59,6 +58,26 @@ class model_version {
     private $indicators;
     /** @var evidence[] $evidence used by the model version */
     private $evidence;
+    /** @var string $error that occurred first when creating this model version and gathering evidence */
+    private $error;
+    /** @var array dataset */
+    private $dataset;
+    /** @var array training dataset */
+    private $trainingdataset;
+    /** @var array test dataset */
+    private $testdataset;
+    /** @var \core_analytics\model $model this version belongs to */
+    private $model;
+    /** @var \Phpml\Classification\Linear\LogisticRegression $trainedmodel for this version */
+    private $trainedmodel;
+    /** @var stdClass $analyser for this version */
+    private $analyser;
+    /** @var stdClass $target for this version */
+    private $target;
+    /** @var context[] $contexts for this version */
+    private $contexts;
+    /** @var \core_analytics\predictor $predictor for this version */
+    private $predictor;
 
     /**
      * Constructor. Deserialize DB object.
@@ -82,11 +101,45 @@ class model_version {
         $this->contextids = $version->contextids;
         $this->indicators = $version->indicators;
         $this->error = $version->error;
-        $this->evidence = $this->get_evidence_from_db();
+        $this->evidence = $DB->get_records('tool_laaudit_evidence', array('versionid' => $this->id));
         $this->modelid =  $DB->get_fieldset_select('tool_laaudit_model_configs', 'modelid', 'id='.$this->configid)[0]; //get_fielset_select('tool_laaudit_model_configs', 'modelid', array('id' => $this->configid));
         if (!isset($this->modelid)) {
             $this->modelid = 0; // Todo: Model was maybe deleted. Catch this case!
         }
+        $this->load_objects();
+
+    }
+
+    private function load_objects() {
+        $this->model = new model($this->modelid);
+        $this->target = $this->model->get_target();
+        $this->contexts = $this->model->get_contexts();
+        $this->predictor = $this->model->get_predictions_processor();
+
+        // Convert indicators from string[] to instances
+        $fullclassnames = json_decode($this->indicators);
+        $indicatorinstances = array();
+        foreach ($fullclassnames as $fullclassname) {
+            $instance = \core_analytics\manager::get_indicator($fullclassname);
+            if ($instance) {
+                $indicatorinstances[$fullclassname] = $instance;
+            } else {
+                debugging('Can\'t load ' . $fullclassname . ' indicator', DEBUG_DEVELOPER);
+            }
+        }
+        if (empty($indicatorinstances)) {
+            throw new \moodle_exception('errornoindicators', 'analytics');
+        }
+        $this->indicatorinstances = $indicatorinstances;
+
+        // Convert analysisintervals from string[] to instances
+        $analysisintervalinstanceinstance = \core_analytics\manager::get_time_splitting($this->analysisinterval);
+        $this->analysisintervalinstances = [$analysisintervalinstanceinstance];
+
+        // Create an analyzer
+        $options = array('evaluation'=>true, 'mode'=>'configuration');
+        $analyzerclassname = $this->target->get_analyser_class();
+        $this->analyser =  new $analyzerclassname($this->modelid, $this->target, $this->indicatorinstances, $this->analysisintervalinstances, $options);
     }
 
     /**
@@ -134,6 +187,16 @@ class model_version {
     }
 
     /**
+     * Helper method: Short check to verify whether the provided value is valid, and thus a valid list exists.
+     *
+     * @param string $value to check
+     * @return boolean
+     */
+    private static function valid_exists($value) {
+        return isset($value) && $value != "" && $value != "[]";
+    }
+
+    /**
      * Returns a plain stdClass with the model version data (...).
      *
      * @return stdClass
@@ -157,125 +220,71 @@ class model_version {
     }
 
     /**
-     * Helper method: Short check to verify whether the provided value is valid, and thus a valid list exists.
-     *
-     * @param string $value to check
-     * @return boolean
-     */
-    private static function valid_exists($value) {
-        return isset($value) && $value != "" && $value != "[]";
-    }
-
-    /**
-     * Retrieve the evidence for this version from the database
-     *
-     * @return stdClass[] of evidence records
-     */
-    private function get_evidence_from_db() {
-        global $DB;
-
-        $records = $DB->get_records('tool_laaudit_evidence', array('versionid' => $this->id));
-
-        return $records;
-    }
-
-    /**
-     * Interface method for add()
+     * Gather the data that can be used for training and testing this model version and store as evidence.
      *
      * @return void
      */
     public function gather_dataset() {
-        // Prepare evidence object.
-        $evidence = dataset::create_and_get_for_version($this->id);
-        // Add to evidence array.
-        $this->evidence['dataset'] = $evidence->get_id();
+        $evidence = dataset::create_scaffold_and_get_for_version($this->id); // Prepare evidence object.
 
+        $this->evidence['dataset'] = $evidence->get_id(); // Add to evidence array.
+
+        $options = array('modelid'=>$this->modelid, 'analyser'=>$this->analyser, 'contexts'=>$this->contexts);
         try {
-            $this->dataset = $this->get_dataset(); // TODO: needs to be field? Or can this be local?
+            $evidence->collect($options);
         } catch (\moodle_exception $e) {
             $evidence->abort();
             $this->register_error($e);
             throw $e;
         }
 
-        $evidence->store($this->dataset);
+        $this->dataset = $evidence->get_raw_data();
+
+        $evidence->serialize();
+
+        $evidence->store();
 
         $evidence->finish();
     }
 
-    protected function get_dataset() {
-        // Create a model object from the accompanying analytics model
-        $model = new model($this->modelid);
+    public function split_training_test_data($testsize = 0.2) {
+        $data = $this->shuffle_dataset($this->dataset);
 
-        // Init analyzer.
-        $this->init_analyzer($model);
+        $options = array('data'=>$data, 'testsize'=>$testsize);
 
-        $this->heavy_duty_mode();
+        // Gather training set
+        $evidence_training = training_dataset::create_scaffold_and_get_for_version($this->id);
+        $this->evidence['training_dataset'] = $evidence_training->get_id();
 
-        $predictor = $model->get_predictions_processor(); // Todo: Necessary?
-
-        $contexts = $model->get_contexts();
-
-        $analysables_iterator = $this->analyser->get_analysables_iterator(null, $contexts);
-
-        $result_array = new result_array($this->modelid, true, []);
-        $analysis = new analysis($this->analyser, true, $result_array);
-        foreach($analysables_iterator as $analysable) {
-            if (!$analysable) {
-                continue;
-            }
-
-            $analysableresults = $analysis->process_analysable($analysable);
-            $result_array->add_analysable_results($analysableresults);
+        try {
+            $evidence_training->collect($options);
+        } catch (\moodle_exception $e) {
+            $evidence_training->abort();
+            $this->register_error($e);
+            throw $e;
         }
 
-        $allresults = $result_array->get();
+        $this->trainingdataset = $evidence_training->get_raw_data();
+        $evidence_training->serialize();
+        $evidence_training->store();
+        $evidence_training->finish();
 
-        if (sizeof($allresults) < 1) {
-            throw new \moodle_exception('nodata', 'analytics');
+        // Gather test set
+        $evidence_test = test_dataset::create_scaffold_and_get_for_version($this->id);
+        $this->evidence['test_dataset'] = $evidence_test->get_id();
+
+        try {
+            $evidence_test->collect($options);
+        } catch (\moodle_exception $e) {
+            $evidence_test->abort();
+            $this->register_error($e);
+            throw $e;
         }
 
-        return $allresults;
-    }
-
-    protected function init_analyzer($model) {
-        $target = $model->get_target();
-        $fullclassnames = json_decode($this->indicators); // Convert indicators from string[] to \core_analytics\local\indicator\base[]
-
-
-        $this->indicatorinstances = array();
-        foreach ($fullclassnames as $fullclassname) {
-            $instance = \core_analytics\manager::get_indicator($fullclassname);
-            if ($instance) {
-                $this->indicatorinstances[$fullclassname] = $instance;
-            } else {
-                debugging('Can\'t load ' . $fullclassname . ' indicator', DEBUG_DEVELOPER);
-            }
-        }
-        if (empty($this->indicatorinstances)) {
-            throw new \moodle_exception('errornoindicators', 'analytics');
-        }
-
-        // Convert analysisintervals from string[] to instances
-        $instance = \core_analytics\manager::get_time_splitting($this->analysisinterval);
-        $analysisintervalinstances = [$instance];
-
-        $options = array('evaluation'=>true, 'mode'=>'configuration'); // Todo: Correct?
-
-        $analyzerclassname = $target->get_analyser_class();
-        $this->analyser = new $analyzerclassname($this->modelid, $target, $this->indicatorinstances, $analysisintervalinstances, $options);
-    }
-
-    /**
-     * Increases system memory and time limits.
-     *
-     * @return void
-     */
-    private function heavy_duty_mode() {
-        if (ini_get('memory_limit') != -1) {
-            raise_memory_limit(MEMORY_HUGE);
-        }
-        \core_php_time_limit::raise();
+        $this->testdataset = $evidence_test->get_raw_data();
+        $evidence_test->serialize();
+        $evidence_test->store();
+        $evidence_test->finish();
     }
 
     /**
@@ -284,7 +293,22 @@ class model_version {
      * @return void
      */
     public function train() {
+        $evidence = \tool_laaudit\model::create_scaffold_and_get_for_version($this->id);
+        $this->evidence['model'] = $evidence->get_id();
 
+        $options = array('data'=>$this->trainingdataset, 'predictor'=>$this->predictor);
+        try {
+            $evidence->collect($options);
+        } catch (\moodle_exception $e) {
+            $evidence->abort();
+            $this->register_error($e);
+            throw $e;
+        }
+
+        $this->trainedmodel = $evidence->get_raw_data();
+        $evidence->serialize();
+        $evidence->store();
+        $evidence->finish();
     }
 
     /**
@@ -293,7 +317,22 @@ class model_version {
      * @return void
      */
     public function predict() {
+        $evidence = predictions_dataset::create_scaffold_and_get_for_version($this->id);
+        $this->evidence['predictions_dataset'] = $evidence->get_id();
 
+        $options = array('model'=>$this->trainedmodel, 'data'=>$this->testdataset);
+        try {
+            $evidence->collect($options);
+        } catch (\moodle_exception $e) {
+            $evidence->abort();
+            $this->register_error($e);
+            throw $e;
+        }
+
+        $this->predictionsdataset = $evidence->get_raw_data();
+        $evidence->serialize();
+        $evidence->store();
+        $evidence->finish();
     }
 
     /**
@@ -309,9 +348,42 @@ class model_version {
                 array('id' => $this->id));
     }
 
+    /**
+     * Register a thrown error in the error column of the model version table.
+     *
+     * @param \Exception the thrown exception
+     * @return void
+     */
     private function register_error(\moodle_exception|\Exception $e) {
         global $DB;
 
         $DB->set_field('tool_laaudit_model_versions', 'error', $e->getMessage(), array('id' => $this->id));
+    }
+
+    /**
+     * Shuffle a data set while preserving the key and the header.
+     *
+     * @param array $dataset
+     * @return array
+     */
+    private function shuffle_dataset($dataset) {
+        $key = array_keys((array) $dataset)[0];
+        $datawithheader = [];
+        foreach($dataset as $arr) { // each analysisinterval has an object
+            $header = array_slice($arr, 0, 1, true);
+            $remainingdata = array_slice($arr, 1, null, true);
+
+            $sampleids = array_keys($remainingdata);
+            shuffle($sampleids);
+            $shuffled_data = [];
+            foreach($sampleids as $id) {
+                $shuffled_data[$id] = $remainingdata[$id]; // assign to each key in the random order the value from the original array
+            }
+
+            $datawithheader[$key] = $header + $shuffled_data;
+            break;
+        }
+
+        return $datawithheader;
     }
 }

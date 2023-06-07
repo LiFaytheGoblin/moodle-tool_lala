@@ -107,7 +107,7 @@ class model_version {
         $this->indicators = $version->indicators;
         $this->error = $version->error;
         $this->evidence = $DB->get_records('tool_laaudit_evidence', array('versionid' => $this->id));
-        $this->modelid =  $DB->get_fieldset_select('tool_laaudit_model_configs', 'modelid', 'id='.$this->configid)[0]; //get_fielset_select('tool_laaudit_model_configs', 'modelid', array('id' => $this->configid));
+        $this->modelid = $DB->get_fieldset_select('tool_laaudit_model_configs', 'modelid', 'id='.$this->configid)[0];
         if (!isset($this->modelid)) {
             $this->modelid = 0; // Todo: Model was maybe deleted. Catch this case!
         }
@@ -129,7 +129,7 @@ class model_version {
         $this->contexts = $this->modelconfig->get_contexts();
         $this->predictor = $this->modelconfig->get_predictions_processor();
 
-        // Convert indicators from string[] to instances
+        // Convert indicators from string[] to instances.
         $fullclassnames = json_decode($this->indicators);
         $indicatorinstances = array();
         foreach ($fullclassnames as $fullclassname) {
@@ -145,14 +145,15 @@ class model_version {
         }
         $this->indicatorinstances = $indicatorinstances;
 
-        // Convert analysisintervals from string[] to instances
+        // Convert analysisintervals from string[] to instances.
         $analysisintervalinstanceinstance = \core_analytics\manager::get_time_splitting($this->analysisinterval);
         $this->analysisintervalinstances = [$analysisintervalinstanceinstance];
 
-        // Create an analyzer
-        $options = array('evaluation'=>true, 'mode'=>'configuration');
+        // Create an analyser.
+        $options = array('evaluation' => true, 'mode' => 'configuration');
         $analyzerclassname = $this->target->get_analyser_class();
-        $this->analyser =  new $analyzerclassname($this->modelid, $this->target, $this->indicatorinstances, $this->analysisintervalinstances, $options);
+        $this->analyser = new $analyzerclassname($this->modelid, $this->target, $this->indicatorinstances,
+                $this->analysisintervalinstances, $options);
     }
 
     /**
@@ -245,12 +246,12 @@ class model_version {
     private function add($evidencetype, $options) {
         $class = 'tool_laaudit\\'.$evidencetype;
 
-        $evidence = call_user_func_array($class.'::create_scaffold_and_get_for_version', array($this->id));  // Prepare evidence object.
+        $evidence = call_user_func_array($class.'::create_scaffold_and_get_for_version', array($this->id));
         $this->evidence[$evidencetype] = $evidence->get_id(); // Add to evidence array.
 
         try {
             $evidence->collect($options);
-        } catch (\moodle_exception|\Exception $e) {
+        } catch (\moodle_exception | \Exception $e) {
             $evidence->abort();
             $this->register_error($e);
             throw $e;
@@ -269,7 +270,7 @@ class model_version {
      * @return void
      */
     public function gather_dataset() {
-        $options = array('modelid'=>$this->modelid, 'analyser'=>$this->analyser, 'contexts'=>$this->contexts);
+        $options = array('modelid' => $this->modelid, 'analyser' => $this->analyser, 'contexts' => $this->contexts);
 
         $this->add('dataset', $options);
     }
@@ -282,7 +283,7 @@ class model_version {
      */
     public function split_training_test_data($testsize = 0.2) {
         $data = dataset::get_shuffled($this->dataset);
-        $options = array('data'=>$data, 'testsize'=>$testsize);
+        $options = array('data' => $data, 'testsize' => $testsize);
 
         $this->add('training_dataset', $options);
         $this->add('test_dataset', $options);
@@ -294,7 +295,7 @@ class model_version {
      * @return void
      */
     public function train() {
-        $options = array('data'=>$this->training_dataset, 'predictor'=>$this->predictor);
+        $options = array('data' => $this->training_dataset, 'predictor' => $this->predictor);
 
         $this->add('model', $options);
     }
@@ -305,7 +306,7 @@ class model_version {
      * @return void
      */
     public function predict() {
-        $options = array('model'=>$this->model, 'data'=>$this->test_dataset);
+        $options = array('model' => $this->model, 'data' => $this->test_dataset);
 
         $this->add('predictions_dataset', $options);
     }

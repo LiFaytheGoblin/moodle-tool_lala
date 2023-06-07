@@ -36,20 +36,20 @@ class test_dataset extends dataset {
      * @return void
      */
     public function collect($options) {
-        if(!isset($options['data'])) {
+        if (!isset($options['data'])) {
             throw new \Exception('Missing split dataset');
         }
-        if(!isset($options['testsize'])) {
+        if (!isset($options['testsize'])) {
             throw new \Exception('Missing test size');
         }
 
         $key = array_keys((array) ($options['data']))[0];
         $testdatawithheader = [];
-        foreach($options['data'] as $arr) { // each analysisinterval has an object
-            $totaldatapoints = sizeof($arr) - 1;
+        foreach ($options['data'] as $arr) { // Each analysisinterval has an object.
+            $totaldatapoints = count($arr) - 1;
             $testdatapoints = round($options['testsize'] * $totaldatapoints);
 
-            $upperlimit = $testdatapoints + 1; // + 1 for the heading, upper limit is exclusive
+            $upperlimit = $testdatapoints + 1; // Add +1 for the heading, upper limit is exclusive.
 
             $testdatawithheader[$key] = array_slice($arr, 0, $upperlimit, true);
 

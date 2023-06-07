@@ -36,17 +36,17 @@ class training_dataset extends dataset {
      * @return void
      */
     public function collect($options) {
-        if(!isset($options['data'])) {
+        if (!isset($options['data'])) {
             throw new \Exception('Missing split dataset');
         }
-        if(!isset($options['testsize'])) {
+        if (!isset($options['testsize'])) {
             throw new \Exception('Missing test size');
         }
 
         $key = array_keys((array) ($options['data']))[0];
         $trainingdatawithheader = [];
-        foreach($options['data'] as $arr) { // each analysisinterval has an object
-            $totaldatapoints = sizeof($arr) - 1;
+        foreach ($options['data'] as $arr) { // Each analysisinterval has an object.
+            $totaldatapoints = count($arr) - 1;
             $testdatapoints = round($options['testsize'] * $totaldatapoints);
 
             $lowerlimit = $testdatapoints + 1;

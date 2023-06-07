@@ -39,33 +39,33 @@ class model extends evidence {
      * @return void
      */
     public function collect($options) {
-        if(!isset($options['data'])) {
+        if (!isset($options['data'])) {
             throw new \Exception('Missing training data');
         }
-        if(!isset($options['predictor'])) {
+        if (!isset($options['predictor'])) {
             throw new \Exception('Missing predictor');
         }
 
-        // get only samples and targets
+        // Get only samples and targets.
         $datawithoutheader = [];
-        foreach($options['data'] as $arr) {
+        foreach ($options['data'] as $arr) {
             $datawithoutheader = array_slice($arr, 1, null, true);
             break;
         }
 
         $trainx = [];
         $trainy = [];
-        $n_columns = sizeof(end($datawithoutheader));
-        foreach($datawithoutheader as $row) {
-            $xs = array_slice($row, 0, $n_columns - 1);
+        $ncolumns = count(end($datawithoutheader));
+        foreach ($datawithoutheader as $row) {
+            $xs = array_slice($row, 0, $ncolumns - 1);
             $y = end($row);
 
             $trainx[] = $xs;
             $trainy[] = $y;
         }
 
-        // currently always uses a logistic regression classifier
-        // (https://github.com/moodle/moodle/blob/MOODLE_402_STABLE/lib/mlbackend/php/classes/processor.php#L548)
+        // Currently always uses a logistic regression classifier.
+        // (https://github.com/moodle/moodle/blob/MOODLE_402_STABLE/lib/mlbackend/php/classes/processor.php#L548).
         $iterations = $options['predictor']::TRAIN_ITERATIONS;
         $this->data = new LogisticRegression($iterations, true, LogisticRegression::CONJUGATE_GRAD_TRAINING, 'log');
         $this->data->train($trainx, $trainy);

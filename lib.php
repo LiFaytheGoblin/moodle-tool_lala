@@ -55,7 +55,7 @@ function tool_laaudit_pluginfile(
         return false;
     }
 
-    // Make sure the user is logged in and has access to the module (plugins that are not course modules should leave out the 'cm' part).
+    // Make sure the user is logged in and has access to the module.
     require_admin();
 
     // Todo: Check the relevant capabilities - these may vary depending on the filearea being accessed.
@@ -67,10 +67,8 @@ function tool_laaudit_pluginfile(
     // Extract the filename / filepath from the $args array.
     $filename = array_pop($args); // The last item in the $args array.
     if (empty($args)) {
-        // $args is empty => the path is '/'.
         $filepath = '/';
     } else {
-        // $args contains the remaining elements of the filepath.
         $filepath = '/' . implode('/', $args) . '/';
     }
 

@@ -168,7 +168,7 @@ abstract class evidence {
     protected function set_serializedfilelocation() {
         $fileinfo = $this->get_file_info();
 
-        $serializedfile_url = moodle_url::make_pluginfile_url(
+        $serializedfileurl = moodle_url::make_pluginfile_url(
                 $fileinfo['contextid'],
                 $fileinfo['component'],
                 $fileinfo['filearea'],
@@ -178,7 +178,7 @@ abstract class evidence {
                 true
         );
 
-        $this->serializedfilelocation = $serializedfile_url->out();
+        $this->serializedfilelocation = $serializedfileurl->out();
 
         global $DB;
         $DB->set_field('tool_laaudit_evidence', 'serializedfilelocation', $this->serializedfilelocation,  array('id' => $this->id));
@@ -203,7 +203,8 @@ abstract class evidence {
                 'filearea'  => 'tool_laaudit',
                 'itemid'    => $this->id,
                 'filepath'  => '/evidence/',
-                'filename'  => 'modelversion' . $this->versionid . '-evidence' . $this->name . $this->id . '.' . $this->get_file_type(),
+                'filename'  => 'modelversion' . $this->versionid . '-evidence' . $this->name . $this->id . '.' .
+                        $this->get_file_type(),
         ];
     }
 

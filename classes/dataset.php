@@ -40,34 +40,34 @@ class dataset extends evidence {
      * @return void
      */
     public function collect($options) {
-        if(!isset($options['contexts'])) {
+        if (!isset($options['contexts'])) {
             throw new \Exception('Missing contexts');
         }
-        if(!isset($options['analyser'])) {
+        if (!isset($options['analyser'])) {
             throw new \Exception('Missing analyser');
         }
-        if(!isset($options['modelid'])) {
+        if (!isset($options['modelid'])) {
             throw new \Exception('Missing model id');
         }
 
         $this->heavy_duty_mode();
 
-        $analysables_iterator = $options['analyser']->get_analysables_iterator(null, $options['contexts']);
+        $analysablesiterator = $options['analyser']->get_analysables_iterator(null, $options['contexts']);
 
-        $result_array = new result_array($options['modelid'], true, []);
+        $resultarray = new result_array($options['modelid'], true, []);
 
-        $analysis = new analysis($options['analyser'], true, $result_array);
-        foreach($analysables_iterator as $analysable) {
+        $analysis = new analysis($options['analyser'], true, $resultarray);
+        foreach ($analysablesiterator as $analysable) {
             if (!$analysable) {
                 continue;
             }
             $analysableresults = $analysis->process_analysable($analysable);
-            $result_array->add_analysable_results($analysableresults);
+            $resultarray->add_analysable_results($analysableresults);
         }
 
-        $allresults = $result_array->get();
+        $allresults = $resultarray->get();
 
-        if (sizeof($allresults) < 1) {
+        if (count($allresults) < 1) {
             throw new \moodle_exception('nodata', 'analytics');
         }
 
@@ -83,10 +83,10 @@ class dataset extends evidence {
     public function serialize() {
         $str = "";
         $columns = null;
-        foreach($this->data as $results) {
+        foreach ($this->data as $results) {
             $ids = array_keys($results);
-            foreach($ids as $id) {
-                if ($id == "0") { // These are the indicator names (and target)
+            foreach ($ids as $id) {
+                if ($id == "0") {
                     $columns = implode(",", $results[$id]);
                     continue;
                 }
@@ -118,18 +118,19 @@ class dataset extends evidence {
     public static function get_shuffled($data) {
         $key = array_keys((array) $data)[0];
         $datawithheader = [];
-        foreach($data as $arr) { // each analysisinterval has an object
+        foreach ($data as $arr) { // Each analysisinterval has an array.
             $header = array_slice($arr, 0, 1, true);
             $remainingdata = array_slice($arr, 1, null, true);
 
             $sampleids = array_keys($remainingdata);
             shuffle($sampleids);
-            $shuffled_data = [];
-            foreach($sampleids as $id) {
-                $shuffled_data[$id] = $remainingdata[$id]; // assign to each key in the random order the value from the original array
+            $shuffleddata = [];
+            foreach ($sampleids as $id) {
+                // Assign to each key in the random order the value from the original array.
+                $shuffleddata[$id] = $remainingdata[$id];
             }
 
-            $datawithheader[$key] = $header + $shuffled_data;
+            $datawithheader[$key] = $header + $shuffleddata;
             break;
         }
 

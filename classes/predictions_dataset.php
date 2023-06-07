@@ -35,16 +35,16 @@ class predictions_dataset extends dataset {
      * @param array $options = [$model, $data]
      * @return void
      */
-    function collect($options) {
-        if(!isset($options['model'])) {
+    public function collect($options) {
+        if (!isset($options['model'])) {
             throw new \Exception('Missing trained model');
         }
 
-        if(!isset($options['data'])) {
+        if (!isset($options['data'])) {
             throw new \Exception('Missing test dataset');
         }
 
-        // Get the test data without analysisinterval container and header
+        // Get the test data without analysisinterval container and header.
         $header = [];
         $testdata = [];
         $analysisintervalkey = array_keys((array) ($options['data']))[0];
@@ -54,24 +54,24 @@ class predictions_dataset extends dataset {
             break;
         }
 
-        // Extract the sample ids, x and y values from the test set
+        // Extract the sample ids, x and y values from the test set.
         $sampleids = array_keys($testdata);
         $testx = [];
         $testy = [];
-        foreach($testdata as $row) {
-            $len = sizeof($row);
+        foreach ($testdata as $row) {
+            $len = count($row);
             $testx[] = array_slice($row, 0, $len - 1, true);
             $testy[] = $row[$len - 1];
         }
 
-        // Get predictions
+        // Get predictions.
         $predictedlabels = $options['model']->predict($testx);
 
-        // Build dataset back together and get the structure Moodle usually works with
+        // Build dataset back together and get the structure Moodle usually works with.
         $header[] = 'prediction';
         $mergeddata = [];
         $mergeddata['0'] = $header;
-        foreach($sampleids as $key => $sampleid) {
+        foreach ($sampleids as $key => $sampleid) {
             $mergeddata[$sampleid] = array_merge($testx[$key], [$testy[$key], $predictedlabels[$key]]);
         }
 

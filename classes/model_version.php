@@ -320,7 +320,7 @@ class model_version {
         $evidence = predictions_dataset::create_scaffold_and_get_for_version($this->id);
         $this->evidence['predictions_dataset'] = $evidence->get_id();
 
-        $options = array('model'=>$this->trainedmodel);
+        $options = array('model'=>$this->trainedmodel, 'data'=>$this->testdataset);
         try {
             $evidence->collect($options);
         } catch (\moodle_exception $e) {

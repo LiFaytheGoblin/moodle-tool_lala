@@ -86,12 +86,12 @@ class dataset extends evidence {
 
     public function serialize() {
         $str = "";
-        $indicatornamesstring = null;
+        $columns = null;
         foreach($this->data as $results) {
             $ids = array_keys($results);
             foreach($ids as $id) {
                 if ($id == "0") { // These are the indicator names (and target)
-                    $indicatornamesstring = implode(",", $results[$id]);
+                    $columns = implode(",", $results[$id]);
                     continue;
                 }
                 $indicatorvaluesstr = implode(",", $results[$id]);
@@ -100,7 +100,7 @@ class dataset extends evidence {
             }
         }
 
-        $heading = "sampleid,".$indicatornamesstring."\n";
+        $heading = "sampleid,".$columns."\n";
         $this->filestring = $heading.$str;
     }
 

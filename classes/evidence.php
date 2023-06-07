@@ -29,7 +29,7 @@ use context_system;
 use moodle_url;
 
 /**
- * Class for the evidence element.
+ * Class for the evidence item.
  */
 abstract class evidence {
     /** @var int $id id assigned to the evidence by the db. */
@@ -93,7 +93,7 @@ abstract class evidence {
 
     /**
      * Collects the raw data.
-     * @param stdClass depending on the implementation
+     * @param array $options depending on the implementation
      * @return void
      */
     abstract public function collect($options);
@@ -162,7 +162,7 @@ abstract class evidence {
 
     /**
      * Sets the path where the serialized data is located as a file on the server, for later download.
-     * @param string path location
+     *
      * @return void
      */
     protected function set_serializedfilelocation() {

@@ -16,7 +16,6 @@
 
 /**
  * The training dataset class, inheriting from sthe dataset class.
- * Collects and preserves evidence on training data used by the model
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
@@ -25,7 +24,17 @@
 
 namespace tool_laaudit;
 
+/**
+ * Class for the training dataset evidence item.
+ */
 class training_dataset extends dataset {
+    /**
+     * Retrieve the training portion of a data set, that is the first p% of data points.
+     * Store resulting data (sampleid, features, label) in the data field.
+     *
+     * @param array $options = [$data, $testsize]
+     * @return void
+     */
     public function collect($options) {
         if(!isset($options['data'])) {
             throw new \Exception('Missing split dataset');

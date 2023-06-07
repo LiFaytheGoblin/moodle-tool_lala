@@ -16,7 +16,6 @@
 
 /**
  * The predictions dataset class, inheriting from the dataset class.
- * Collects and preserves evidence on predictions made by the model
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
@@ -25,12 +24,15 @@
 
 namespace tool_laaudit;
 
+/**
+ * Class for the predictions dataset evidence item.
+ */
 class predictions_dataset extends dataset {
     /**
      * Retrieve predictions for certain $data from a $model.
      * Store resulting data (sampleid, target, prediction) in the data field.
      *
-     * @param $options = [$model, $data]
+     * @param array $options = [$model, $data]
      * @return void
      */
     function collect($options) {

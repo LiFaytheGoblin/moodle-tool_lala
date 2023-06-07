@@ -16,7 +16,6 @@
 
 /**
  * The model class.
- * Collects and preserves evidence on the model itself, e.g. the learned weights
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
@@ -27,13 +26,16 @@ namespace tool_laaudit;
 
 use \Phpml\Classification\Linear\LogisticRegression;
 
+/**
+ * Class for the trained model evidence item.
+ */
 class model extends evidence {
 
     /**
      * Train a model using the data sent via $options and the $predictor.
      * Store the trained LogisticRegression model as the raw $data of this evidence item.
      *
-     * @param $options = [$data, $predictor]
+     * @param array $options = [$data, $predictor]
      * @return void
      */
     public function collect($options) {

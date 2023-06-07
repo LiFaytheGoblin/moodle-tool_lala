@@ -56,15 +56,19 @@ class model_version {
     private $contextids;
     /** @var string $indicators used by the model version */
     private $indicators;
+    /** @var \core_analytics\indicator[] $indicatorinstances for this version */
+    private $indicatorinstances;
+    /** @var \core_analytics\analysis_interval[] $analysisintervalinstances for this version */
+    private $analysisintervalinstances;
     /** @var evidence[] $evidence used by the model version */
     private $evidence;
     /** @var string $error that occurred first when creating this model version and gathering evidence */
     private $error;
-    /** @var array dataset */
+    /** @var array $dataset */
     private $dataset;
-    /** @var array training dataset */
+    /** @var array $training_dataset */
     private $training_dataset;
-    /** @var array test dataset */
+    /** @var array $test_dataset */
     private $test_dataset;
     /** @var \core_analytics\model $modelconfig / moodle model this version belongs to */
     private $modelconfig;
@@ -78,6 +82,7 @@ class model_version {
     private $contexts;
     /** @var \core_analytics\predictor $predictor for this version */
     private $predictor;
+
 
     /**
      * Constructor. Deserialize DB object.
@@ -110,6 +115,14 @@ class model_version {
 
     }
 
+    /**
+     * Loads php objects instead of just ids or names for some of the model properties,
+     * so they can be reused later.
+     * Objects that are being loaded:
+     * $modelconfig, $target, $contexts, $predictor, $indicatorinstances, $analysisintervalinstances, $analyser
+     *
+     * @return void
+     */
     private function load_objects() {
         $this->modelconfig = new model($this->modelid);
         $this->target = $this->modelconfig->get_target();
@@ -197,7 +210,7 @@ class model_version {
     }
 
     /**
-     * Returns a plain stdClass with the model version data (...).
+     * Returns a plain stdClass with the model version data.
      *
      * @return stdClass
      */
@@ -219,6 +232,16 @@ class model_version {
         return $obj;
     }
 
+    /**
+     * Add a next step and therefore next evidence in the model version creation process.
+     * Steps ($evidencetype) can be:
+     * 'dataset', 'test_dataset', 'training_dataset', 'model', 'predictions_dataset'.
+     * Stores the retrieved evidence in the appropriate field of this model version.
+     *
+     * @param string $evidencetype created in the next step.
+     * @param array $options those options that are relevant in the called classes, see for instance dataset->collect().
+     * @return void
+     */
     private function add($evidencetype, $options) {
         $class = 'tool_laaudit\\'.$evidencetype;
 
@@ -241,7 +264,7 @@ class model_version {
     }
 
     /**
-     * Gather the data that can be used for training and testing this model version and store as evidence.
+     * Call next step: Gather the data that can be used for training and testing this model version.
      *
      * @return void
      */
@@ -251,8 +274,14 @@ class model_version {
         $this->add('dataset', $options);
     }
 
+    /**
+     * Call next step: Split the data into training and testing data.
+     *
+     * @param number $testsize the percentage of datapoints to be used as test data.
+     * @return void
+     */
     public function split_training_test_data($testsize = 0.2) {
-        $data = $this->evidence['dataset']->get_shuffled_data();
+        $data = dataset::get_shuffled($this->dataset);
         $options = array('data'=>$data, 'testsize'=>$testsize);
 
         $this->add('training_dataset', $options);
@@ -260,7 +289,7 @@ class model_version {
     }
 
     /**
-     * Interface method for add()
+     * Call next step: Train a model.
      *
      * @return void
      */
@@ -271,7 +300,7 @@ class model_version {
     }
 
     /**
-     * Interface method for add()
+     * Call next step: Request predictions from a trained model.
      *
      * @return void
      */
@@ -282,7 +311,7 @@ class model_version {
     }
 
     /**
-     * Mark the version as finished.
+     * Mark the model version as finished.
      *
      * @return void
      */
@@ -297,7 +326,7 @@ class model_version {
     /**
      * Register a thrown error in the error column of the model version table.
      *
-     * @param \Exception the thrown exception
+     * @param \Exception $e the thrown exception
      * @return void
      */
     private function register_error(\moodle_exception|\Exception $e) {

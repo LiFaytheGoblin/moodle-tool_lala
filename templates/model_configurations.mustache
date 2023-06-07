@@ -19,11 +19,10 @@
         - id: int - model config unique identifier
         - modelname: string - name of the model config
         - modelid: int - model id
-        - target: string - name of the target associated with the model config
-        - versions: currently an array of version ids (int)
+        - modeltarget: string - name of the target associated with the model config
+        - modelanalysabletype: string - name of the analysable type associated with the model config
+        - versions: [{}]
         - buttons: [{}]
-        - startedevidencesets: [{}]
-        - completedevidencesets: [{}]
     Example context (json):
     {
         "modelconfigs": [{
@@ -31,7 +30,7 @@
             "modelid": 4,
             "modelname": "model4",
             "modeltarget": "Prevent devs at risk",
-            "versions": [1, 2, 3],
+            "modelanalysabletype": "user_enrolments",
             "buttons": [{
                 "method" : "post",
                 "url" : "/config/1/version",

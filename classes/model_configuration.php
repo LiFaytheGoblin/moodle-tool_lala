@@ -16,8 +16,6 @@
 
 /**
  * The model configuration class, built on top of the analytics/model class.
- * The accompanying db table is needed to preserve a record of the model configuration
- * even if the model has been deleted.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
@@ -48,7 +46,7 @@ class model_configuration {
     /**
      * Constructor. Import from DB.
      *
-     * @param model $model
+     * @param number $id
      * @return void
      */
     public function __construct($id) {
@@ -92,6 +90,8 @@ class model_configuration {
 
     /**
      * Create a new model configuration for a model id, or if it already exists, retrieve that config.
+     * The accompanying db table is needed to preserve a record of the model configuration
+     * even if the model has been deleted.
      *
      * @param int $modelid of an analytics model
      * @return int id of created or retrieved object

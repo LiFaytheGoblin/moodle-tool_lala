@@ -16,8 +16,6 @@
 
 /**
  * The dataset class.
- * Collects and preserves evidence on data used by the model.
- * Can be inherited from for specific datasets.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
@@ -29,13 +27,16 @@ namespace tool_laaudit;
 use core_analytics\local\analysis\result_array;
 use core_analytics\analysis;
 
+/**
+ * Class for the complete dataset evidence item.
+ */
 class dataset extends evidence {
 
     /**
      * Retrieve all available analysable samples, calculate features and label.
      * Store resulting data (sampleid, features, label) in the data field.
      *
-     * @param $options = [$modelid, $analyser, $contexts]
+     * @param array $options = [$modelid, $analyser, $contexts]
      * @return void
      */
     public function collect($options) {
@@ -109,15 +110,15 @@ class dataset extends evidence {
     }
 
     /**
-     * Shuffle a data set while preserving the key and the header.
+     * Helper: Shuffle a data set while preserving the key and the header.
      *
-     * @param array $dataset
-     * @return array
+     * @param array $data
+     * @return array shuffled data
      */
-    public function get_shuffled_data() {
-        $key = array_keys((array) $this->data)[0];
+    public static function get_shuffled($data) {
+        $key = array_keys((array) $data)[0];
         $datawithheader = [];
-        foreach($this->data as $arr) { // each analysisinterval has an object
+        foreach($data as $arr) { // each analysisinterval has an object
             $header = array_slice($arr, 0, 1, true);
             $remainingdata = array_slice($arr, 1, null, true);
 

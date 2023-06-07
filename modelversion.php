@@ -40,6 +40,8 @@ $context = context_system::instance();
 $PAGE->set_url($pageurl);
 $PAGE->set_context($context);
 
+$versionid = null;
+
 if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $versionid = model_version::create_scaffold_and_get_for_config($configid);
 
@@ -52,8 +54,9 @@ if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $version->predict();
 
     $version->finish();
-
-    $priorurl = new moodle_url('/admin/tool/laaudit/index.php#version'.$versionid);
-    redirect($priorurl);
 }
+
+$versionaddendum = (isset($versionid) ? '#version'.$versionid : '');
+$priorurl = new moodle_url('/admin/tool/laaudit/index.php'.$versionaddendum);
+redirect($priorurl);
 

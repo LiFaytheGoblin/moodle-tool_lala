@@ -63,13 +63,13 @@ class model_version {
     /** @var array dataset */
     private $dataset;
     /** @var array training dataset */
-    private $trainingdataset;
+    private $training_dataset;
     /** @var array test dataset */
-    private $testdataset;
-    /** @var \core_analytics\model $model this version belongs to */
+    private $test_dataset;
+    /** @var \core_analytics\model $modelconfig / moodle model this version belongs to */
+    private $modelconfig;
+    /** @var \Phpml\Classification\Linear\LogisticRegression $model trained for this version */
     private $model;
-    /** @var \Phpml\Classification\Linear\LogisticRegression $trainedmodel for this version */
-    private $trainedmodel;
     /** @var stdClass $analyser for this version */
     private $analyser;
     /** @var stdClass $target for this version */
@@ -111,10 +111,10 @@ class model_version {
     }
 
     private function load_objects() {
-        $this->model = new model($this->modelid);
-        $this->target = $this->model->get_target();
-        $this->contexts = $this->model->get_contexts();
-        $this->predictor = $this->model->get_predictions_processor();
+        $this->modelconfig = new model($this->modelid);
+        $this->target = $this->modelconfig->get_target();
+        $this->contexts = $this->modelconfig->get_contexts();
+        $this->predictor = $this->modelconfig->get_predictions_processor();
 
         // Convert indicators from string[] to instances
         $fullclassnames = json_decode($this->indicators);
@@ -163,25 +163,25 @@ class model_version {
         // Copy values from model.
         $modelconfig = $DB->get_record('tool_laaudit_model_configs', array('id' => $configid), 'modelid', MUST_EXIST);
         $modelid = $modelconfig->modelid;
-        $model = $DB->get_record('analytics_models', array('id' => $modelid),
+        $moodlemodel = $DB->get_record('analytics_models', array('id' => $modelid),
                 'timesplitting, predictionsprocessor, contextids, indicators', MUST_EXIST);
-        if (self::valid_exists($model->timesplitting)) {
-            $obj->analysisinterval = $model->timesplitting;
+        if (self::valid_exists($moodlemodel->timesplitting)) {
+            $obj->analysisinterval = $moodlemodel->timesplitting;
         } else {
             $analysisintervals = manager::get_time_splitting_methods_for_evaluation();
             $firstanalysisinterval = array_keys($analysisintervals)[0];
             $obj->analysisinterval = $firstanalysisinterval;
         }
-        if (self::valid_exists($model->predictionsprocessor)) {
-            $obj->predictionsprocessor = $model->predictionsprocessor;
+        if (self::valid_exists($moodlemodel->predictionsprocessor)) {
+            $obj->predictionsprocessor = $moodlemodel->predictionsprocessor;
         } else {
             $default = manager::default_mlbackend();
             $obj->predictionsprocessor = $default;
         }
-        if (self::valid_exists($model->contextids)) {
-            $obj->contextids = $model->contextids;
+        if (self::valid_exists($moodlemodel->contextids)) {
+            $obj->contextids = $moodlemodel->contextids;
         }
-        $obj->indicators = $model->indicators;
+        $obj->indicators = $moodlemodel->indicators;
 
         return $DB->insert_record('tool_laaudit_model_versions', $obj);
     }
@@ -219,72 +219,44 @@ class model_version {
         return $obj;
     }
 
+    private function add($evidencetype, $options) {
+        $class = 'tool_laaudit\\'.$evidencetype;
+
+        $evidence = call_user_func_array($class.'::create_scaffold_and_get_for_version', array($this->id));  // Prepare evidence object.
+        $this->evidence[$evidencetype] = $evidence->get_id(); // Add to evidence array.
+
+        try {
+            $evidence->collect($options);
+        } catch (\moodle_exception|\Exception $e) {
+            $evidence->abort();
+            $this->register_error($e);
+            throw $e;
+        }
+
+        $evidence->serialize();
+        $evidence->store();
+        $evidence->finish();
+
+        $this->$evidencetype = $evidence->get_raw_data();
+    }
+
     /**
      * Gather the data that can be used for training and testing this model version and store as evidence.
      *
      * @return void
      */
     public function gather_dataset() {
-        $evidence = dataset::create_scaffold_and_get_for_version($this->id); // Prepare evidence object.
-
-        $this->evidence['dataset'] = $evidence->get_id(); // Add to evidence array.
-
         $options = array('modelid'=>$this->modelid, 'analyser'=>$this->analyser, 'contexts'=>$this->contexts);
-        try {
-            $evidence->collect($options);
-        } catch (\moodle_exception $e) {
-            $evidence->abort();
-            $this->register_error($e);
-            throw $e;
-        }
 
-        $this->dataset = $evidence->get_raw_data();
-
-        $evidence->serialize();
-
-        $evidence->store();
-
-        $evidence->finish();
+        $this->add('dataset', $options);
     }
 
     public function split_training_test_data($testsize = 0.2) {
-        $data = $this->shuffle_dataset($this->dataset);
-
+        $data = $this->evidence['dataset']->get_shuffled_data();
         $options = array('data'=>$data, 'testsize'=>$testsize);
 
-        // Gather training set
-        $evidence_training = training_dataset::create_scaffold_and_get_for_version($this->id);
-        $this->evidence['training_dataset'] = $evidence_training->get_id();
-
-        try {
-            $evidence_training->collect($options);
-        } catch (\moodle_exception $e) {
-            $evidence_training->abort();
-            $this->register_error($e);
-            throw $e;
-        }
-
-        $this->trainingdataset = $evidence_training->get_raw_data();
-        $evidence_training->serialize();
-        $evidence_training->store();
-        $evidence_training->finish();
-
-        // Gather test set
-        $evidence_test = test_dataset::create_scaffold_and_get_for_version($this->id);
-        $this->evidence['test_dataset'] = $evidence_test->get_id();
-
-        try {
-            $evidence_test->collect($options);
-        } catch (\moodle_exception $e) {
-            $evidence_test->abort();
-            $this->register_error($e);
-            throw $e;
-        }
-
-        $this->testdataset = $evidence_test->get_raw_data();
-        $evidence_test->serialize();
-        $evidence_test->store();
-        $evidence_test->finish();
+        $this->add('training_dataset', $options);
+        $this->add('test_dataset', $options);
     }
 
     /**
@@ -293,22 +265,9 @@ class model_version {
      * @return void
      */
     public function train() {
-        $evidence = \tool_laaudit\model::create_scaffold_and_get_for_version($this->id);
-        $this->evidence['model'] = $evidence->get_id();
+        $options = array('data'=>$this->training_dataset, 'predictor'=>$this->predictor);
 
-        $options = array('data'=>$this->trainingdataset, 'predictor'=>$this->predictor);
-        try {
-            $evidence->collect($options);
-        } catch (\moodle_exception $e) {
-            $evidence->abort();
-            $this->register_error($e);
-            throw $e;
-        }
-
-        $this->trainedmodel = $evidence->get_raw_data();
-        $evidence->serialize();
-        $evidence->store();
-        $evidence->finish();
+        $this->add('model', $options);
     }
 
     /**
@@ -317,22 +276,9 @@ class model_version {
      * @return void
      */
     public function predict() {
-        $evidence = predictions_dataset::create_scaffold_and_get_for_version($this->id);
-        $this->evidence['predictions_dataset'] = $evidence->get_id();
+        $options = array('model'=>$this->model, 'data'=>$this->test_dataset);
 
-        $options = array('model'=>$this->trainedmodel, 'data'=>$this->testdataset);
-        try {
-            $evidence->collect($options);
-        } catch (\moodle_exception $e) {
-            $evidence->abort();
-            $this->register_error($e);
-            throw $e;
-        }
-
-        $this->predictionsdataset = $evidence->get_raw_data();
-        $evidence->serialize();
-        $evidence->store();
-        $evidence->finish();
+        $this->add('predictions_dataset', $options);
     }
 
     /**
@@ -358,32 +304,5 @@ class model_version {
         global $DB;
 
         $DB->set_field('tool_laaudit_model_versions', 'error', $e->getMessage(), array('id' => $this->id));
-    }
-
-    /**
-     * Shuffle a data set while preserving the key and the header.
-     *
-     * @param array $dataset
-     * @return array
-     */
-    private function shuffle_dataset($dataset) {
-        $key = array_keys((array) $dataset)[0];
-        $datawithheader = [];
-        foreach($dataset as $arr) { // each analysisinterval has an object
-            $header = array_slice($arr, 0, 1, true);
-            $remainingdata = array_slice($arr, 1, null, true);
-
-            $sampleids = array_keys($remainingdata);
-            shuffle($sampleids);
-            $shuffled_data = [];
-            foreach($sampleids as $id) {
-                $shuffled_data[$id] = $remainingdata[$id]; // assign to each key in the random order the value from the original array
-            }
-
-            $datawithheader[$key] = $header + $shuffled_data;
-            break;
-        }
-
-        return $datawithheader;
     }
 }

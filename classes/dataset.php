@@ -107,4 +107,31 @@ class dataset extends evidence {
     protected function get_file_type() {
         return 'csv';
     }
+
+    /**
+     * Shuffle a data set while preserving the key and the header.
+     *
+     * @param array $dataset
+     * @return array
+     */
+    public function get_shuffled_data() {
+        $key = array_keys((array) $this->data)[0];
+        $datawithheader = [];
+        foreach($this->data as $arr) { // each analysisinterval has an object
+            $header = array_slice($arr, 0, 1, true);
+            $remainingdata = array_slice($arr, 1, null, true);
+
+            $sampleids = array_keys($remainingdata);
+            shuffle($sampleids);
+            $shuffled_data = [];
+            foreach($sampleids as $id) {
+                $shuffled_data[$id] = $remainingdata[$id]; // assign to each key in the random order the value from the original array
+            }
+
+            $datawithheader[$key] = $header + $shuffled_data;
+            break;
+        }
+
+        return $datawithheader;
+    }
 }

@@ -50,4 +50,5 @@ $string['allcontexts'] = 'all contexts';
 $string['analysable'] = 'analysable';
 $string['model'] = 'model';
 $string['error'] = 'error';
-
+$string['traintestsplit'] = 'train-test-split';
+$string['traintest'] = 'Train: {$a->trainsize}%, Test: {$a->testsize}%';

@@ -36,6 +36,7 @@ use stdClass;
  * Class for the model configuration.
  */
 class model_version {
+    const DEFAULT_RELATIVE_TEST_SET_SIZE = 0.2;
     /** @var int $id assigned to the version by the db. */
     private $id;
     /** @var string $name assigned to the version. */
@@ -52,6 +53,8 @@ class model_version {
     private $analysisinterval;
     /** @var string $predictionsprocessor used by the model version */
     private $predictionsprocessor;
+    /** @var float $relativetestsetsize relative amount of available data to be used for testing */
+    private $relativetestsetsize;
     /** @var string $contextids used as data by the model version */
     private $contextids;
     /** @var string $indicators used by the model version */
@@ -83,7 +86,6 @@ class model_version {
     /** @var \core_analytics\predictor $predictor for this version */
     private $predictor;
 
-
     /**
      * Constructor. Deserialize DB object.
      *
@@ -103,6 +105,7 @@ class model_version {
         $this->timecreationfinished = $version->timecreationfinished;
         $this->analysisinterval = $version->analysisinterval;
         $this->predictionsprocessor = $version->predictionsprocessor;
+        $this->relativetestsetsize = $version->relativetestsetsize;
         $this->contextids = $version->contextids;
         $this->indicators = $version->indicators;
         $this->error = $version->error;
@@ -170,9 +173,8 @@ class model_version {
         $obj->configid = $configid;
 
         // Set defaults.
-        $obj->name = "default";
         $obj->timecreationstarted = time();
-        $obj->timecreationfinished = 0;
+        $obj->relativetestsetsize = self::DEFAULT_RELATIVE_TEST_SET_SIZE;
 
         // Copy values from model.
         $modelconfig = $DB->get_record('tool_laaudit_model_configs', array('id' => $configid), 'modelid', MUST_EXIST);
@@ -225,6 +227,7 @@ class model_version {
         $obj->timecreationfinished = $this->timecreationfinished;
         $obj->analysisinterval = $this->analysisinterval;
         $obj->predictionsprocessor = $this->predictionsprocessor;
+        $obj->relativetestsetsize = $this->relativetestsetsize;
         $obj->contextids = $this->contextids;
         $obj->indicators = $this->indicators;
         $obj->evidence = $this->evidence;
@@ -278,12 +281,11 @@ class model_version {
     /**
      * Call next step: Split the data into training and testing data.
      *
-     * @param number $testsize the percentage of datapoints to be used as test data.
      * @return void
      */
-    public function split_training_test_data($testsize = 0.2) {
+    public function split_training_test_data() {
         $data = dataset::get_shuffled($this->dataset);
-        $options = array('data' => $data, 'testsize' => $testsize);
+        $options = array('data' => $data, 'testsize' => $this->relativetestsetsize);
 
         $this->add('training_dataset', $options);
         $this->add('test_dataset', $options);

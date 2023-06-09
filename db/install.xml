@@ -20,8 +20,9 @@
                 <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="default" SEQUENCE="false" COMMENT="Name of the model version, 'default' if version was created automatically"/>
                 <FIELD NAME="timecreationstarted" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="timecreationfinished" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
-                <FIELD NAME="analysisinterval" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
-                <FIELD NAME="predictionsprocessor" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="analysisinterval" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="predictionsprocessor" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="relativetestsetsize" TYPE="number" LENGTH="4" NOTNULL="true" SEQUENCE="false" DECIMALS="2"/>
                 <FIELD NAME="contextids" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
                 <FIELD NAME="indicators" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="configid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>

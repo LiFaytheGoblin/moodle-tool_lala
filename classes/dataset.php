@@ -81,18 +81,18 @@ class dataset extends evidence {
      * @return void
      */
     public function serialize() {
-        $str = "";
+        $str = '';
         $columns = null;
         foreach ($this->data as $results) {
             $ids = array_keys($results);
             foreach ($ids as $id) {
-                if ($id == "0") {
-                    $columns = implode(",", $results[$id]);
+                if ($id == '0') {
+                    $columns = implode(',', $results[$id]);
                     continue;
                 }
-                $indicatorvaluesstr = implode(",", $results[$id]);
-                $simpleid = explode("-", $id)[0];
-                $str = $str.$simpleid.",".$indicatorvaluesstr."\n";
+                $indicatorvaluesstr = implode(',', $results[$id]);
+                $simpleid = explode('-', $id)[0];
+                $str = $str.$simpleid.','.$indicatorvaluesstr.'\n';
             }
         }
 

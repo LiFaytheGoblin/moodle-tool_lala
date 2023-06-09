@@ -84,7 +84,7 @@ class model_version_description implements templatable, renderable {
             $data->contextids = $contextids;
         }
 
-        $data->indicators = "";
+        $data->indicators = '';
         $indicators = json_decode($this->version->indicators);
         if (gettype($indicators) == 'array') {
             $data->indicators = implode(', ', $indicators);

@@ -62,7 +62,7 @@ class model_configuration {
 
         $model = new model($this->modelid);
 
-        $this->modelname = $model->get_name() ?? "model" . $this->modelid;
+        $this->modelname = $model->get_name() ?? 'model' . $this->modelid;
 
         $target = $model->get_target();
         $this->modelanalysabletype = $target->get_analyser_class();

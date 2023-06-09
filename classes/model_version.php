@@ -37,6 +37,7 @@ use tool_laaudit\event\model_version_created;
  * Class for the model configuration.
  */
 class model_version {
+    /** @var float $DEFAULT_RELATIVE_TEST_SET_SIZE out of all available test data */
     const DEFAULT_RELATIVE_TEST_SET_SIZE = 0.2;
     /** @var int $id assigned to the version by the db. */
     private $id;
@@ -70,10 +71,10 @@ class model_version {
     private $error;
     /** @var array $dataset */
     private $dataset;
-    /** @var array $training_dataset */
-    private $training_dataset;
-    /** @var array $test_dataset */
-    private $test_dataset;
+    /** @var array $trainingdataset */
+    private $trainingdataset;
+    /** @var array $testdataset */
+    private $testdataset;
     /** @var \core_analytics\model $modelconfig / moodle model this version belongs to */
     private $modelconfig;
     /** @var \Phpml\Classification\Linear\LogisticRegression $model trained for this version */
@@ -265,7 +266,8 @@ class model_version {
         $evidence->store();
         $evidence->finish();
 
-        $this->$evidencetype = $evidence->get_raw_data();
+        $fieldname = str_replace('_', '', $evidencetype);
+        $this->$fieldname = $evidence->get_raw_data();
     }
 
     /**
@@ -298,7 +300,7 @@ class model_version {
      * @return void
      */
     public function train() {
-        $options = array('data' => $this->training_dataset, 'predictor' => $this->predictor);
+        $options = array('data' => $this->trainingdataset, 'predictor' => $this->predictor);
 
         $this->add('model', $options);
     }
@@ -309,7 +311,7 @@ class model_version {
      * @return void
      */
     public function predict() {
-        $options = array('model' => $this->model, 'data' => $this->test_dataset);
+        $options = array('model' => $this->model, 'data' => $this->testdataset);
 
         $this->add('predictions_dataset', $options);
     }
@@ -327,9 +329,6 @@ class model_version {
                 array('id' => $this->id));
 
         // Register an event.
-        // 'context' => context_system::instance(),
-        //                'contextlevel' => CONTEXT_SYSTEM,
-        //
         $props = array('objectid' => $this->id, 'other' => array('configid' => $this->configid, 'modelid' => $this->modelid));
         $event = model_version_created::create($props);
         $event->trigger();

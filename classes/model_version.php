@@ -31,6 +31,7 @@ use core_analytics\analysis;
 use core_date;
 use DateTime;
 use stdClass;
+use tool_laaudit\event\model_version_created;
 
 /**
  * Class for the model configuration.
@@ -324,6 +325,14 @@ class model_version {
         $this->timecreationfinished = time();
         $DB->set_field('tool_laaudit_model_versions', 'timecreationfinished', $this->timecreationfinished,
                 array('id' => $this->id));
+
+        // Register an event.
+        // 'context' => context_system::instance(),
+        //                'contextlevel' => CONTEXT_SYSTEM,
+        //
+        $props = array('objectid' => $this->id, 'other' => array('configid' => $this->configid, 'modelid' => $this->modelid));
+        $event = model_version_created::create($props);
+        $event->trigger();
     }
 
     /**

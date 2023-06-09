@@ -57,7 +57,7 @@ abstract class evidence {
     public function __construct($id) {
         global $DB;
 
-        $evidence = $DB->get_record('tool_laaudit_evidence', array('id' => $id), '*', MUST_EXIST);
+        $evidence = $DB->get_record('tool_laaudit_evidence', ['id' => $id], '*', MUST_EXIST);
 
         // Fill properties from DB.
         $this->id = $evidence->id;
@@ -181,7 +181,7 @@ abstract class evidence {
         $this->serializedfilelocation = $serializedfileurl->out();
 
         global $DB;
-        $DB->set_field('tool_laaudit_evidence', 'serializedfilelocation', $this->serializedfilelocation,  array('id' => $this->id));
+        $DB->set_field('tool_laaudit_evidence', 'serializedfilelocation', $this->serializedfilelocation, ['id' => $this->id]);
     }
 
     /**
@@ -222,7 +222,7 @@ abstract class evidence {
         global $DB;
 
         $this->timecollectionfinished = time();
-        $DB->set_field('tool_laaudit_evidence', 'timecollectionfinished', $this->timecollectionfinished, array('id' => $this->id));
+        $DB->set_field('tool_laaudit_evidence', 'timecollectionfinished', $this->timecollectionfinished, ['id' => $this->id]);
     }
 
     /**
@@ -232,6 +232,6 @@ abstract class evidence {
     public function abort() {
         global $DB;
 
-        $DB->delete_records('tool_laaudit_evidence', array('id' => $this->id));
+        $DB->delete_records('tool_laaudit_evidence', ['id' => $this->id]);
     }
 }

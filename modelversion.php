@@ -34,7 +34,7 @@ $configid = optional_param('configid', 0, PARAM_INT);
 // POST /admin/tool/laaudit/modelversion.php?configid=<configid>
 
 // Set some page parameters.
-$pageurl = new moodle_url('/admin/tool/laaudit/modelversion.php', array('configid' => $configid));
+$pageurl = new moodle_url('/admin/tool/laaudit/modelversion.php', ['configid' => $configid]);
 $context = context_system::instance();
 
 $PAGE->set_url($pageurl);

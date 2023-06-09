@@ -52,12 +52,12 @@ class model_configuration {
     public function __construct($id) {
         global $DB;
         // Fill properties from DB.
-        $modelconfig = $DB->get_record('tool_laaudit_model_configs', array('id' => $id), '*', MUST_EXIST);
+        $modelconfig = $DB->get_record('tool_laaudit_model_configs', ['id' => $id], '*', MUST_EXIST);
 
         $this->id = $modelconfig->id;
         $this->modelid = $modelconfig->modelid;
 
-        $modelobj = $DB->get_record('analytics_models', array('id' => $this->modelid), '*', MUST_EXIST);
+        $modelobj = $DB->get_record('analytics_models', ['id' => $this->modelid], '*', MUST_EXIST);
         $this->modeltarget = $modelobj->target;
 
         $model = new model($this->modelid);
@@ -99,8 +99,8 @@ class model_configuration {
     public static function get_or_create_and_get_for_model($modelid) {
         global $DB;
 
-        if ($DB->record_exists('tool_laaudit_model_configs', array('modelid' => $modelid))) {
-            $record = $DB->get_record('tool_laaudit_model_configs', array('modelid' => $modelid), 'id', MUST_EXIST);
+        if ($DB->record_exists('tool_laaudit_model_configs', ['modelid' => $modelid])) {
+            $record = $DB->get_record('tool_laaudit_model_configs', ['modelid' => $modelid], 'id', MUST_EXIST);
             return $record->id;
         }
 

@@ -97,7 +97,7 @@ class model_version {
     public function __construct($id) {
         global $DB;
 
-        $version = $DB->get_record('tool_laaudit_model_versions', array('id' => $id), '*', MUST_EXIST);
+        $version = $DB->get_record('tool_laaudit_model_versions', ['id' => $id], '*', MUST_EXIST);
 
         // Fill properties from DB.
         $this->id = $version->id;
@@ -111,7 +111,7 @@ class model_version {
         $this->contextids = $version->contextids;
         $this->indicators = $version->indicators;
         $this->error = $version->error;
-        $this->evidence = $DB->get_records('tool_laaudit_evidence', array('versionid' => $this->id));
+        $this->evidence = $DB->get_records('tool_laaudit_evidence', ['versionid' => $this->id]);
         $this->modelid = $DB->get_fieldset_select('tool_laaudit_model_configs', 'modelid', 'id='.$this->configid)[0];
         if (!isset($this->modelid)) {
             $this->modelid = 0; // Todo: Model was maybe deleted. Catch this case!
@@ -155,7 +155,7 @@ class model_version {
         $this->analysisintervalinstances = [$analysisintervalinstanceinstance];
 
         // Create an analyser.
-        $options = array('evaluation' => true, 'mode' => 'configuration');
+        $options = ['evaluation' => true, 'mode' => 'configuration'];
         $analyzerclassname = $this->target->get_analyser_class();
         $this->analyser = new $analyzerclassname($this->modelid, $this->target, $this->indicatorinstances,
                 $this->analysisintervalinstances, $options);
@@ -179,9 +179,9 @@ class model_version {
         $obj->relativetestsetsize = self::DEFAULT_RELATIVE_TEST_SET_SIZE;
 
         // Copy values from model.
-        $modelconfig = $DB->get_record('tool_laaudit_model_configs', array('id' => $configid), 'modelid', MUST_EXIST);
+        $modelconfig = $DB->get_record('tool_laaudit_model_configs', ['id' => $configid], 'modelid', MUST_EXIST);
         $modelid = $modelconfig->modelid;
-        $moodlemodel = $DB->get_record('analytics_models', array('id' => $modelid),
+        $moodlemodel = $DB->get_record('analytics_models', ['id' => $modelid],
                 'timesplitting, predictionsprocessor, contextids, indicators', MUST_EXIST);
         if (self::valid_exists($moodlemodel->timesplitting)) {
             $obj->analysisinterval = $moodlemodel->timesplitting;
@@ -251,7 +251,7 @@ class model_version {
     private function add($evidencetype, $options) {
         $class = 'tool_laaudit\\'.$evidencetype;
 
-        $evidence = call_user_func_array($class.'::create_scaffold_and_get_for_version', array($this->id));
+        $evidence = call_user_func_array($class.'::create_scaffold_and_get_for_version', [$this->id]);
         $this->evidence[$evidencetype] = $evidence->get_id(); // Add to evidence array.
 
         try {
@@ -276,7 +276,7 @@ class model_version {
      * @return void
      */
     public function gather_dataset() {
-        $options = array('modelid' => $this->modelid, 'analyser' => $this->analyser, 'contexts' => $this->contexts);
+        $options = ['modelid' => $this->modelid, 'analyser' => $this->analyser, 'contexts' => $this->contexts];
 
         $this->add('dataset', $options);
     }
@@ -288,7 +288,7 @@ class model_version {
      */
     public function split_training_test_data() {
         $data = dataset::get_shuffled($this->dataset);
-        $options = array('data' => $data, 'testsize' => $this->relativetestsetsize);
+        $options = ['data' => $data, 'testsize' => $this->relativetestsetsize];
 
         $this->add('training_dataset', $options);
         $this->add('test_dataset', $options);
@@ -300,7 +300,7 @@ class model_version {
      * @return void
      */
     public function train() {
-        $options = array('data' => $this->trainingdataset, 'predictor' => $this->predictor);
+        $options = ['data' => $this->trainingdataset, 'predictor' => $this->predictor];
 
         $this->add('model', $options);
     }
@@ -311,7 +311,7 @@ class model_version {
      * @return void
      */
     public function predict() {
-        $options = array('model' => $this->model, 'data' => $this->testdataset);
+        $options = ['model' => $this->model, 'data' => $this->testdataset];
 
         $this->add('predictions_dataset', $options);
     }
@@ -326,10 +326,10 @@ class model_version {
 
         $this->timecreationfinished = time();
         $DB->set_field('tool_laaudit_model_versions', 'timecreationfinished', $this->timecreationfinished,
-                array('id' => $this->id));
+                ['id' => $this->id]);
 
         // Register an event.
-        $props = array('objectid' => $this->id, 'other' => array('configid' => $this->configid, 'modelid' => $this->modelid));
+        $props = ['objectid' => $this->id, 'other' => ['configid' => $this->configid, 'modelid' => $this->modelid]];
         $event = model_version_created::create($props);
         $event->trigger();
     }
@@ -343,6 +343,6 @@ class model_version {
     private function register_error(\moodle_exception|\Exception $e) {
         global $DB;
 
-        $DB->set_field('tool_laaudit_model_versions', 'error', $e->getMessage(), array('id' => $this->id));
+        $DB->set_field('tool_laaudit_model_versions', 'error', $e->getMessage(), ['id' => $this->id]);
     }
 }

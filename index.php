@@ -24,8 +24,6 @@
 
 require(__DIR__ . '/../../../config.php');
 
-require_admin();
-
 /////// CONTROLLER
 
 // Get all model configurations.
@@ -43,6 +41,9 @@ $PAGE->set_url($pageurl);
 $PAGE->set_pagelayout('standard');
 $PAGE->set_title(format_string($heading));
 $PAGE->set_heading($heading);
+
+require_login();
+require_capability('tool/laaudit:viewpagecontent', $context);
 
 // Output the page.
 $output = $PAGE->get_renderer('tool_laaudit');

@@ -56,9 +56,9 @@ function tool_laaudit_pluginfile(
     }
 
     // Make sure the user is logged in and has access to the module.
-    require_admin();
+    require_login();
+    require_capability('tool/laaudit:downloadevidence', $context);
 
-    // Todo: Check the relevant capabilities - these may vary depending on the filearea being accessed.
 
     // The args is an array containing [itemid, path].
     // Fetch the itemid from the path.

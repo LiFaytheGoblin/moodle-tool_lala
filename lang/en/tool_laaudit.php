@@ -53,3 +53,6 @@ $string['error'] = 'error';
 $string['traintestsplit'] = 'train-test-split';
 $string['traintest'] = 'Train: {$a->trainsize}%, Test: {$a->testsize}%';
 $string['eventmodelversioncreated'] = 'Model version created';
+$string['laaudit:viewpagecontent'] = 'View the content of the plugin page';
+$string['laaudit:downloadevidence'] = 'Download the evidence produced for model versions';
+$string['laaudit:createmodelversion'] = 'Trigger the creation of a new model version';

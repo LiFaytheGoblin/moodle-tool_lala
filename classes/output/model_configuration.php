@@ -68,7 +68,7 @@ class model_configuration implements templatable, renderable {
 
         // Add buttons.
         $buttons = [];
-        $buttons[] = new single_button(new moodle_url('modelversion.php', ['configid' => $this->modelconfig->id]),
+        $buttons[] = new single_button(new moodle_url('modelversion.php', ['configid' => $this->modelconfig->id, 'sesskey' => sesskey()]),
                 get_string('automaticallycreateversion', 'tool_laaudit'), 'post');
         foreach ($buttons as $key => $button) {
             $buttons[$key] = $button->export_for_template($output);

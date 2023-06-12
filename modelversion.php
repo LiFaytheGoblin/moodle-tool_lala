@@ -26,8 +26,6 @@ require(__DIR__ . '/../../../config.php');
 
 use \tool_laaudit\model_version;
 
-require_admin();
-
 $configid = optional_param('configid', 0, PARAM_INT);
 
 // Routes
@@ -39,6 +37,10 @@ $context = context_system::instance();
 
 $PAGE->set_url($pageurl);
 $PAGE->set_context($context);
+
+require_login();
+require_capability('tool/laaudit:createmodelversion', $context);
+require_sesskey();
 
 $versionid = null;
 

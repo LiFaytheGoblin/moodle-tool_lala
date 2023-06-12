@@ -24,14 +24,29 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$context = context_system::instance();
-if (\core_analytics\manager::is_analytics_enabled() and has_capability('tool/laaudit:viewpagecontent', $context)) {
-    if (is_siteadmin()) {
-        // If it is an admin, add the link to the admin page.
-        $ADMIN->add('analytics', new admin_externalpage('tool_laaudit_index',
-                get_string('pluginname', 'tool_laaudit'),
-                $CFG->wwwroot . '/' . $CFG->admin . '/tool/laaudit/index.php', 'moodle/analytics:managemodels'));
-    } else {
-        // If it is an auditor, add the link to the frontpage.
-    }
-}
+$capabilities = [
+        'tool/laaudit:viewpagecontent' => [
+            'riskbitmask' => RISK_SPAM,
+            'captype' => 'read',
+            'contextlevel' => CONTEXT_SYSTEM,
+            'archetypes' => [
+                    'auditor' => CAP_ALLOW,
+            ],
+        ],
+        'tool/laaudit:downloadevidence' => [
+            'riskbitmask' => RISK_PERSONAL,
+            'captype' => 'read',
+            'contextlevel' => CONTEXT_SYSTEM,
+            'archetypes' => [
+                    'auditor' => CAP_ALLOW,
+            ],
+        ],
+        'tool/laaudit:createmodelversion' => [
+            'riskbitmask' => RISK_SPAM,
+            'captype' => 'write',
+            'contextlevel' => CONTEXT_SYSTEM,
+            'archetypes' => [
+                    'auditor' => CAP_ALLOW,
+            ],
+        ],
+];

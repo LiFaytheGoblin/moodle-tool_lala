@@ -83,6 +83,7 @@ class dataset extends evidence {
     public function serialize() {
         $str = '';
         $columns = null;
+
         foreach ($this->data as $results) {
             $ids = array_keys($results);
             foreach ($ids as $id) {
@@ -91,8 +92,8 @@ class dataset extends evidence {
                     continue;
                 }
                 $indicatorvaluesstr = implode(',', $results[$id]);
-                $simpleid = explode('-', $id)[0];
-                $str = $str.$simpleid.','.$indicatorvaluesstr.'\n';
+                //$simpleid = explode('-', $id)[0];
+                $str = $str.$id.','.$indicatorvaluesstr."\n";
             }
         }
 

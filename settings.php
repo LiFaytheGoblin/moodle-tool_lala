@@ -25,8 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $context = context_system::instance();
-if (\core_analytics\manager::is_analytics_enabled() and has_capability('tool/laaudit:viewpagecontent', $context)) {
+if (\core_analytics\manager::is_analytics_enabled()) {
     $ADMIN->add('analytics', new admin_externalpage('tool_laaudit_index',
             get_string('pluginname', 'tool_laaudit'),
-            $CFG->wwwroot . '/' . $CFG->admin . '/tool/laaudit/index.php', 'moodle/analytics:managemodels'));
+            $CFG->wwwroot . '/' . $CFG->admin . '/tool/laaudit/index.php', 'tool/laaudit:viewpagecontent'));
 }

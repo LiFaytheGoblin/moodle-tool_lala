@@ -22,6 +22,8 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use navigation_node;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -85,14 +87,16 @@ function tool_laaudit_pluginfile(
 }
 
 /**
-* Insert a link to index.php on the site front page navigation menu.
+ * Insert a link to index.php on the site front page navigation menu.
  *
  * @param navigation_node $frontpage Node representing the front page in the navigation tree.
  */
-function local_greetings_extend_navigation_frontpage(navigation_node $frontpage) {
-    $frontpage->add(
-            get_string('pluginname', 'tool_laaudit'),
-            new moodle_url('/local/greetings/index.php'),
-            navigation_node::TYPE_CUSTOM,
-    );
+function tool_laaudit_extend_navigation_frontpage(navigation_node $frontpage) {
+    $context = context_system::instance();
+    if(!is_siteadmin() and has_capability('tool/laaudit:viewpagecontent', $context)) {
+        $frontpage->add(
+                get_string('pluginname', 'tool_laaudit'),
+                new moodle_url('/admin/tool/laaudit/index.php')
+        );
+    }
 }

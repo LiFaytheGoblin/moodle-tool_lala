@@ -26,27 +26,20 @@ defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
         'tool/laaudit:viewpagecontent' => [
-            'riskbitmask' => RISK_SPAM,
             'captype' => 'read',
             'contextlevel' => CONTEXT_SYSTEM,
-            'archetypes' => [
-                    'auditor' => CAP_ALLOW,
-            ],
+            'archetypes' => [],
         ],
         'tool/laaudit:downloadevidence' => [
             'riskbitmask' => RISK_PERSONAL,
             'captype' => 'read',
             'contextlevel' => CONTEXT_SYSTEM,
-            'archetypes' => [
-                    'auditor' => CAP_ALLOW,
-            ],
+            'archetypes' => [],
         ],
         'tool/laaudit:createmodelversion' => [
             'riskbitmask' => RISK_SPAM,
             'captype' => 'write',
             'contextlevel' => CONTEXT_SYSTEM,
-            'archetypes' => [
-                    'auditor' => CAP_ALLOW,
-            ],
+            'archetypes' => [],
         ],
 ];

@@ -26,12 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $context = context_system::instance();
 if (\core_analytics\manager::is_analytics_enabled() and has_capability('tool/laaudit:viewpagecontent', $context)) {
-    if (is_siteadmin()) {
-        // If it is an admin, add the link to the admin page.
-        $ADMIN->add('analytics', new admin_externalpage('tool_laaudit_index',
-                get_string('pluginname', 'tool_laaudit'),
-                $CFG->wwwroot . '/' . $CFG->admin . '/tool/laaudit/index.php', 'moodle/analytics:managemodels'));
-    } else {
-        // If it is an auditor, add the link to the frontpage.
-    }
+    $ADMIN->add('analytics', new admin_externalpage('tool_laaudit_index',
+            get_string('pluginname', 'tool_laaudit'),
+            $CFG->wwwroot . '/' . $CFG->admin . '/tool/laaudit/index.php', 'moodle/analytics:managemodels'));
 }

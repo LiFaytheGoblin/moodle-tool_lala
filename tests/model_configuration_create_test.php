@@ -29,13 +29,14 @@ require_once($CFG->dirroot . '/admin/tool/laaudit/classes/model_configuration.ph
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class model_configuration_create_test extends \advanced_testcase {
-
     /**
-     * Data provider for {@see test_model_configuration_create()}.
+     * Check that __create() creates a model configuration.
      *
-     * @return array List of data sets - (string) data set name => (array) data
+     * @covers ::tool_laaudit_model_configuration___create
      */
-    public function tool_laaudit_create_provider() {
+    public function test_model_configuration_create() {
+        $this->resetAfterTest(true);
+
         global $DB;
 
         // Define some standard model data
@@ -44,70 +45,34 @@ class model_configuration_create_test extends \advanced_testcase {
 
         // Get a valid model id.
         $validmodelobject = [
-            'name' => $name,
-            'target' => $target,
-            'indicators' => "[\"\\\\core\\\\analytics\\\\indicator\\\\any_access_after_end\"]",
-            'timesplitting' => '\core\analytics\time_splitting\deciles',
-            'version' => time(),
-            'timemodified' => time(),
-            'usermodified' => 1,
+                'name' => $name,
+                'target' => $target,
+                'indicators' => "[\"\\\\core\\\\analytics\\\\indicator\\\\any_access_after_end\"]",
+                'timesplitting' => '\core\analytics\time_splitting\deciles',
+                'version' => time(),
+                'timemodified' => time(),
+                'usermodified' => 1,
         ];
-        $validmodelid = $DB->insert_record('analytics_models', $validmodelobject);
+        $modelid = $DB->insert_record('analytics_models', $validmodelobject);
 
         // Get a valid config id.
         $valididconfigobject = [
-                'modelid' => $validmodelid,
+                'modelid' => $modelid,
         ];
-        $validconfigid = $DB->insert_record('tool_laaudit_model_configs', $valididconfigobject);
+        $configid = $DB->insert_record('tool_laaudit_model_configs', $valididconfigobject);
 
-        // Get another model id for a model that will be deleted after creating a config for it.
-        $tobedeletedmodelid = $DB->insert_record('analytics_models', $validmodelobject);
-
-        // Get another valid config id, but with a model id from a model that will be deleted after creating the config.
-        $valididconfigobject2 = [
-                'modelid' => $tobedeletedmodelid,
-        ];
-        $validconfigid2 = $DB->insert_record('tool_laaudit_model_configs', $valididconfigobject2);
-
-        $DB->delete_records('analytics_models', ['id' => $tobedeletedmodelid]);
-
-        return [
-                'validconfigmodelid' => [
-                        'configid' => $validconfigid,
-                        'modelid' => $validmodelid,
-                        'modelname' => $name,
-                        'modeltarget' => $target,
-                ],
-                'validconfigmissingmodelid' => [
-                        'configid' => $validconfigid2,
-                        'modelid' => $tobedeletedmodelid,
-                        'modelname' => $name,
-                        'modeltarget' => $target,
-                ],
-        ];
-    }
-
-    /**
-     * Check that __create() creates a model configuration.
-     *
-     * @covers ::tool_laaudit_model_configuration___create
-     *
-     * @dataProvider tool_laaudit_create_provider
-     * @param int $configid
-     * @param int $modelid
-     * @param string|null $modelname
-     * @param string $modeltarget
-     */
-    public function test_model_configuration_create(int $configid, int $modelid, ?string $modelname, string $modeltarget) {
-        $this->resetAfterTest(true);
-
+        // Create a model configuration from a config with an existing model
         $config = new model_configuration($configid);
         $this->assertEquals($config->get_id(), $configid);
         $this->assertEquals($config->get_modelid(), $modelid);
-        if (isset($modelname)) {
-            $this->assertEquals($config->get_modelname(), $modelname);
-        }
-        $this->assertEquals($config->get_modeltarget(), $modeltarget);
+        $this->assertEquals($config->get_modelname(), $name);
+        $this->assertEquals($config->get_modeltarget(), $target);
+
+        // Delete model and create a model configuration from a config with a now deleted model
+        $DB->delete_records('analytics_models', ['id' => $modelid]);
+        $config2 = new model_configuration($configid);
+        $this->assertEquals($config2->get_id(), $configid);
+        $this->assertEquals($config2->get_modelid(), $modelid);
     }
 
     /**

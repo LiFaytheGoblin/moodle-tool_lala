@@ -22,7 +22,7 @@ global $CFG;
 require_once($CFG->dirroot . '/admin/tool/laaudit/classes/model_configuration.php');
 
 /**
- * Metadata registry tests.
+ * Model configuration get_or_create_and_get_for_model() test.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>

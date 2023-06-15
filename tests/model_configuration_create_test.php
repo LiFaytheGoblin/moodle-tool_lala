@@ -22,7 +22,7 @@ global $CFG;
 require_once($CFG->dirroot . '/admin/tool/laaudit/classes/model_configuration.php');
 
 /**
- * Metadata registry tests.
+ * Model configuration __create() test.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
@@ -35,7 +35,7 @@ class model_configuration_create_test extends \advanced_testcase {
      *
      * @return array List of data sets - (string) data set name => (array) data
      */
-    public function tool_laaudit_create_config_provider() {
+    public function tool_laaudit_create_provider() {
         global $DB;
 
         // Define some standard model data
@@ -92,7 +92,7 @@ class model_configuration_create_test extends \advanced_testcase {
      *
      * @covers ::tool_laaudit_model_configuration___create
      *
-     * @dataProvider tool_laaudit_create_config_provider
+     * @dataProvider tool_laaudit_create_provider
      * @param int $configid
      * @param int $modelid
      * @param string|null $modelname

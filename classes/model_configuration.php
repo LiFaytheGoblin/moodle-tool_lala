@@ -128,4 +128,21 @@ class model_configuration {
 
         return $obj;
     }
+
+    public function get_id() {
+        return $this->id;
+    }
+
+    public function get_modelid() {
+        return $this->modelid;
+    }
+
+    public function get_modelname() {
+        return $this->modelname;
+    }
+
+    public function get_modeltarget() {
+        return $this->modeltarget;
+        ;
+    }
 }

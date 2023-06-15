@@ -28,13 +28,14 @@ require_once($CFG->dirroot . '/admin/tool/laaudit/classes/model_configuration.ph
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class model_configuration_test extends \advanced_testcase {
+class model_configuration_create_test extends \advanced_testcase {
+
     /**
      * Data provider for {@see test_model_configuration_create()}.
      *
      * @return array List of data sets - (string) data set name => (array) data
      */
-    public function tool_laaudit_create_provider() {
+    public function tool_laaudit_create_config_provider() {
         global $DB;
 
         // Define some standard model data
@@ -61,12 +62,13 @@ class model_configuration_test extends \advanced_testcase {
 
         // Get another model id for a model that will be deleted after creating a config for it.
         $tobedeletedmodelid = $DB->insert_record('analytics_models', $validmodelobject);
+
+        // Get another valid config id, but with a model id from a model that will be deleted after creating the config.
         $valididconfigobject2 = [
                 'modelid' => $tobedeletedmodelid,
         ];
-
-        // Get another valid config id, but with a model id from a model that will be deleted after creating the config.
         $validconfigid2 = $DB->insert_record('tool_laaudit_model_configs', $valididconfigobject2);
+
         $DB->delete_records('analytics_models', ['id' => $tobedeletedmodelid]);
 
         return [
@@ -77,20 +79,20 @@ class model_configuration_test extends \advanced_testcase {
                         'modeltarget' => $target,
                 ],
                 'validconfigmissingmodelid' => [
-                        'country' => $validconfigid2,
+                        'configid' => $validconfigid2,
                         'modelid' => $tobedeletedmodelid,
                         'modelname' => $name,
                         'modeltarget' => $target,
                 ],
         ];
     }
-    
+
     /**
      * Check that __create() creates a model configuration.
      *
-     * @covers ::tool_laaudit_model_configuration_create
+     * @covers ::tool_laaudit_model_configuration___create
      *
-     * @dataProvider tool_laaudit_create_provider
+     * @dataProvider tool_laaudit_create_config_provider
      * @param int $configid
      * @param int $modelid
      * @param string|null $modelname
@@ -110,6 +112,8 @@ class model_configuration_test extends \advanced_testcase {
 
     /**
      * Check that __create() throws an error if the provided config id does not exist in tool_laaudit_model_configs.
+     *
+     * @covers ::tool_laaudit_model_configuration___create
      */
     public function test_model_configuration_create_error() {
         global $DB;

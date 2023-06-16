@@ -27,9 +27,9 @@ namespace tool_laaudit;
 defined('MOODLE_INTERNAL') || die();
 class test_model {
     const NAME = 'testmodel';
-    const TARGET = '\core_course\analytics\target\course_dropout';
-    const INDICATORS = "[\"\\\\core\\\\analytics\\\\indicator\\\\any_access_after_end\"]";
-    const ANALYSISINTERVAL = '\core\analytics\time_splitting\deciles';
+    const TARGET = '\core_course\analytics\target\no_recent_accesses';
+    const INDICATORS = "[\"\\\\core\\\\analytics\\\\indicator\\\\any_course_access\"]";
+    const ANALYSISINTERVAL = '\core\analytics\time_splitting\past_3_days';
     const PREDICTIONSPROCESSOR = '\mlbackend_php\processor';
 
     /**

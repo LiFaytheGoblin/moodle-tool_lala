@@ -52,4 +52,10 @@ class test_version {
         $existingversionids = $DB->get_fieldset_select('tool_laaudit_model_versions', 'id', '1=1');
         return (sizeof($existingversionids) > 0) ? max($existingversionids) : 1;
     }
+
+    public static function haserror(int $versionid) : bool {
+        global $DB;
+        $error = $DB->get_fieldset_select('tool_laaudit_model_versions', 'error', 'id='.$versionid);
+        return isset($error);
+    }
 }

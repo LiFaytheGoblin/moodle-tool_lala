@@ -23,6 +23,7 @@ require_once($CFG->dirroot . '/admin/tool/laaudit/classes/model_version.php');
 require_once(__DIR__ . '/fixtures/test_config.php');
 require_once(__DIR__ . '/fixtures/test_model.php');
 require_once(__DIR__ . '/fixtures/test_version.php');
+require_once(__DIR__ . '/fixtures/test_course_with_students.php');
 
 /**
  * Model version gather_dataset() test.
@@ -49,24 +50,48 @@ class model_version_gather_dataset_test extends \advanced_testcase {
         // Create a model configuration from a config with an existing model.
         $version = new model_version($versionid);
 
-        // No data is available for gathering:
-        $this->expectException(\Exception::class);
-        $version->gather_dataset();
-
-        $dataset = $version->get_dataset();
-        $this->assertFalse(isset($dataset)); // $dataset has not been set
-        $error = $DB->get_fieldset_select('tool_laaudit_model_versions', 'error', 'id='.$versionid); // An error has been registered
-        assert(isset($error));
-
-        // Todo: Generate data
+        // Generate test data
+        test_course_with_students::create($this->getDataGenerator());
 
         // Data is available for gathering
         $version->gather_dataset();
         $dataset = $version->get_dataset();
         $this->assertTrue(isset($dataset));
+        $error = test_version::haserror($versionid) ; // An error has been registered
+        $this->assertFalse($error);
 
         // Try to gather dataset again, even though it has already been gathered.
-        $this->expectException(\Exception::class);
+        $this->expectException(\moodle_exception::class);
         $version->gather_dataset();
+        $error = test_version::haserror($versionid) ; // An error has been registered
+        $this->assertFalse($error);
+    }
+
+    /**
+     * Check that gather_dataset() throws and registers an error if no data is available.
+     *
+     * @covers ::tool_laaudit_model_version_gather_dataset
+     */
+    public function test_model_version_gather_dataset_error() {
+        $this->resetAfterTest(true);
+
+        $modelid = test_model::create();
+        $configid = test_config::create($modelid);
+        $versionid = test_version::create($configid);
+
+        // Create a model configuration from a config with an existing model.
+        $version = new model_version($versionid);
+
+        // No data is available for gathering:
+        try {
+            $this->expectException(\moodle_exception::class);
+            $version->gather_dataset();
+        } finally {
+            global $DB;
+            $dataset = $version->get_dataset();
+            $this->assertFalse(isset($dataset)); // $dataset has not been set
+            $error = test_version::haserror($versionid) ; // An error has been registered
+            $this->assertTrue($error);
+        }
     }
 }

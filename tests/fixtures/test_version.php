@@ -55,7 +55,7 @@ class test_version {
 
     public static function haserror(int $versionid) : bool {
         global $DB;
-        $error = $DB->get_fieldset_select('tool_laaudit_model_versions', 'error', 'id='.$versionid);
+        $error = $DB->get_fieldset_select('tool_laaudit_model_versions', 'error', 'id='.$versionid)[0];
         return isset($error);
     }
 }

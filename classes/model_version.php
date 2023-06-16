@@ -75,6 +75,8 @@ class model_version {
     private $trainingdataset;
     /** @var array $testdataset */
     private $testdataset;
+    /** @var array $predictionsdataset */
+    private $predictionsdataset;
     /** @var \core_analytics\model $moodlemodel / moodle model this version belongs to */
     private $moodlemodel;
     /** @var \Phpml\Classification\Linear\LogisticRegression $model trained for this version */
@@ -351,5 +353,21 @@ class model_version {
 
     public function get_dataset() {
         return $this->dataset;
+    }
+
+    public function get_testdataset() {
+        return $this->testdataset;
+    }
+
+    public function get_trainingdataset() {
+        return $this->testdataset;
+    }
+
+    public function get_model() {
+        return $this->model;
+    }
+
+    public function get_predictionsdataset() {
+        return $this->predictionsdataset;
     }
 }

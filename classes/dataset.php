@@ -117,7 +117,9 @@ class dataset extends evidence {
      * @return array shuffled data
      */
     public static function get_shuffled($data) {
-        $key = array_keys((array) $data)[0];
+        $keys = array_keys((array) $data);
+        if(sizeof($keys) < 2) return $data;
+        $key = $keys[0];
         $datawithheader = [];
         foreach ($data as $arr) { // Each analysisinterval has an array.
             $header = array_slice($arr, 0, 1, true);

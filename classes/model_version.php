@@ -75,8 +75,8 @@ class model_version {
     private $trainingdataset;
     /** @var array $testdataset */
     private $testdataset;
-    /** @var \core_analytics\model $modelconfig / moodle model this version belongs to */
-    private $modelconfig;
+    /** @var \core_analytics\model $moodlemodel / moodle model this version belongs to */
+    private $moodlemodel;
     /** @var \Phpml\Classification\Linear\LogisticRegression $model trained for this version */
     private $model;
     /** @var stdClass $analyser for this version */
@@ -117,7 +117,6 @@ class model_version {
             $this->modelid = 0; // Todo: Model was maybe deleted. Catch this case!
         }
         $this->load_objects();
-
     }
 
     /**
@@ -129,10 +128,10 @@ class model_version {
      * @return void
      */
     private function load_objects() {
-        $this->modelconfig = new model($this->modelid);
-        $this->target = $this->modelconfig->get_target();
-        $this->contexts = $this->modelconfig->get_contexts();
-        $this->predictor = $this->modelconfig->get_predictions_processor();
+        $this->moodlemodel = new model($this->modelid);
+        $this->target = $this->moodlemodel->get_target();
+        $this->contexts = $this->moodlemodel->get_contexts();
+        $this->predictor = $this->moodlemodel->get_predictions_processor();
 
         // Convert indicators from string[] to instances.
         $fullclassnames = json_decode($this->indicators);
@@ -207,7 +206,7 @@ class model_version {
     /**
      * Helper method: Short check to verify whether the provided value is valid, and thus a valid list exists.
      *
-     * @param string $value to check
+     * @param string|null $value to check
      * @return boolean
      */
     private static function valid_exists($value) {
@@ -344,5 +343,9 @@ class model_version {
         global $DB;
 
         $DB->set_field('tool_laaudit_model_versions', 'error', $e->getMessage(), ['id' => $this->id]);
+    }
+
+    public function get_id() {
+        return $this->id;
     }
 }

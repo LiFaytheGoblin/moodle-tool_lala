@@ -20,6 +20,9 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/admin/tool/laaudit/classes/model_version.php');
+require_once(__DIR__ . '/fixtures/test_config.php');
+require_once(__DIR__ . '/fixtures/test_model.php');
+require_once(__DIR__ . '/fixtures/test_version.php');
 
 /**
  * Model version create_scaffold_and_get_for_config() test.
@@ -35,34 +38,18 @@ class model_version_create_scaffold_and_get_for_config_test extends \advanced_te
      * @covers ::tool_laaudit_model_version_create_scaffold_and_get_for_config
      */
     public function test_model_version_create_scaffold_and_get_for_config() {
-        //create_scaffold_and_get_for_config($configid) returns a new model version id
-        global $DB;
-        // Define some standard model data
-        $name = 'testmodel';
-        $target = '\core_course\analytics\target\course_dropout';
-        // Get a valid model id.
-        $validmodelobject = [
-                'name' => $name,
-                'target' => $target,
-                'indicators' => "[\"\\\\core\\\\analytics\\\\indicator\\\\any_access_after_end\"]",
-                'timesplitting' => '\core\analytics\time_splitting\deciles',
-                'version' => time(),
-                'timemodified' => time(),
-                'usermodified' => 1,
-        ];
-        $modelid = $DB->insert_record('analytics_models', $validmodelobject);
+        $modelid = test_model::create();
 
         // create a config
-        $configid = model_configuration::get_or_create_and_get_for_model($modelid);
+        $configid = test_config::create($modelid);
 
         // for valid config & model
-        $existingversionids = $DB->get_fieldset_select('tool_laaudit_model_configs', 'id', '1=1');
-        $maxidbeforenewversioncreation = (sizeof($existingversionids) > 0) ? max($existingversionids) : 0;
+        $maxidbeforenewversioncreation = test_version::get_highest_id();
         $versionid = model_version::create_scaffold_and_get_for_config($configid);
         $this->assertGreaterThan($maxidbeforenewversioncreation, $versionid);
 
         // for valid config & deleted model
-        $DB->delete_records('analytics_models', ['id' => $modelid]);
+        test_model::delete($modelid);
         $versionid2 = model_version::create_scaffold_and_get_for_config($configid);
         $this->assertGreaterThan($maxidbeforenewversioncreation, $versionid2);
     }
@@ -73,11 +60,7 @@ class model_version_create_scaffold_and_get_for_config_test extends \advanced_te
      * @covers ::tool_laaudit_model_version_create_scaffold_and_get_for_config
      */
     public function test_model_version_create_scaffold_and_get_for_config_error() {
-        global $DB;
-        // for invalid config
-        $existingconfigids = $DB->get_fieldset_select('tool_laaudit_model_configs', 'id', '1=1');
-        $maxconfigid = (sizeof($existingconfigids) > 0) ? max($existingconfigids) : 0;
         $this->expectException(\Exception::class);
-        model_version::create_scaffold_and_get_for_config($maxconfigid + 1);
+        model_version::create_scaffold_and_get_for_config(test_config::get_highest_id() + 1);
     }
 }

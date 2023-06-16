@@ -20,6 +20,9 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/admin/tool/laaudit/classes/model_version.php');
+require_once(__DIR__ . '/fixtures/test_config.php');
+require_once(__DIR__ . '/fixtures/test_model.php');
+require_once(__DIR__ . '/fixtures/test_version.php');
 
 /**
  * Model version __create() test.
@@ -37,49 +40,17 @@ class model_version_create_test extends \advanced_testcase {
     public function test_model_version_create() {
         $this->resetAfterTest(true);
 
-        global $DB;
-
-        // Define some standard model data
-        $name = 'testmodel';
-        $target = '\core_course\analytics\target\course_dropout';
-        $indicators = "[\"\\\\core\\\\analytics\\\\indicator\\\\any_access_after_end\"]";
-        $analysisinterval = '\core\analytics\time_splitting\deciles';
-
-        // Get a valid model id.
-        $validmodelobject = [
-                'name' => $name,
-                'target' => $target,
-                'indicators' => $indicators,
-                'timesplitting' => $analysisinterval,
-                'version' => time(),
-                'timemodified' => time(),
-                'usermodified' => 1,
-        ];
-        $modelid = $DB->insert_record('analytics_models', $validmodelobject);
-
-        // Get a valid config id.
-        $valididconfigobject = [
-                'modelid' => $modelid,
-        ];
-        $configid = $DB->insert_record('tool_laaudit_model_configs', $valididconfigobject);
-
-        // Get a valid version id.
-        $valididversionobject = [
-                'timecreationstarted' => time(),
-                'analysisinterval' => $analysisinterval,
-                'predictionsprocessor' => '\mlbackend_php\processor',
-                'configid' => $configid,
-                'indicators' => $indicators,
-                'relativetestsetsize' => 0.2,
-        ];
-        $versionid = $DB->insert_record('tool_laaudit_model_versions', $valididversionobject);
+        $modelid = test_model::create();
+        $configid = test_config::create($modelid);
+        $versionid = test_version::create($configid);
 
         // Create a model configuration from a config with an existing model
         $version = new model_version($versionid);
         $this->assertEquals($version->get_id(), $versionid);
 
         // Delete model and create a model configuration from a config with a now deleted model
-        $DB->delete_records('analytics_models', ['id' => $modelid]);
+        test_model::delete($modelid);
+
         $version2 = new model_version($versionid);
         $this->assertEquals($version2->get_id(), $versionid);
     }
@@ -90,13 +61,7 @@ class model_version_create_test extends \advanced_testcase {
      * @covers ::tool_laaudit_model_version___create
      */
     public function test_model_version_create_error() {
-        global $DB;
-        // Get a non-existing id
-        $existingversionids = $DB->get_fieldset_select('tool_laaudit_model_versions', 'id', '1=1');
-        $nonexistantversionid = (sizeof($existingversionids) > 0) ? (max($existingversionids) + 1) : 1;
-
         $this->expectException(\dml_missing_record_exception::class);
-
-        new model_configuration($nonexistantversionid);
+        new model_version(test_version::get_highest_id() + 1);
     }
 }

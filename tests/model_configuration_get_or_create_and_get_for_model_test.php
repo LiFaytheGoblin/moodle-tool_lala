@@ -20,6 +20,8 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/admin/tool/laaudit/classes/model_configuration.php');
+require_once(__DIR__ . '/fixtures/test_config.php');
+require_once(__DIR__ . '/fixtures/test_model.php');
 
 /**
  * Model configuration get_or_create_and_get_for_model() test.
@@ -37,27 +39,10 @@ class model_configuration_get_or_create_and_get_for_model_test extends \advanced
     public function test_model_configuration_get_or_create_and_get_for_model() {
         $this->resetAfterTest(true);
 
-        global $DB;
-
-        // Define some standard model data
-        $name = 'testmodel';
-        $target = '\core_course\analytics\target\course_dropout';
-
-        // Get a valid model id.
-        $validmodelobject = [
-                'name' => $name,
-                'target' => $target,
-                'indicators' => "[\"\\\\core\\\\analytics\\\\indicator\\\\any_access_after_end\"]",
-                'timesplitting' => '\core\analytics\time_splitting\deciles',
-                'version' => time(),
-                'timemodified' => time(),
-                'usermodified' => 1,
-        ];
-        $modelid = $DB->insert_record('analytics_models', $validmodelobject);
+        $modelid = test_model::create();
 
         // No config exists yet for the model, so create one
-        $existingconfigids = $DB->get_fieldset_select('tool_laaudit_model_configs', 'id', '1=1');
-        $maxidbeforenewconfigcreation = (sizeof($existingconfigids) > 0) ? max($existingconfigids) : 0;
+        $maxidbeforenewconfigcreation = test_config::get_highest_id();
         $returnedconfigid = model_configuration::get_or_create_and_get_for_model($modelid);
         $this->assertGreaterThan($maxidbeforenewconfigcreation, $returnedconfigid); // A new config has been created and is referenced.
 
@@ -65,7 +50,7 @@ class model_configuration_get_or_create_and_get_for_model_test extends \advanced
         $this->assertEquals($returnedconfigid, $returnedconfigid2); // The existing config is referenced, no new config is created.
 
         // Even though the model is deleted, the correct config record should still be referenced.
-        $DB->delete_records('analytics_models', ['id' => $modelid]);
+        test_model::delete($modelid);
         $returnedconfigid3 = model_configuration::get_or_create_and_get_for_model($modelid);
         $this->assertEquals($returnedconfigid, $returnedconfigid3); // The existing config is referenced, no new config is created.
     }
@@ -76,16 +61,7 @@ class model_configuration_get_or_create_and_get_for_model_test extends \advanced
      * @covers ::tool_laaudit_model_configuration_get_or_create_and_get_for_model
      */
     public function test_model_configuration_get_or_create_and_get_for_model_error() {
-        global $DB;
-        // Get a non-existing modelid (max. existing modelid + 1)
-        $existingmodelidsinconfigs = $DB->get_fieldset_select('tool_laaudit_model_configs', 'modelid', '1=1');
-        $existingmodelidsinmodels = $DB->get_fieldset_select('analytics_models', 'id', '1=1');
-
-        $allmodelids = array_merge($existingmodelidsinconfigs, $existingmodelidsinmodels);
-        $falsemodelid = max($allmodelids) + 1;
-
         $this->expectException(\Exception::class);
-
-        model_configuration::get_or_create_and_get_for_model($falsemodelid);
+        model_configuration::get_or_create_and_get_for_model(test_model::get_highest_id() + 1);
     }
 }

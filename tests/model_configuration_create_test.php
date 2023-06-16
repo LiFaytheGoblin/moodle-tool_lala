@@ -20,6 +20,8 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/admin/tool/laaudit/classes/model_configuration.php');
+require_once(__DIR__ . '/fixtures/test_config.php');
+require_once(__DIR__ . '/fixtures/test_model.php');
 
 /**
  * Model configuration __create() test.
@@ -37,39 +39,18 @@ class model_configuration_create_test extends \advanced_testcase {
     public function test_model_configuration_create() {
         $this->resetAfterTest(true);
 
-        global $DB;
-
-        // Define some standard model data
-        $name = 'testmodel';
-        $target = '\core_course\analytics\target\course_dropout';
-
-        // Get a valid model id.
-        $validmodelobject = [
-                'name' => $name,
-                'target' => $target,
-                'indicators' => "[\"\\\\core\\\\analytics\\\\indicator\\\\any_access_after_end\"]",
-                'timesplitting' => '\core\analytics\time_splitting\deciles',
-                'version' => time(),
-                'timemodified' => time(),
-                'usermodified' => 1,
-        ];
-        $modelid = $DB->insert_record('analytics_models', $validmodelobject);
-
-        // Get a valid config id.
-        $valididconfigobject = [
-                'modelid' => $modelid,
-        ];
-        $configid = $DB->insert_record('tool_laaudit_model_configs', $valididconfigobject);
+        $modelid = test_model::create();
+        $configid = test_config::create($modelid);
 
         // Create a model configuration from a config with an existing model
         $config = new model_configuration($configid);
         $this->assertEquals($config->get_id(), $configid);
         $this->assertEquals($config->get_modelid(), $modelid);
-        $this->assertEquals($config->get_modelname(), $name);
-        $this->assertEquals($config->get_modeltarget(), $target);
+        $this->assertEquals($config->get_modelname(), test_model::NAME);
+        $this->assertEquals($config->get_modeltarget(), test_model::TARGET);
 
         // Delete model and create a model configuration from a config with a now deleted model
-        $DB->delete_records('analytics_models', ['id' => $modelid]);
+        test_model::delete($modelid);
         $config2 = new model_configuration($configid);
         $this->assertEquals($config2->get_id(), $configid);
         $this->assertEquals($config2->get_modelid(), $modelid);
@@ -81,13 +62,7 @@ class model_configuration_create_test extends \advanced_testcase {
      * @covers ::tool_laaudit_model_configuration___create
      */
     public function test_model_configuration_create_error() {
-        global $DB;
-        // Get a non-existing id
-        $existingconfigids = $DB->get_fieldset_select('tool_laaudit_model_configs', 'id', '1=1');
-        $nonexistantconfigid = (sizeof($existingconfigids) > 0) ? (max($existingconfigids) + 1) : 1;
-
         $this->expectException(\dml_missing_record_exception::class);
-
-        new model_configuration($nonexistantconfigid);
+        new model_configuration(test_config::get_highest_id() + 1);
     }
 }

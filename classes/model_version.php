@@ -348,4 +348,8 @@ class model_version {
     public function get_id() {
         return $this->id;
     }
+
+    public function get_dataset() {
+        return $this->dataset;
+    }
 }

@@ -20,6 +20,7 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/admin/tool/laaudit/classes/model_configurations.php');
+require_once(__DIR__ . '/fixtures/test_model.php');
 
 /**
  * Model configurations init_and_get_all_model_config_objs() test
@@ -37,27 +38,15 @@ class model_configurations_init_and_get_all_model_config_objs_test extends \adva
     public function test_model_configurations_init_and_get_all_model_config_objs() {
         $this->resetAfterTest(true);
 
-        global $DB;
-
-        $nmodels = $DB->count_records('analytics_models');
+        $nmodels = test_model::count_models();
         $configs = model_configurations::init_and_get_all_model_config_objs();
         $this->assertEquals($nmodels, sizeOf($configs)); // A config is created for each existing model.
 
-        // Add a model
-        $validmodelobject = [
-                'name' => 'testmodel',
-                'target' => '\core_course\analytics\target\course_dropout',
-                'indicators' => "[\"\\\\core\\\\analytics\\\\indicator\\\\any_access_after_end\"]",
-                'timesplitting' => '\core\analytics\time_splitting\deciles',
-                'version' => time(),
-                'timemodified' => time(),
-                'usermodified' => 1,
-        ];
-        $tobedeletedmodelid = $DB->insert_record('analytics_models', $validmodelobject);
+        $tobedeletedmodelid = test_model::create();
         $configs2 = model_configurations::init_and_get_all_model_config_objs();
         $this->assertEquals($nmodels + 1, sizeOf($configs2)); // A config has been added for the new model.
 
-        $DB->delete_records('analytics_models', ['id' => $tobedeletedmodelid]);
+        test_model::delete($tobedeletedmodelid);
         $configs3 = model_configurations::init_and_get_all_model_config_objs();
         $this->assertEquals($nmodels + 1, sizeOf($configs3)); // Config belonging to deleted model should still be there.
     }

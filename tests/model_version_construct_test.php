@@ -25,17 +25,17 @@ require_once(__DIR__ . '/fixtures/test_model.php');
 require_once(__DIR__ . '/fixtures/test_version.php');
 
 /**
- * Model version __create() test.
+ * Model version __construct() test.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class model_version_create_test extends \advanced_testcase {
+class model_version_construct_test extends \advanced_testcase {
     /**
-     * Check that __create() creates a model version.
+     * Check that __construct() creates a model version.
      *
-     * @covers ::tool_laaudit_model_version___create
+     * @covers ::tool_laaudit_model_version___construct
      */
     public function test_model_version_create() {
         $this->resetAfterTest(true);
@@ -56,9 +56,9 @@ class model_version_create_test extends \advanced_testcase {
     }
 
     /**
-     * Check that __create() throws an error if the provided version id does not exist in tool_laaudit_model_versions.
+     * Check that __construct() throws an error if the provided version id does not exist in tool_laaudit_model_versions.
      *
-     * @covers ::tool_laaudit_model_version___create
+     * @covers ::tool_laaudit_model_version___construct
      */
     public function test_model_version_create_error() {
         $this->expectException(\dml_missing_record_exception::class);

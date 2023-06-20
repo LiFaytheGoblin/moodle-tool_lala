@@ -24,17 +24,17 @@ require_once(__DIR__ . '/fixtures/test_config.php');
 require_once(__DIR__ . '/fixtures/test_model.php');
 
 /**
- * Model configuration __create() test.
+ * Model configuration __construct() test.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class model_configuration_create_test extends \advanced_testcase {
+class model_configuration_construct_test extends \advanced_testcase {
     /**
-     * Check that __create() creates a model configuration.
+     * Check that __construct() creates a model configuration.
      *
-     * @covers ::tool_laaudit_model_configuration___create
+     * @covers ::tool_laaudit_model_configuration___construct
      */
     public function test_model_configuration_create() {
         $this->resetAfterTest(true);
@@ -49,7 +49,7 @@ class model_configuration_create_test extends \advanced_testcase {
         $this->assertEquals($config->get_modelname(), test_model::NAME);
         $this->assertEquals($config->get_modeltarget(), test_model::TARGET);
 
-        // Delete model and create a model configuration from a config with a now deleted model
+        // Delete model and construct a model configuration from a config with a now deleted model
         test_model::delete($modelid);
         $config2 = new model_configuration($configid);
         $this->assertEquals($config2->get_id(), $configid);
@@ -57,9 +57,9 @@ class model_configuration_create_test extends \advanced_testcase {
     }
 
     /**
-     * Check that __create() throws an error if the provided config id does not exist in tool_laaudit_model_configs.
+     * Check that __construct() throws an error if the provided config id does not exist in tool_laaudit_model_configs.
      *
-     * @covers ::tool_laaudit_model_configuration___create
+     * @covers ::tool_laaudit_model_configuration___construct
      */
     public function test_model_configuration_create_error() {
         $this->expectException(\dml_missing_record_exception::class);

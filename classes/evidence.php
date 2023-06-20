@@ -111,6 +111,9 @@ abstract class evidence {
      * @return void
      */
     public function store() {
+        if (!isset($this->filestring)) {
+            throw new \Exception('No data has been serialized for this evidence yet.');
+        }
         $fileinfo = $this->get_file_info();
 
         $fs = get_file_storage();

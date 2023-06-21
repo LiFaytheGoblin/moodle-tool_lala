@@ -26,8 +26,9 @@ namespace tool_laaudit;
 
 defined('MOODLE_INTERNAL') || die();
 class test_evidence extends evidence {
-    const rawdata =  ['a', 'b', 'c'];
-    const datastring = "['a', 'b', 'c']";
+    const RAWDATA =  ['a', 'b', 'c'];
+    const DATASTRING = "['a', 'b', 'c']";
+    const FILETYPE = 'txt';
 
     public static function create(int $versionid) {
         global $DB;
@@ -47,7 +48,7 @@ class test_evidence extends evidence {
      * @return void
      */
     public function collect($options) {
-        $this->data = self::rawdata;
+        $this->data = self::RAWDATA;
     }
 
     /**
@@ -57,7 +58,7 @@ class test_evidence extends evidence {
      * @return void
      */
     public function serialize() {
-        $this->filestring = self::datastring;
+        $this->filestring = self::DATASTRING;
     }
 
     /**
@@ -65,6 +66,6 @@ class test_evidence extends evidence {
      * @return string
      */
     protected function get_file_type() {
-        return '.txt';
+        return self::FILETYPE;
     }
 }

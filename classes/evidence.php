@@ -195,6 +195,10 @@ abstract class evidence {
         return $this->serializedfilelocation;
     }
 
+    public function get_timecollectionfinished() {
+        return $this->timecollectionfinished;
+    }
+
     /**
      * Returns info on the serialized data file on the server.
      * @return array

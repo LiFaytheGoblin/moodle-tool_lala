@@ -23,6 +23,8 @@ require_once(__DIR__ . '/fixtures/test_model.php');
 require_once(__DIR__ . '/fixtures/test_version.php');
 require_once(__DIR__ . '/fixtures/test_evidence.php');
 
+use context_system;
+
 /**
  * Model evidence test.
  *
@@ -75,7 +77,7 @@ class evidence_test extends \advanced_testcase {
         $configid = test_config::create($modelid);
         $versionid = test_version::create($configid);
 
-        // Create a new piece of evidence for the version.
+        // Create a new piece of evidence for the version and store it.
         $evidenceid = test_evidence::create($versionid);
         $evidence = new test_evidence($evidenceid);
 
@@ -83,10 +85,15 @@ class evidence_test extends \advanced_testcase {
         $evidence->serialize();
 
         $evidence->store();
-        $serializedfilelocation = $evidence->get_serializedfilelocation();
-        // todo: read file content
-        $filecontent = '';
-        $this->assertEquals(test_evidence::datastring, $filecontent);
+
+        // Read the file content.
+        $fs = get_file_storage();
+        $file = $fs->get_file(context_system::instance()->id, 'tool_laaudit', 'tool_laaudit', $evidenceid,
+                '/evidence/', 'modelversion' . $versionid . '-evidence' . $evidence->get_name() . $evidenceid . '.' .
+                $evidence::FILETYPE);
+        $contents = $file->get_content();
+
+        $this->assertEquals(test_evidence::DATASTRING, $contents);
     }
 
     /**
@@ -107,5 +114,30 @@ class evidence_test extends \advanced_testcase {
         // Expect that an exception is thrown when trying to store without first collecting evidence.
         $this->expectException(\Exception::class);
         $evidence->store();
+    }
+
+    /**
+     * Check that finish() sets the timecollectionfinished property in the database and field
+     *
+     * @covers ::tool_laaudit_evidence_finish
+     */
+    public function test_evidence_finish() {
+        $this->resetAfterTest(true);
+
+        $modelid = test_model::create();
+        $configid = test_config::create($modelid);
+        $versionid = test_version::create($configid);
+
+        // Create a new piece of evidence for the version and store it.
+        $evidenceid = test_evidence::create($versionid);
+        $evidence = new test_evidence($evidenceid);
+
+        $evidence->finish();
+
+        $this->assertTrue($evidence->get_timecollectionfinished() !== null);
+
+        global $DB;
+        $finished = $DB->get_fieldset_select('tool_laaudit_evidence', 'timecollectionfinished', 'id='.$evidenceid);
+        $this->assertTrue($finished !== null);
     }
 }

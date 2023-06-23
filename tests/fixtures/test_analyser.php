@@ -25,22 +25,21 @@
 namespace tool_laaudit;
 
 defined('MOODLE_INTERNAL') || die();
-class test_course_with_students {
+class test_analyser {
+
     /**
-     * Generates a new course with students, but no activity.
+     * Stores a model in the db and returns a modelid
+     *
+     * @return analyser
      */
-    public static function create($generator, $nstudents=10, $createddaysago=7) {
-        $timestart = time() - (60 * 60 * 24 * $createddaysago);
+    public static function create($modelid) {
+        $options = ['evaluation' => true, 'mode' => 'configuration'];
 
-        $users = [];
-        for ($i = 0; $i < $nstudents; $i++) {
-            $users[] = $generator->create_user();
-        }
-        $course = $generator->create_course(['startdate' => $timestart]);
+        $target = test_model::get_target_instance($modelid);
+        $indicatorinstances = test_model::get_indicator_instances($modelid);
+        $analysisintervalinstanceinstances = test_model::get_analysisinterval_instances($modelid);
 
-
-        foreach ($users as $user) {
-            $generator->enrol_user($user->id, $course->id, null, 'manual', $timestart + 1);
-        }
+        $analyzerclassname = $target->get_analyser_class();
+        return new $analyzerclassname($modelid, $target, $indicatorinstances, $analysisintervalinstanceinstances, $options);
     }
 }

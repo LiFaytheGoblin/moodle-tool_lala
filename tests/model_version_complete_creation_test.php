@@ -51,7 +51,7 @@ class model_version_complete_creation_test extends \advanced_testcase {
      */
     public function test_model_version_complete_creation() {
         // Generate test data
-        test_course_with_students::create($this->getDataGenerator());
+        test_course_with_students::create($this->getDataGenerator(), 10);
 
         // Data is available for gathering
         $this->version->gather_dataset();

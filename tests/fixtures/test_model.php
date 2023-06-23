@@ -25,6 +25,8 @@
 namespace tool_laaudit;
 
 defined('MOODLE_INTERNAL') || die();
+
+use core_analytics\model;
 class test_model {
     const NAME = 'testmodel';
     const TARGET = '\core_course\analytics\target\no_recent_accesses';
@@ -72,5 +74,25 @@ class test_model {
 
         $allmodelids = array_merge($existingmodelidsinconfigs, $existingmodelidsinmodels);
         return max($allmodelids);
+    }
+
+    public static function get_target_instance($modelid) {
+        $moodlemodel = new model($modelid);
+        return $moodlemodel->get_target();
+    }
+
+    public static function get_indicator_instances() {
+        $fullclassnames = json_decode(self::INDICATORS);
+        $indicatorinstances = array();
+        foreach ($fullclassnames as $fullclassname) {
+            $instance = \core_analytics\manager::get_indicator($fullclassname);
+            $indicatorinstances[$fullclassname] = $instance;
+        }
+        return $indicatorinstances;
+    }
+
+    public static function get_analysisinterval_instances() {
+        $analysisintervalinstanceinstance = \core_analytics\manager::get_time_splitting(test_model::ANALYSISINTERVAL);
+        return [$analysisintervalinstanceinstance];
     }
 }

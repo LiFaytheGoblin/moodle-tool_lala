@@ -14,30 +14,36 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_laaudit;
-
-defined('MOODLE_INTERNAL') || die();
-
-global $CFG;
-require_once($CFG->dirroot . '/admin/tool/laaudit/classes/dataset.php');
-require_once(__DIR__ . '/fixtures/test_dataset_evidence.php.php');
-
-
 /**
- * Dataset get_shuffled test.
+ * Test dataset (evidence).
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class dataset_get_shuffled_test extends \advanced_testcase {
-    public function test_dataset_serialize_error_again() {
-        $data = test_dataset_evidence::create();
 
-        $res = dataset::get_shuffled($data);
+namespace tool_laaudit;
 
-        $this->assertFalse(json_encode($data) == json_encode($res));
-        $this->assertEquals(sizeof($data), sizeof($res));
-        $this->assertTrue(str_contains(json_encode($res), json_encode(test_dataset_evidence::get_header())));
+defined('MOODLE_INTERNAL') || die();
+class test_dataset_evidence {
+    /**
+     * Stores a model in the db and returns a modelid
+     *
+     * @return array
+     */
+    public static function create($size=3) {
+        $content = [
+                '0' => self::get_header()
+        ];
+        for($i = 1; $i <= $size; $i++) {
+            $content[$i] = [random_int(0, 1), random_int(0, 1)];
+        }
+        return [
+                test_model::ANALYSISINTERVAL => $content
+        ];
+    }
+
+    public static function get_header() {
+        return [json_decode(test_model::INDICATORS)[0], test_model::TARGET];
     }
 }

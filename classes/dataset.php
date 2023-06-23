@@ -92,7 +92,6 @@ class dataset extends evidence {
                     continue;
                 }
                 $indicatorvaluesstr = implode(',', $results[$id]);
-                //$simpleid = explode('-', $id)[0];
                 $str = $str.$id.','.$indicatorvaluesstr."\n";
             }
         }
@@ -118,7 +117,6 @@ class dataset extends evidence {
      */
     public static function get_shuffled($data) {
         $keys = array_keys((array) $data);
-        if(sizeof($keys) < 2) return $data;
         $key = $keys[0];
         $datawithheader = [];
         foreach ($data as $arr) { // Each analysisinterval has an array.
@@ -126,6 +124,7 @@ class dataset extends evidence {
             $remainingdata = array_slice($arr, 1, null, true);
 
             $sampleids = array_keys($remainingdata);
+            if(sizeof($sampleids) < 2) return $data;
             shuffle($sampleids);
             $shuffleddata = [];
             foreach ($sampleids as $id) {

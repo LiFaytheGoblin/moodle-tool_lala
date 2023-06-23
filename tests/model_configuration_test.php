@@ -24,13 +24,48 @@ require_once(__DIR__ . '/fixtures/test_config.php');
 require_once(__DIR__ . '/fixtures/test_model.php');
 
 /**
- * Model configuration get_or_create_and_get_for_model() test.
+ * Model configuration test.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class model_configuration_get_or_create_and_get_for_model_test extends \advanced_testcase {
+class model_configuration__test extends \advanced_testcase {
+    /**
+     * Check that __construct() creates a model configuration.
+     *
+     * @covers ::tool_laaudit_model_configuration___construct
+     */
+    public function test_model_configuration_construct() {
+        $this->resetAfterTest(true);
+
+        $modelid = test_model::create();
+        $configid = test_config::create($modelid);
+
+        // Create a model configuration from a config with an existing model
+        $config = new model_configuration($configid);
+        $this->assertEquals($config->get_id(), $configid);
+        $this->assertEquals($config->get_modelid(), $modelid);
+        $this->assertEquals($config->get_modelname(), test_model::NAME);
+        $this->assertEquals($config->get_modeltarget(), test_model::TARGET);
+
+        // Delete model and construct a model configuration from a config with a now deleted model
+        test_model::delete($modelid);
+        $config2 = new model_configuration($configid);
+        $this->assertEquals($config2->get_id(), $configid);
+        $this->assertEquals($config2->get_modelid(), $modelid);
+    }
+
+    /**
+     * Check that __construct() throws an error if the provided config id does not exist in tool_laaudit_model_configs.
+     *
+     * @covers ::tool_laaudit_model_configuration___construct
+     */
+    public function test_model_configuration_construct_error() {
+        $this->expectException(\dml_missing_record_exception::class);
+        new model_configuration(test_config::get_highest_id() + 1);
+    }
+
     /**
      * Check that get_or_create_and_get_for_model() references and creates correct configs.
      *

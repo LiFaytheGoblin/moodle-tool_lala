@@ -23,15 +23,15 @@ require_once($CFG->dirroot . '/admin/tool/laaudit/classes/model_configurations.p
 require_once(__DIR__ . '/fixtures/test_model.php');
 
 /**
- * Model configurations init_and_get_all_model_config_objs() test
+ * Model configurations test
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class model_configurations_init_and_get_all_model_config_objs_test extends \advanced_testcase {
+class _model_configurations_test extends \advanced_testcase {
     /**
-     * Check that __create() creates a model configuration.
+     * Check that init_and_get_all_model_config_objs() creates model configurations and returns them.
      *
      * @covers ::tool_laaudit_model_model_configurations_init_and_get_all_model_config_objs
      */

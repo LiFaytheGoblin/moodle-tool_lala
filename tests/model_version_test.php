@@ -25,13 +25,13 @@ require_once(__DIR__ . '/fixtures/test_model.php');
 require_once(__DIR__ . '/fixtures/test_version.php');
 
 /**
- * Model version __construct() test.
+ * Model version __construct() and create_scaffold_and_get_for_config() test.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class model_version_construct_test extends \advanced_testcase {
+class model_version__test extends \advanced_testcase {
     /**
      * Check that __construct() creates a model version.
      *
@@ -63,5 +63,38 @@ class model_version_construct_test extends \advanced_testcase {
     public function test_model_version_create_error() {
         $this->expectException(\dml_missing_record_exception::class);
         new model_version(test_version::get_highest_id() + 1);
+    }
+
+    /**
+     * Check that create_scaffold_and_get_for_config() references and creates correct model version scaffolds.
+     *
+     * @covers ::tool_laaudit_model_version_create_scaffold_and_get_for_config
+     */
+    public function test_model_version_create_scaffold_and_get_for_config() {
+        $this->resetAfterTest(true);
+        $modelid = test_model::create();
+
+        // create a config
+        $configid = test_config::create($modelid);
+
+        // for valid config & model
+        $maxidbeforenewversioncreation = test_version::get_highest_id();
+        $versionid = model_version::create_scaffold_and_get_for_config($configid);
+        $this->assertGreaterThan($maxidbeforenewversioncreation, $versionid);
+
+        // for valid config & deleted model
+        test_model::delete($modelid);
+        $versionid2 = model_version::create_scaffold_and_get_for_config($configid);
+        $this->assertGreaterThan($maxidbeforenewversioncreation, $versionid2);
+    }
+
+    /**
+     * Check that create_scaffold_and_get_for_config() throws an error if the provided config id does not exist.
+     *
+     * @covers ::tool_laaudit_model_version_create_scaffold_and_get_for_config
+     */
+    public function test_model_version_create_scaffold_and_get_for_config_error() {
+        $this->expectException(\Exception::class);
+        model_version::create_scaffold_and_get_for_config(test_config::get_highest_id() + 1);
     }
 }

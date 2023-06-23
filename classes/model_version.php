@@ -253,7 +253,6 @@ class model_version {
         $class = 'tool_laaudit\\'.$evidencetype;
 
         $evidence = call_user_func_array($class.'::create_scaffold_and_get_for_version', [$this->id]);
-        $this->evidence[$evidencetype] = $evidence->get_id(); // Add to evidence array.
 
         try {
             $evidence->collect($options);
@@ -267,6 +266,7 @@ class model_version {
         $evidence->store();
         $evidence->finish();
 
+        $this->evidence[$evidencetype] = $evidence->get_id(); // Add to evidence array.
         $fieldname = str_replace('_', '', $evidencetype);
         $this->$fieldname = $evidence->get_raw_data();
     }

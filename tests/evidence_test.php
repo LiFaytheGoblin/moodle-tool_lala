@@ -140,4 +140,31 @@ class evidence_test extends \advanced_testcase {
         $finished = $DB->get_fieldset_select('tool_laaudit_evidence', 'timecollectionfinished', 'id='.$evidenceid);
         $this->assertTrue($finished !== null);
     }
+
+    /**
+     * Check that abort() deletes the evidence from the database
+     *
+     * @covers ::tool_laaudit_evidence_abort
+     */
+    public function test_evidence_abort() {
+        $this->resetAfterTest(true);
+
+        $modelid = test_model::create();
+        $configid = test_config::create($modelid);
+        $versionid = test_version::create($configid);
+
+        // Create a new piece of evidence for the version and store it.
+        $evidenceid = test_evidence::create($versionid);
+        $evidence = new test_evidence($evidenceid);
+
+        // get db entry
+        global $DB;
+        $resultid = $DB->get_fieldset_select('tool_laaudit_evidence', 'id', 'id='.$evidenceid)[0];
+        $this->assertEquals($evidenceid, $resultid);
+
+        $evidence->abort();
+
+        $resultids = $DB->get_fieldset_select('tool_laaudit_evidence', 'id', 'id='.$evidenceid);
+        $this->assertEquals([], $resultids);
+    }
 }

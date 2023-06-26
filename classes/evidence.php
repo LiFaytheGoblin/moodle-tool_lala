@@ -203,7 +203,7 @@ abstract class evidence {
      * Returns info on the serialized data file on the server.
      * @return array
      */
-    protected function get_file_info() {
+    public function get_file_info() {
         return [
                 'contextid' => context_system::instance()->id,
                 'component' => 'tool_laaudit',

@@ -95,6 +95,18 @@ class dataset_test extends \advanced_testcase {
         $this->assertEquals($expectedheadersize, sizeof($resheader));
 
         $this->assertEquals(sizeof($resdata), $nstudents * floor($createddaysago / 3));
+
+        // Test serialize()
+        $this->evidence->serialize();
+
+        $serializedstring = $this->evidence->get_serialized_data();
+
+        $expectedheadersize = sizeof(test_model::get_indicator_instances()) + 1;
+        $this->assertTrue(strlen($serializedstring) >= $expectedheadersize); // The string should contain at least a header.
+        $this->assertTrue(str_contains($serializedstring, ',')); // the string should have commas.
+
+        $this->expectException(\Exception::class); // Expect exception if no data collected yet.
+        $this->evidence->serialize();
     }
 
     public function test_dataset_collect_error_again() {
@@ -144,53 +156,7 @@ class dataset_test extends \advanced_testcase {
         $this->assertEquals(sizeof($resdata), $nstudents * floor($createddaysago / 3));
     }
 
-    /**
-     * Check that serialize returns data
-     *
-     * @covers ::tool_laaudit_dataset_serialize
-     *
-     * @dataProvider tool_laaudit_get_source_data_parameters_provider
-     * @param int $nstudents amount of students
-     * @param int $createddaysago how many days ago a sample course should have been started
-     */
-    public function test_dataset_serialize($nstudents, $createddaysago) {
-        test_course_with_students::create($this->getDataGenerator(), $nstudents, $createddaysago);
-
-        $options=[
-                'contexts' => [],
-                'analyser' => test_analyser::create($this->modelid),
-                'modelid' => $this->modelid,
-        ];
-        $this->evidence->collect($options);
-
-        $this->evidence->serialize();
-
-        $serializedstring = $this->evidence->get_serialized_data();
-
-        $expectedheadersize = sizeof(test_model::get_indicator_instances()) + 1;
-        $this->assertTrue(strlen($serializedstring) >= $expectedheadersize); // The string should contain at least a header.
-        $this->assertTrue(str_contains($serializedstring, ',')); // the string should have commas.
-    }
-
     public function test_dataset_serialize_error_nodata() {
-        $this->expectException(\Exception::class); // Expect exception if no data collected yet.
-        $this->evidence->serialize();
-    }
-
-    public function test_dataset_serialize_error_again() {
-        $nstudents = 1;
-        $createddaysago = 3;
-        test_course_with_students::create($this->getDataGenerator(), $nstudents, $createddaysago);
-
-        $options=[
-                'contexts' => [],
-                'analyser' => test_analyser::create($this->modelid),
-                'modelid' => $this->modelid,
-        ];
-        $this->evidence->collect($options);
-
-        $this->evidence->serialize();
-
         $this->expectException(\Exception::class); // Expect exception if no data collected yet.
         $this->evidence->serialize();
     }

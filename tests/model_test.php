@@ -25,6 +25,8 @@ require_once(__DIR__ . '/fixtures/test_model.php');
 require_once(__DIR__ . '/fixtures/test_version.php');
 require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
 
+use Phpml\ModelManager;
+
 /**
  * Model test.
  *
@@ -86,6 +88,20 @@ class model_test extends \advanced_testcase {
         $testx = test_dataset_evidence::create_x($size);
         $predictedlabels = $trained_model->predict($testx);
         $this->assertEquals($size, sizeof($predictedlabels));
+
+        // Test serialize()
+        $this->evidence->serialize();
+
+        // store the serialized data
+        $content = $this->evidence->get_serialized_data();
+        $path = '\testfiles\testmodel'.$this->modelid.'.ser';
+        file_put_contents($path, $content);
+        $this->assertTrue(file_exists($path));
+        $this->assertTrue(is_readable($path));
+
+        $importer = new ModelManager();
+        $imported = $importer->restoreFromFile($path);
+        $this->assertTrue($imported != null);
     }
 
     public function test_model_collect_error_again() {
@@ -116,5 +132,32 @@ class model_test extends \advanced_testcase {
         $trained_model = $this->evidence->get_raw_data();
         // Check that the $data property is set to a LogisticRegression model.
         $this->assertEquals('Phpml\Classification\Linear\LogisticRegression', get_class($trained_model));
+    }
+
+    public function test_dataset_serialize_error_nodata() {
+        $this->expectException(\Exception::class); // Expect exception if no data collected yet.
+        $this->evidence->serialize();
+    }
+
+    public function test_model_serialize_error_again() {
+        $dataset = test_dataset_evidence::create(3);
+
+        $options=[
+                'data' => $dataset,
+                'predictor' => $this->predictor,
+        ];
+        $this->evidence->collect($options);
+
+        $trained_model = $this->evidence->get_raw_data();
+
+        $testx = test_dataset_evidence::create_x(3);
+        $trained_model->predict($testx);
+
+        // Test serialize()
+        $this->evidence->serialize();
+
+        // Expect error if trying to serialize again.
+        $this->expectException(\Exception::class); // Expect exception if no data collected yet.
+        $this->evidence->serialize();
     }
 }

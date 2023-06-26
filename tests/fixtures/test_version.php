@@ -24,6 +24,8 @@
 
 namespace tool_laaudit;
 
+use \core_analytics\manager;
+
 defined('MOODLE_INTERNAL') || die();
 class test_version {
     const RELATIVETESTSETSIZE = 0.2;
@@ -57,5 +59,11 @@ class test_version {
         global $DB;
         $error = $DB->get_fieldset_select('tool_laaudit_model_versions', 'error', 'id='.$versionid)[0];
         return isset($error);
+    }
+
+    public static function get_predictor(int $versionid) {
+        global $DB;
+        $predictionsprocessorstring = $DB->get_fieldset_select('tool_laaudit_model_versions', 'predictionsprocessor', 'id='.$versionid)[0];
+        return manager::get_predictions_processor($predictionsprocessorstring);
     }
 }

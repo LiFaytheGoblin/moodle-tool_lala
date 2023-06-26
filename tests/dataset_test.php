@@ -72,8 +72,8 @@ class dataset_test extends \advanced_testcase {
      * @covers ::tool_laaudit_dataset_collect
      *
      * @dataProvider tool_laaudit_get_source_data_parameters_provider
-     * @param string|null $country User country
-     * @param string $langstring Greetings message language string
+     * @param int $nstudents amount of students
+     * @param int $createddaysago how many days ago a sample course should have been started
      */
     public function test_dataset_collect($nstudents, $createddaysago) {
         test_course_with_students::create($this->getDataGenerator(), $nstudents, $createddaysago);

@@ -31,12 +31,15 @@ class test_dataset_evidence {
      *
      * @return array
      */
-    public static function create($size=3) {
+    public static function create($size = 3) {
+        $header = self::get_header();
         $content = [
-                '0' => self::get_header()
+                '0' => $header
         ];
         for($i = 1; $i <= $size; $i++) {
-            $content[$i] = [random_int(0, 1), random_int(0, 1)];
+            foreach($header as $ignored) {
+                $content[$i][] = random_int(0, 1);
+            }
         }
         return [
                 test_model::ANALYSISINTERVAL => $content
@@ -44,6 +47,19 @@ class test_dataset_evidence {
     }
 
     public static function get_header() {
-        return [json_decode(test_model::INDICATORS)[0], test_model::TARGET];
+        $header = json_decode(test_model::INDICATORS);
+        $header[] = test_model::TARGET;
+        return $header;
+    }
+
+    public static function create_x($size = 3) {
+        $indicators = json_decode(test_model::INDICATORS);
+        $xs = [];
+        for($i = 0; $i < $size; $i++) {
+            foreach($indicators as $ignored) {
+                $xs[$i][] = random_int(0, 1);
+            }
+        }
+        return $xs;
     }
 }

@@ -38,7 +38,6 @@ class test_course_with_students {
         }
         $course = $generator->create_course(['startdate' => $timestart]);
 
-
         foreach ($users as $user) {
             $generator->enrol_user($user->id, $course->id, null, 'manual', $timestart + 1);
         }

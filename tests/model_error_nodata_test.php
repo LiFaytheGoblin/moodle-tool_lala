@@ -32,14 +32,14 @@ require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class model_test extends \advanced_testcase {
+class model_error_nodata_test extends \advanced_testcase {
     private $evidence;
     private $predictor;
     protected function setUp(): void {
         $this->resetAfterTest(true);
 
-        $this->modelid = test_model::create();
-        $configid = test_config::create($this->modelid);
+        $modelid = test_model::create();
+        $configid = test_config::create($modelid);
         $versionid = test_version::create($configid);
 
         $this->evidence = model::create_scaffold_and_get_for_version($versionid);
@@ -47,17 +47,20 @@ class model_test extends \advanced_testcase {
         $this->predictor = test_version::get_predictor($versionid);
     }
     /**
-     * Data provider for {@see model_collect()}.
+     * Data provider for {@see test_model_error_nodata()}.
      *
      * @return array List of source data information
      */
     public function tool_laaudit_get_source_data_parameters_provider() {
         return [
-                'Min datapoints' => [
-                        'ndatapoints' => 3
+                'No dataset' => [
+                        'dataset' => []
                 ],
-                'Some datapoints' => [
-                        'ndatapoints' => 10,
+                'Just header' => [
+                        'dataset' => test_dataset_evidence::create(0)
+                ],
+                'Too small dataset' => [
+                        'dataset' => test_dataset_evidence::create(1)
                 ]
         ];
     }
@@ -69,52 +72,12 @@ class model_test extends \advanced_testcase {
      * @dataProvider tool_laaudit_get_source_data_parameters_provider
      * @param int $ndatapoints amount of datapoints in training data
      */
-    public function test_model_collect($ndatapoints) {
-        $dataset = test_dataset_evidence::create($ndatapoints);
-
+    public function test_model_error_nodata($dataset) {
         $options=[
                 'data' => $dataset,
                 'predictor' => $this->predictor,
         ];
+        $this->expectException(\Exception::class); // Expect exception if trying to collect but no(t enough) data exists.
         $this->evidence->collect($options);
-
-        $trained_model = $this->evidence->get_raw_data();
-        // Check that the $data property is set to a TRAINED LogisticRegression model.
-        $this->assertEquals('Phpml\Classification\Linear\LogisticRegression', get_class($trained_model));
-
-        $size = 3;
-        $testx = test_dataset_evidence::create_x($size);
-        $predictedlabels = $trained_model->predict($testx);
-        $this->assertEquals($size, sizeof($predictedlabels));
-    }
-
-    public function test_model_collect_error_again() {
-        $dataset = test_dataset_evidence::create();
-
-        $options=[
-                'data' => $dataset,
-                'predictor' => $this->predictor,
-        ];
-        $this->evidence->collect($options);
-
-        $this->expectException(\Exception::class); // Expect exception if trying to collect again.
-        $this->evidence->collect($options);
-    }
-
-    public function test_model_collect_deletedmodel() {
-        test_model::delete($this->modelid);
-
-        $dataset = test_dataset_evidence::create();
-
-        $options=[
-                'data' => $dataset,
-                'predictor' => $this->predictor,
-        ];
-
-        $this->evidence->collect($options);
-
-        $trained_model = $this->evidence->get_raw_data();
-        // Check that the $data property is set to a LogisticRegression model.
-        $this->assertEquals('Phpml\Classification\Linear\LogisticRegression', get_class($trained_model));
     }
 }

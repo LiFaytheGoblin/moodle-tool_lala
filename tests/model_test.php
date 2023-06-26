@@ -26,7 +26,7 @@ require_once(__DIR__ . '/fixtures/test_version.php');
 require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
 
 use Phpml\ModelManager;
-
+use Phpml\Estimator;
 /**
  * Model test.
  *
@@ -89,19 +89,23 @@ class model_test extends \advanced_testcase {
         $predictedlabels = $trained_model->predict($testx);
         $this->assertEquals($size, sizeof($predictedlabels));
 
-        // Test serialize()
+        // Test serialize().
         $this->evidence->serialize();
 
-        // store the serialized data
+        // Store the serialized data.
         $content = $this->evidence->get_serialized_data();
         $path = '\testfiles\testmodel'.$this->modelid.'.ser';
         file_put_contents($path, $content);
-        $this->assertTrue(file_exists($path));
-        $this->assertTrue(is_readable($path));
 
+        // Verify that serialized data is valid (it is if we can restore the classifier from it, and get predictions from it).
         $importer = new ModelManager();
         $imported = $importer->restoreFromFile($path);
         $this->assertTrue($imported != null);
+        $this->assertTrue($imported instanceof Estimator);
+        $size = 3;
+        $testxforimported = test_dataset_evidence::create_x($size);
+        $predictedlabelsforimported = $imported->predict($testxforimported);
+        $this->assertEquals($size, sizeof($predictedlabelsforimported));
     }
 
     public function test_model_collect_error_again() {

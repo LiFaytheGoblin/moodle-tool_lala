@@ -29,13 +29,13 @@ require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
 
 
 /**
- * Training dataset test.
+ * Test dataset test.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class training_dataset_test extends \advanced_testcase {
+class test_dataset_test extends \advanced_testcase {
     private $evidence;
     private $modelid;
     protected function setUp(): void {
@@ -45,10 +45,10 @@ class training_dataset_test extends \advanced_testcase {
         $configid = test_config::create($this->modelid);
         $versionid = test_version::create($configid);
 
-        $this->evidence = training_dataset::create_scaffold_and_get_for_version($versionid);
+        $this->evidence = test_dataset::create_scaffold_and_get_for_version($versionid);
     }
     /**
-     * Data provider for {@see test_training_dataset_collect()}.
+     * Data provider for {@see test_test_dataset_collect()}.
      *
      * @return array List of source data information
      */
@@ -57,35 +57,35 @@ class training_dataset_test extends \advanced_testcase {
                 'Min dataset, min testsize' => [
                         'data' => test_dataset_evidence::create(),
                         'testsize' => 0.3,
-                        'expectedressize' => 2
+                        'expectedressize' => 1
                 ],
                 'Small dataset, some testsize' => [
                         'data' => test_dataset_evidence::create(7),
                         'testsize' => 0.3,
-                        'expectedressize' => 5
+                        'expectedressize' => 2
                 ],
                 'Small dataset, smaller testsize' => [
                         'data' => test_dataset_evidence::create(7),
                         'testsize' => 0.2,
-                        'expectedressize' => 6
+                        'expectedressize' => 1
                 ],
                 'Some dataset, some testsize' => [
                         'data' => test_dataset_evidence::create(10),
                         'testsize' => 0.2,
-                        'expectedressize' => 8
+                        'expectedressize' => 2
                 ],
         ];
     }
     /**
-     * Check that collect gathers all necessary data
+     * Check that collect gathers all necessary data.
      *
-     * @covers ::tool_laaudit_training_dataset_collect
+     * @covers ::tool_laaudit_test_dataset_collect
      *
      * @dataProvider tool_laaudit_get_source_data_parameters_provider
-     * @param string|null $country User country
-     * @param string $langstring Greetings message language string
+     * @param array $data set
+     * @param float $testsize portion of the dataset to be used as test data
      */
-    public function test_training_dataset_collect($data, $testsize, $expectedressize) {
+    public function test_test_dataset_collect($data, $testsize, $expectedressize) {
         $options=[
             'data' => $data,
             'testsize' => $testsize,
@@ -106,9 +106,9 @@ class training_dataset_test extends \advanced_testcase {
     /**
      * Check that collect throws an error if trying to call it twice for the same object.
      *
-     * @covers ::tool_laaudit_training_dataset_collect
+     * @covers ::tool_laaudit_test_dataset_collect
      */
-    public function test_training_dataset_collect_error_again() {
+    public function test_test_dataset_collect_error_again() {
         $options=[
                 'data' => test_dataset_evidence::create(3),
                 'testsize' => 0.2,

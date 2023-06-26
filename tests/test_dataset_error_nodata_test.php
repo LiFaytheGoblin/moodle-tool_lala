@@ -29,13 +29,13 @@ require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
 
 
 /**
- * Training dataset test.
+ * Test dataset test.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class training_dataset_error_nodata_test extends \advanced_testcase {
+class test_dataset_error_nodata_test extends \advanced_testcase {
     private $evidence;
     private $modelid;
     protected function setUp(): void {
@@ -45,10 +45,10 @@ class training_dataset_error_nodata_test extends \advanced_testcase {
         $configid = test_config::create($this->modelid);
         $versionid = test_version::create($configid);
 
-        $this->evidence = training_dataset::create_scaffold_and_get_for_version($versionid);
+        $this->evidence = test_dataset::create_scaffold_and_get_for_version($versionid);
     }
     /**
-     * Data provider for {@see test_training_dataset_collect()}.
+     * Data provider for {@see test_dataset_collect()}.
      *
      * @return array List of source data information
      */
@@ -71,13 +71,13 @@ class training_dataset_error_nodata_test extends \advanced_testcase {
     /**
      * Check that collect throws error if not enough data available.
      *
-     * @covers ::tool_laaudit_training_dataset_collect
+     * @covers ::tool_laaudit_test_dataset_collect
      *
      * @dataProvider tool_laaudit_get_source_data_parameters_provider
      * @param array $data set
      * @param float $testsize portion of the dataset to be used as test data
      */
-    public function test_training_dataset_error_nodata($data, $testsize) {
+    public function test_test_dataset_error_nodata($data, $testsize) {
         $options=[
             'data' => $data,
             'testsize' => $testsize,

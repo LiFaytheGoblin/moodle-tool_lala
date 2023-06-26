@@ -35,17 +35,19 @@ require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class training_dataset_test extends \advanced_testcase {
+class predictions_dataset_test extends \advanced_testcase {
     private $evidence;
-    private $modelid;
+    private $predictor;
     protected function setUp(): void {
         $this->resetAfterTest(true);
 
-        $this->modelid = test_model::create();
-        $configid = test_config::create($this->modelid);
+        $modelid = test_model::create();
+        $configid = test_config::create($modelid);
         $versionid = test_version::create($configid);
 
-        $this->evidence = training_dataset::create_scaffold_and_get_for_version($versionid);
+        $this->evidence = predictions_dataset::create_scaffold_and_get_for_version($versionid);
+
+        $this->predictor = test_version::get_predictor($versionid);
     }
     /**
      * Data provider for {@see test_training_dataset_collect()}.
@@ -54,26 +56,12 @@ class training_dataset_test extends \advanced_testcase {
      */
     public function tool_laaudit_get_source_data_parameters_provider() {
         return [
-                'Min dataset, min testsize' => [
-                        'data' => test_dataset_evidence::create(),
-                        'testsize' => 0.3,
-                        'expectedressize' => 2
+                'Min datapoints' => [
+                        'ndatapoints' => 1
                 ],
-                'Small dataset, some testsize' => [
-                        'data' => test_dataset_evidence::create(7),
-                        'testsize' => 0.3,
-                        'expectedressize' => 5
-                ],
-                'Small dataset, smaller testsize' => [
-                        'data' => test_dataset_evidence::create(7),
-                        'testsize' => 0.2,
-                        'expectedressize' => 6
-                ],
-                'Some dataset, some testsize' => [
-                        'data' => test_dataset_evidence::create(10),
-                        'testsize' => 0.2,
-                        'expectedressize' => 8
-                ],
+                'Some datapoints' => [
+                        'ndatapoints' => 3,
+                ]
         ];
     }
     /**
@@ -82,38 +70,30 @@ class training_dataset_test extends \advanced_testcase {
      * @covers ::tool_laaudit_training_dataset_collect
      *
      * @dataProvider tool_laaudit_get_source_data_parameters_provider
-     * @param array $data set
-     * @param float $testsize portion of the dataset to be used for testing
-     * @param number $expectedressize absolute nr. of datapoints to be expected for training
+     * @param $ndatapoints  amount of datapoints in training data
      */
-    public function test_training_dataset_collect($data, $testsize, $expectedressize) {
+    public function test_predictions_dataset_collect($ndatapoints) {
         $options=[
-            'data' => $data,
-            'testsize' => $testsize,
+                'model' => $this->predictor, //Nope, need to hand over a trained model (LogisticRegression), not a predictor
+                'data' => test_dataset_evidence::create($ndatapoints),
         ];
         $this->evidence->collect($options);
 
         $rawdata = $this->evidence->get_raw_data();
 
-        $res = $rawdata[test_model::ANALYSISINTERVAL];
-        $resheader = array_slice($res, 0, 1, true)[0];
-        $resdata = array_slice($res, 1, null, true);
-
-        $expectedheadersize = sizeof(test_model::get_indicator_instances()) + 1; // The header should contain indicator and target names.
-        $this->assertEquals($expectedheadersize, sizeof($resheader));
-
-        $this->assertEquals($expectedressize, sizeof($resdata));
+        // todo: verify rawdata
     }
     /**
      * Check that collect throws an error if trying to call it twice for the same object.
      *
      * @covers ::tool_laaudit_training_dataset_collect
      */
-    public function test_training_dataset_collect_error_again() {
+    public function test_predictions_dataset_collect_error_again() {
         $options=[
+                'model' => $this->predictor,
                 'data' => test_dataset_evidence::create(3),
-                'testsize' => 0.2,
         ];
+        $this->assertEquals('Phpml\Classification\Linear\LogisticRegression', get_class($this->predictor));
         $this->evidence->collect($options);
 
         $this->expectException(\Exception::class); // Expect exception if trying to collect again.

@@ -83,7 +83,8 @@ class test_dataset_test extends \advanced_testcase {
      *
      * @dataProvider tool_laaudit_get_source_data_parameters_provider
      * @param array $data set
-     * @param float $testsize portion of the dataset to be used as test data
+     * @param float $testsize portion of the dataset to be used for testing
+     * @param number $expectedressize absolute nr. of datapoints to be expected for training
      */
     public function test_test_dataset_collect($data, $testsize, $expectedressize) {
         $options=[

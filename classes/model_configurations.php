@@ -35,19 +35,26 @@ class model_configurations {
     /**
      * Collect all model configuration objects.
      *
-     * @return array of model config objects
+     * @return object[] of model config objects
      */
-    public static function init_and_get_all_model_config_objs() {
+    public static function init_and_get_all_model_config_objs(): array {
         global $DB;
 
-        $modelids = $DB->get_fieldset_select('analytics_models', 'id', '1=1'); // Todo: only check non-static models?
-        $modelconfigs = [];
+        // Get all existing model configs.
+        $modelconfigs = $DB->get_records('tool_laaudit_model_configs');
 
-        foreach ($modelids as $modelid) {
-            $configid = model_configuration::get_or_create_and_get_for_model($modelid);
+        // Add configs for new models/ models that have not received a config entry yet.
+        // Can we use something else than modelid? The version is stored somewhere I think?
+        $modelidsinconfigtable = $DB->get_fieldset_select('tool_laaudit_model_configs', 'modelid', '1=1');
+        $modelidsinanalyticsmodelstabel = $DB->get_fieldset_select('analytics_models', 'id', '1=1');
+        $missingmodelids = array_diff($modelidsinanalyticsmodelstabel, $modelidsinconfigtable);
+        foreach ($missingmodelids as $missingmodelid) {
+            $configid = model_configuration::create_and_get_for_model($missingmodelid);
             $modelconfig = new model_configuration($configid);
             $modelconfigs[] = $modelconfig->get_model_config_obj();
         }
+
+        // If a model has changed indicators, create a new config for it.
 
         return $modelconfigs;
     }

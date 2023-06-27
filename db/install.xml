@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="admin/tool/laaudit/db" VERSION="20230328" COMMENT="XMLDB file for Moodle admin/tool/laaudit"
+<XMLDB PATH="admin/tool/laaudit/db" VERSION="20230627" COMMENT="XMLDB file for Moodle admin/tool/laaudit"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
 >
@@ -7,11 +7,13 @@
         <TABLE NAME="tool_laaudit_model_configs" COMMENT="Model configurations (immutable model properties) derived from analytics_models">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" DEFAULT="default" SEQUENCE="false" COMMENT="Name of the model, 'model' + modelid if none was given by the original model"/>
                 <FIELD NAME="modelid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="target" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-                <KEY NAME="modelid" TYPE="unique" FIELDS="modelid"/>
             </KEYS>
         </TABLE>
         <TABLE NAME="tool_laaudit_model_versions" COMMENT="Versions of model configurations">

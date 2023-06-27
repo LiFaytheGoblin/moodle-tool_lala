@@ -58,10 +58,10 @@ class model_configuration implements templatable, renderable {
         // Add info about the model configuration.
         $data->id = $this->modelconfig->id;
         $data->modelid = $this->modelconfig->modelid;
-        $data->modelname = $this->modelconfig->modelname;
+        $data->name = $this->modelconfig->name;
 
-        $modeltargetnameparts = explode('\\', $this->modelconfig->modeltarget);
-        $data->modeltarget = end($modeltargetnameparts);
+        $targetnameparts = explode('\\', $this->modelconfig->target);
+        $data->target = end($targetnameparts);
 
         $modelanalysabletypenameparts = explode('\\', $this->modelconfig->modelanalysabletype);
         $data->modelanalysabletype = end($modelanalysabletypenameparts);

@@ -30,7 +30,7 @@ require_once(__DIR__ . '/fixtures/test_model.php');
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class model_configuration__test extends \advanced_testcase {
+class model_configuration_test extends \advanced_testcase {
     /**
      * Check that __construct() creates a model configuration.
      *
@@ -46,8 +46,8 @@ class model_configuration__test extends \advanced_testcase {
         $config = new model_configuration($configid);
         $this->assertEquals($config->get_id(), $configid);
         $this->assertEquals($config->get_modelid(), $modelid);
-        $this->assertEquals($config->get_modelname(), test_model::NAME);
-        $this->assertEquals($config->get_modeltarget(), test_model::TARGET);
+        $this->assertEquals($config->get_name(), test_model::NAME);
+        $this->assertEquals($config->get_target(), test_model::TARGET);
 
         // Delete model and construct a model configuration from a config with a now deleted model
         test_model::delete($modelid);
@@ -67,27 +67,28 @@ class model_configuration__test extends \advanced_testcase {
     }
 
     /**
-     * Check that get_or_create_and_get_for_model() references and creates correct configs.
+     * Check that create_and_get_for_model() references and creates correct configs.
      *
      * @covers ::tool_laaudit_model_configuration_get_or_create_and_get_for_model
      */
-    public function test_model_configuration_get_or_create_and_get_for_model() {
+    public function test_model_configuration_create_and_get_for_model() {
         $this->resetAfterTest(true);
 
         $modelid = test_model::create();
 
         // No config exists yet for the model, so create one
         $maxidbeforenewconfigcreation = test_config::get_highest_id();
-        $returnedconfigid = model_configuration::get_or_create_and_get_for_model($modelid);
+        $returnedconfigid = model_configuration::create_and_get_for_model($modelid);
         $this->assertGreaterThan($maxidbeforenewconfigcreation, $returnedconfigid); // A new config has been created and is referenced.
-
-        $returnedconfigid2 = model_configuration::get_or_create_and_get_for_model($modelid);
-        $this->assertEquals($returnedconfigid, $returnedconfigid2); // The existing config is referenced, no new config is created.
 
         // Even though the model is deleted, the correct config record should still be referenced.
         test_model::delete($modelid);
-        $returnedconfigid3 = model_configuration::get_or_create_and_get_for_model($modelid);
+        $returnedconfigid3 = model_configuration::create_and_get_for_model($modelid);
         $this->assertEquals($returnedconfigid, $returnedconfigid3); // The existing config is referenced, no new config is created.
+
+        // We can not create a config again if it already exists.
+        $returnedconfigid2 = model_configuration::create_and_get_for_model($modelid);
+        $this->assertEquals($returnedconfigid, $returnedconfigid2); // The existing config is referenced, no new config is created.
     }
 
     /**
@@ -95,8 +96,8 @@ class model_configuration__test extends \advanced_testcase {
      *
      * @covers ::tool_laaudit_model_configuration_get_or_create_and_get_for_model
      */
-    public function test_model_configuration_get_or_create_and_get_for_model_error() {
+    public function test_model_configuration_create_and_get_for_model_error() {
         $this->expectException(\Exception::class);
-        model_configuration::get_or_create_and_get_for_model(test_model::get_highest_id() + 1);
+        model_configuration::create_and_get_for_model(test_model::get_highest_id() + 1);
     }
 }

@@ -25,6 +25,7 @@
 namespace tool_laaudit;
 
 use core_analytics\model;
+use core_analytics\manager;
 use stdClass;
 
 /**
@@ -35,10 +36,10 @@ class model_configuration {
     private $id;
     /** @var int $modelid of the belonging analytics model. */
     private $modelid;
-    /** @var string $modelname of the belonging analytics model. */
-    private $modelname;
-    /** @var string $modeltarget of the belonging analytics model. */
-    private $modeltarget;
+    /** @var string $name of the belonging analytics model. */
+    private $name;
+    /** @var string $target of the belonging analytics model. */
+    private $target;
     /** @var string $modelanalysabletype that will be used for calculating features for the model. */
     private $modelanalysabletype;
     /** @var int[] $versions created of the model config. */
@@ -51,21 +52,17 @@ class model_configuration {
      */
     public function __construct($id) {
         global $DB;
-        // Fill properties from DB.
+
         $modelconfig = $DB->get_record('tool_laaudit_model_configs', ['id' => $id], '*', MUST_EXIST);
 
         $this->id = $modelconfig->id;
         $this->modelid = $modelconfig->modelid;
+        $this->target = $modelconfig->target;
+        $this->name = $modelconfig->name ??  'model' . $this->modelid;
 
-        $modelobj = $DB->get_record('analytics_models', ['id' => $this->modelid], '*', MUST_EXIST);
-        $this->modeltarget = $modelobj->target;
-
-        $model = new model($this->modelid);
-
-        $this->modelname = $model->get_name() ?? 'model' . $this->modelid;
-
-        $target = $model->get_target();
-        $this->modelanalysabletype = $target->get_analyser_class();
+        $targetinstance = manager::get_target($this->target);
+        if (!$targetinstance) throw new \Exception('Target could not be retrieved from target name '.$this->target);
+        $this->modelanalysabletype = $targetinstance->get_analyser_class();
 
         $this->versions = $this->get_versions_from_db();
     }
@@ -89,23 +86,29 @@ class model_configuration {
     }
 
     /**
-     * Create a new model configuration for a model id, or if it already exists, retrieve that config.
+     * Create a new model configuration for a model id.
+     * Failing gracefully: If config for this model already exists, just return it.
      * The accompanying db table is needed to preserve a record of the model configuration
      * even if the model has been deleted.
      *
      * @param int $modelid of an analytics model
      * @return int id of created or retrieved object
      */
-    public static function get_or_create_and_get_for_model($modelid) {
+    public static function create_and_get_for_model(int $modelid) : int {
         global $DB;
 
         if ($DB->record_exists('tool_laaudit_model_configs', ['modelid' => $modelid])) {
-            $record = $DB->get_record('tool_laaudit_model_configs', ['modelid' => $modelid], 'id', MUST_EXIST);
-            return $record->id;
+            return $DB->get_fieldset_select('tool_laaudit_model_configs', 'id', 'modelid='.$modelid)[0];
         }
+
+        $modelobj = $DB->get_record('analytics_models', ['id' => $modelid], '*', MUST_EXIST);
 
         $obj = new stdClass();
         $obj->modelid = $modelid;
+        $obj->name = $modelobj->name;
+        $obj->target = $modelobj->target;
+        $obj->timecreated = time(); //later check: if model modified after this, create a new config for it.
+        // store analysisinterval? indicators?
 
         return $DB->insert_record('tool_laaudit_model_configs', $obj);
     }
@@ -121,8 +124,8 @@ class model_configuration {
         // Add info about the model configuration.
         $obj->id = $this->id;
         $obj->modelid = $this->modelid;
-        $obj->modelname = $this->modelname;
-        $obj->modeltarget = $this->modeltarget;
+        $obj->name = $this->name;
+        $obj->target = $this->target;
         $obj->modelanalysabletype = $this->modelanalysabletype;
         $obj->versions = $this->versions;
 
@@ -137,12 +140,11 @@ class model_configuration {
         return $this->modelid;
     }
 
-    public function get_modelname() {
-        return $this->modelname;
+    public function get_name() {
+        return $this->name;
     }
 
-    public function get_modeltarget() {
-        return $this->modeltarget;
-        ;
+    public function get_target() {
+        return $this->target;
     }
 }

@@ -16,9 +16,9 @@
     Template for model configuration item.
     Context variables required for this template:
     - id: int - model config unique identifier
-    - modelname: string - name of the model config
+    - name: string - name of the model config
     - modelid: int - model id
-    - modeltarget: string - name of the target associated with the model config
+    - target: string - name of the target associated with the model config
     - modelanalysabletype: string - name of the analysable type associated with the model config
     - buttons: [{}]
     - versions: [{}]
@@ -26,8 +26,8 @@
     {
             "id": 1,
             "modelid": 4,
-            "modelname": "model4",
-            "modeltarget": "Prevent devs at risk",
+            "name": "model4",
+            "target": "Prevent devs at risk",
             "modelanalysabletype": "user_enrolments",
             "buttons": [{
                 "method" : "post",
@@ -60,7 +60,7 @@
     <div class="activity-item">
         <div class="activity-basis d-flex w-100 align-items-center flex-column flex-md-row align-self-start">
             <h3 class="activity-instance activity-title">
-                <span title="{{#str}}model, tool_laaudit{{/str}}" id="config{{id}}">{{modelname}}</span>
+                <span title="{{#str}}model, tool_laaudit{{/str}}" id="config{{id}}">{{name}}</span>
                 <span class="badge rounded-pill bg-light ml-2 position-absolute start-0" title="{{#str}}modelid, tool_laaudit{{/str}}">
                     <i class="icon fa fa-key" aria-hidden="true"></i>{{modelid}}
                 </span>
@@ -75,7 +75,7 @@
                             <i class="fa fa-bullseye" aria-hidden="true"></i>
                         </dt>
                         <dd  class="mb-0 px-1 col-sm">
-                            {{modeltarget}}
+                            {{target}}
                         </dd>
                     </dl>
                 </li>

@@ -36,6 +36,9 @@ class test_config {
         global $DB;
         $valididconfigobject = [
                 'modelid' => $modelid,
+                'target' => test_model::TARGET,
+                'timecreated' => time(),
+                'name' => test_model::NAME
         ];
         $configid = $DB->insert_record('tool_laaudit_model_configs', $valididconfigobject);
         return $configid;

@@ -14,19 +14,30 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_laaudit;
+
+defined('MOODLE_INTERNAL') || die();
+
+global $CFG;
+require_once($CFG->dirroot . '/admin/tool/laaudit/classes/dataset.php');
+require_once(__DIR__ . '/fixtures/test_dataset_evidence.php.php');
+
+
 /**
- * Adds a link to the tool page to the admin settings.
+ * Dataset get_shuffled test.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+class dataset_get_shuffled_test extends \advanced_testcase {
+    public function test_dataset_serialize_error_again() {
+        $data = test_dataset_evidence::create();
 
-defined('MOODLE_INTERNAL') || die();
+        $res = dataset::get_shuffled($data);
 
-$context = context_system::instance();
-if (\core_analytics\manager::is_analytics_enabled()) {
-    $ADMIN->add('analytics', new admin_externalpage('tool_laaudit_index',
-            get_string('pluginname', 'tool_laaudit'),
-            $CFG->wwwroot . '/' . $CFG->admin . '/tool/laaudit/index.php', 'tool/laaudit:viewpagecontent'));
+        $this->assertFalse(json_encode($data) == json_encode($res));
+        $this->assertEquals(sizeof($data), sizeof($res));
+        $this->assertTrue(str_contains(json_encode($res), json_encode(test_dataset_evidence::get_header())));
+    }
 }

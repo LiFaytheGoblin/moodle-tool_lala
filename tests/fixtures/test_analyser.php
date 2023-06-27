@@ -15,18 +15,31 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Adds a link to the tool page to the admin settings.
+ * Test model.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace tool_laaudit;
 
-$context = context_system::instance();
-if (\core_analytics\manager::is_analytics_enabled()) {
-    $ADMIN->add('analytics', new admin_externalpage('tool_laaudit_index',
-            get_string('pluginname', 'tool_laaudit'),
-            $CFG->wwwroot . '/' . $CFG->admin . '/tool/laaudit/index.php', 'tool/laaudit:viewpagecontent'));
+defined('MOODLE_INTERNAL') || die();
+class test_analyser {
+
+    /**
+     * Stores a model in the db and returns a modelid
+     *
+     * @return analyser
+     */
+    public static function create($modelid) {
+        $options = ['evaluation' => true, 'mode' => 'configuration'];
+
+        $target = test_model::get_target_instance($modelid);
+        $indicatorinstances = test_model::get_indicator_instances($modelid);
+        $analysisintervalinstanceinstances = test_model::get_analysisinterval_instances($modelid);
+
+        $analyzerclassname = $target->get_analyser_class();
+        return new $analyzerclassname($modelid, $target, $indicatorinstances, $analysisintervalinstanceinstances, $options);
+    }
 }

@@ -26,19 +26,23 @@ require(__DIR__ . '/../../../config.php');
 
 use \tool_laaudit\model_version;
 
-require_admin();
-
 $configid = optional_param('configid', 0, PARAM_INT);
 
 // Routes
 // POST /admin/tool/laaudit/modelversion.php?configid=<configid>
 
 // Set some page parameters.
-$pageurl = new moodle_url('/admin/tool/laaudit/modelversion.php', array("configid" => $configid));
+$pageurl = new moodle_url('/admin/tool/laaudit/modelversion.php', ['configid' => $configid]);
 $context = context_system::instance();
 
 $PAGE->set_url($pageurl);
 $PAGE->set_context($context);
+
+require_login();
+require_capability('tool/laaudit:createmodelversion', $context);
+require_sesskey();
+
+$versionid = null;
 
 if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $versionid = model_version::create_scaffold_and_get_for_config($configid);
@@ -52,8 +56,9 @@ if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $version->predict();
 
     $version->finish();
-
-    $priorurl = new moodle_url('/admin/tool/laaudit/index.php#version'.$versionid);
-    redirect($priorurl);
 }
+
+$versionaddendum = (isset($versionid) ? '#version'.$versionid : '');
+$priorurl = new moodle_url('/admin/tool/laaudit/index.php'.$versionaddendum);
+redirect($priorurl);
 

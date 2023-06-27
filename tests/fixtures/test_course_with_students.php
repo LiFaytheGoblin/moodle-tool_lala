@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -12,11 +12,10 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The features dataset class, inheriting from the dataset class.
- * Calculates features for model input and stores them as evidence
+ * Test model.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
@@ -24,8 +23,23 @@
  */
 
 namespace tool_laaudit;
-class features_dataset extends dataset {
-    protected function collect($data = null) {
-        // TODO: Implement collect() method.
+
+defined('MOODLE_INTERNAL') || die();
+class test_course_with_students {
+    /**
+     * Generates a new course with students, but no activity.
+     */
+    public static function create($generator, $nstudents=10, $createddaysago=7) {
+        $timestart = time() - (60 * 60 * 24 * $createddaysago);
+
+        $users = [];
+        for ($i = 0; $i < $nstudents; $i++) {
+            $users[] = $generator->create_user();
+        }
+        $course = $generator->create_course(['startdate' => $timestart]);
+
+        foreach ($users as $user) {
+            $generator->enrol_user($user->id, $course->id, null, 'manual', $timestart + 1);
+        }
     }
 }

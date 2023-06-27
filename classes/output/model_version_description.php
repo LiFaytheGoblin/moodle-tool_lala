@@ -71,6 +71,11 @@ class model_version_description implements templatable, renderable {
 
         $data->predictionsprocessor = explode('\\', $this->version->predictionsprocessor)[1];
 
+        $params = new stdClass();
+        $params->testsize = $this->version->relativetestsetsize * 100;
+        $params->trainsize = 100 - $params->testsize;
+        $data->traintestsplit = get_string('traintest', 'tool_laaudit', $params);
+
         $data->contextids = get_string('allcontexts', 'tool_laaudit');
         $contextids = json_decode($this->version->contextids);
         if (gettype($contextids) == 'array') {
@@ -79,7 +84,7 @@ class model_version_description implements templatable, renderable {
             $data->contextids = $contextids;
         }
 
-        $data->indicators = "";
+        $data->indicators = '';
         $indicators = json_decode($this->version->indicators);
         if (gettype($indicators) == 'array') {
             $data->indicators = implode(', ', $indicators);

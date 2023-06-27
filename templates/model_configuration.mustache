@@ -18,9 +18,8 @@
     - id: int - model config unique identifier
     - modelname: string - name of the model config
     - modelid: int - model id
-    - target: string - name of the target associated with the model config
+    - modeltarget: string - name of the target associated with the model config
     - modelanalysabletype: string - name of the analysable type associated with the model config
-    - versions: currently an array of version ids (int)
     - buttons: [{}]
     - versions: [{}]
     Example context (json):
@@ -61,7 +60,7 @@
     <div class="activity-item">
         <div class="activity-basis d-flex w-100 align-items-center flex-column flex-md-row align-self-start">
             <h3 class="activity-instance activity-title">
-                <span title="{{#str}}model, tool_laaudit{{/str}}" id="config{{id}}">{{modelname}}</a>
+                <span title="{{#str}}model, tool_laaudit{{/str}}" id="config{{id}}">{{modelname}}</span>
                 <span class="badge rounded-pill bg-light ml-2 position-absolute start-0" title="{{#str}}modelid, tool_laaudit{{/str}}">
                     <i class="icon fa fa-key" aria-hidden="true"></i>{{modelid}}
                 </span>

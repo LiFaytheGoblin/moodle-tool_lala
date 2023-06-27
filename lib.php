@@ -55,10 +55,10 @@ function tool_laaudit_pluginfile(
         return false;
     }
 
-    // Make sure the user is logged in and has access to the module (plugins that are not course modules should leave out the 'cm' part).
-    require_admin();
+    // Make sure the user is logged in and has access to the module.
+    require_login();
+    require_capability('tool/laaudit:downloadevidence', $context);
 
-    // Todo: Check the relevant capabilities - these may vary depending on the filearea being accessed.
 
     // The args is an array containing [itemid, path].
     // Fetch the itemid from the path.
@@ -67,10 +67,8 @@ function tool_laaudit_pluginfile(
     // Extract the filename / filepath from the $args array.
     $filename = array_pop($args); // The last item in the $args array.
     if (empty($args)) {
-        // $args is empty => the path is '/'.
         $filepath = '/';
     } else {
-        // $args contains the remaining elements of the filepath.
         $filepath = '/' . implode('/', $args) . '/';
     }
 
@@ -84,4 +82,19 @@ function tool_laaudit_pluginfile(
     // We can now send the file back to the browser - in this case with a cache lifetime of 1 day and no filtering.
     send_stored_file($file, 86400, 0, $forcedownload, $options);
     return true;
+}
+
+/**
+ * Insert a link to index.php on the site front page navigation menu.
+ *
+ * @param navigation_node $frontpage Node representing the front page in the navigation tree.
+ */
+function tool_laaudit_extend_navigation_frontpage(navigation_node $frontpage) {
+    $context = context_system::instance();
+    if(!is_siteadmin() and has_capability('tool/laaudit:viewpagecontent', $context)) {
+        $frontpage->add(
+                get_string('pluginname', 'tool_laaudit'),
+                new moodle_url('/admin/tool/laaudit/index.php')
+        );
+    }
 }

@@ -16,7 +16,6 @@
 
 /**
  * The predictions dataset class, inheriting from the dataset class.
- * Collects and preserves evidence on predictions made by the model
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
@@ -25,45 +24,53 @@
 
 namespace tool_laaudit;
 
+/**
+ * Class for the predictions dataset evidence item.
+ */
 class predictions_dataset extends dataset {
-    function collect($options) {
-        if(!isset($options['model'])) {
+    /**
+     * Retrieve predictions for certain $data from a $model.
+     * Store resulting data (sampleid, target, prediction) in the data field.
+     *
+     * @param array $options = [$model, $data]
+     * @return void
+     */
+    public function collect($options) {
+        if (!isset($options['model'])) {
             throw new \Exception('Missing trained model');
         }
 
-        if(!isset($options['data'])) {
+        if (!isset($options['data'])) {
             throw new \Exception('Missing test dataset');
         }
 
-        // Get the test data without analysisinterval container and header
-        $header = [];
+        // Get the test data without analysisinterval container and header.
         $testdata = [];
         $analysisintervalkey = array_keys((array) ($options['data']))[0];
         foreach ($options['data'] as $arr) {
-            $header = $arr['0'];
             $testdata = array_slice($arr, 1, null, true);
             break;
         }
 
-        // Extract the sample ids, x and y values from the test set
+        // Extract the sample ids, x and y values from the test set.
         $sampleids = array_keys($testdata);
         $testx = [];
         $testy = [];
-        foreach($testdata as $row) {
-            $len = sizeof($row);
+        foreach ($testdata as $row) {
+            $len = count($row);
             $testx[] = array_slice($row, 0, $len - 1, true);
             $testy[] = $row[$len - 1];
         }
 
-        // Get predictions
+        // Get predictions.
         $predictedlabels = $options['model']->predict($testx);
 
-        // Build dataset back together and get the structure Moodle usually works with
-        $header[] = 'prediction';
+        // Build dataset back together and get the structure Moodle usually works with.
+        $header = ['target', 'prediction'];
         $mergeddata = [];
         $mergeddata['0'] = $header;
-        foreach($sampleids as $key => $sampleid) {
-            $mergeddata[$sampleid] = array_merge($testx[$key], [$testy[$key], $predictedlabels[$key]]);
+        foreach ($sampleids as $key => $sampleid) {
+            $mergeddata[$sampleid] = [$testy[$key], $predictedlabels[$key]];
         }
 
         $res = [];

@@ -16,7 +16,6 @@
 
 /**
  * The test dataset class, inheriting from the dataset class.
- * Collects and preserves evidence on test data used by the model
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
@@ -24,23 +23,33 @@
  */
 
 namespace tool_laaudit;
-class test_dataset extends dataset {
 
+/**
+ * Class for the test dataset evidence item.
+ */
+class test_dataset extends dataset {
+    /**
+     * Retrieve the test portion of a data set, that is the last p% of data points.
+     * Store resulting data (sampleid, features, label) in the data field.
+     *
+     * @param array $options = [$data, $testsize]
+     * @return void
+     */
     public function collect($options) {
-        if(!isset($options['data'])) {
+        if (!isset($options['data'])) {
             throw new \Exception('Missing split dataset');
         }
-        if(!isset($options['testsize'])) {
+        if (!isset($options['testsize'])) {
             throw new \Exception('Missing test size');
         }
 
         $key = array_keys((array) ($options['data']))[0];
         $testdatawithheader = [];
-        foreach($options['data'] as $arr) { // each analysisinterval has an object
-            $totaldatapoints = sizeof($arr) - 1;
+        foreach ($options['data'] as $arr) { // Each analysisinterval has an object.
+            $totaldatapoints = count($arr) - 1;
             $testdatapoints = round($options['testsize'] * $totaldatapoints);
 
-            $upperlimit = $testdatapoints + 1; // + 1 for the heading, upper limit is exclusive
+            $upperlimit = $testdatapoints + 1; // Add +1 for the heading, upper limit is exclusive.
 
             $testdatawithheader[$key] = array_slice($arr, 0, $upperlimit, true);
 

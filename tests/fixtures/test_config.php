@@ -15,18 +15,35 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Adds a link to the tool page to the admin settings.
+ * Test model.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace tool_laaudit;
 
-$context = context_system::instance();
-if (\core_analytics\manager::is_analytics_enabled()) {
-    $ADMIN->add('analytics', new admin_externalpage('tool_laaudit_index',
-            get_string('pluginname', 'tool_laaudit'),
-            $CFG->wwwroot . '/' . $CFG->admin . '/tool/laaudit/index.php', 'tool/laaudit:viewpagecontent'));
+defined('MOODLE_INTERNAL') || die();
+class test_config {
+
+    /**
+     * Stores a model in the db and returns a modelid
+     *
+     * @return int
+     */
+    public static function create($modelid) : int {
+        global $DB;
+        $valididconfigobject = [
+                'modelid' => $modelid,
+        ];
+        $configid = $DB->insert_record('tool_laaudit_model_configs', $valididconfigobject);
+        return $configid;
+    }
+
+    public static function get_highest_id() {
+        global $DB;
+        $existingconfigids = $DB->get_fieldset_select('tool_laaudit_model_configs', 'id', '1=1');
+        return (sizeof($existingconfigids) > 0) ? max($existingconfigids) : 0;
+    }
 }

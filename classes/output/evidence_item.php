@@ -63,7 +63,7 @@ class evidence_item implements templatable, renderable {
         $data->name = $name;
 
         $data->timecollectionstarted = userdate((int) $this->item->timecollectionstarted);
-        $data->timecollectionfinished = userdate((int)$this->item->timecollectionfinished);
+        $data->timecollectionfinished = userdate((int) $this->item->timecollectionfinished);
         $data->serializedfilelocation = $this->item->serializedfilelocation;
 
         return $data;

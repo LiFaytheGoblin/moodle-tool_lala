@@ -24,9 +24,22 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$context = context_system::instance();
-if (\core_analytics\manager::is_analytics_enabled()) {
-    $ADMIN->add('analytics', new admin_externalpage('tool_laaudit_index',
-            get_string('pluginname', 'tool_laaudit'),
-            $CFG->wwwroot . '/' . $CFG->admin . '/tool/laaudit/index.php', 'tool/laaudit:viewpagecontent'));
-}
+$capabilities = [
+        'tool/laaudit:viewpagecontent' => [
+            'captype' => 'read',
+            'contextlevel' => CONTEXT_SYSTEM,
+            'archetypes' => [],
+        ],
+        'tool/laaudit:downloadevidence' => [
+            'riskbitmask' => RISK_PERSONAL,
+            'captype' => 'read',
+            'contextlevel' => CONTEXT_SYSTEM,
+            'archetypes' => [],
+        ],
+        'tool/laaudit:createmodelversion' => [
+            'riskbitmask' => RISK_SPAM,
+            'captype' => 'write',
+            'contextlevel' => CONTEXT_SYSTEM,
+            'archetypes' => [],
+        ],
+];

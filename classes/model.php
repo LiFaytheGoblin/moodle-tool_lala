@@ -16,7 +16,6 @@
 
 /**
  * The model class.
- * Collects and preserves evidence on the model itself, e.g. the learned weights
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
@@ -27,49 +26,67 @@ namespace tool_laaudit;
 
 use \Phpml\Classification\Linear\LogisticRegression;
 
+/**
+ * Class for the trained model evidence item.
+ */
 class model extends evidence {
 
-    protected function get_file_type() {
-        return 'ser';
-    }
-
+    /**
+     * Train a model using the data sent via $options and the $predictor.
+     * Store the trained LogisticRegression model as the raw $data of this evidence item.
+     *
+     * @param array $options = [$data, $predictor]
+     * @return void
+     */
     public function collect($options) {
-        if(!isset($options['data'])) {
+        if (!isset($options['data'])) {
             throw new \Exception('Missing training data');
         }
-        if(!isset($options['predictor'])) {
+        if (!isset($options['predictor'])) {
             throw new \Exception('Missing predictor');
         }
 
-        // get only samples and targets
+        // Get only samples and targets.
         $datawithoutheader = [];
-        foreach($options['data'] as $arr) {
+        foreach ($options['data'] as $arr) {
             $datawithoutheader = array_slice($arr, 1, null, true);
             break;
         }
 
         $trainx = [];
         $trainy = [];
-        $n_columns = sizeof(end($datawithoutheader));
-        foreach($datawithoutheader as $row) {
-            $xs = array_slice($row, 0, $n_columns - 1);
+        $ncolumns = count(end($datawithoutheader));
+        foreach ($datawithoutheader as $row) {
+            $xs = array_slice($row, 0, $ncolumns - 1);
             $y = end($row);
 
             $trainx[] = $xs;
             $trainy[] = $y;
         }
 
-        //next: check whether there is enough data - at least two samples per target?
-
-        // currently always uses a logistic regression classifier
-        // (https://github.com/moodle/moodle/blob/MOODLE_402_STABLE/lib/mlbackend/php/classes/processor.php#L548)
+        // Currently always uses a logistic regression classifier.
+        // (https://github.com/moodle/moodle/blob/MOODLE_402_STABLE/lib/mlbackend/php/classes/processor.php#L548).
         $iterations = $options['predictor']::TRAIN_ITERATIONS;
         $this->data = new LogisticRegression($iterations, true, LogisticRegression::CONJUGATE_GRAD_TRAINING, 'log');
         $this->data->train($trainx, $trainy);
     }
 
+    /**
+     * Serializes the model.
+     * Store the serialization string in the filestring field.
+     *
+     * @return void
+     */
     public function serialize() {
         $str = serialize($this->data);
         $this->filestring = $str;
+    }
+
+    /**
+     * Returns the type of the stored file.
+     * @return string
+     */
+    protected function get_file_type() {
+        return 'ser';
     }
 }

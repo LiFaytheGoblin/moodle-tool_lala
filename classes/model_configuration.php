@@ -16,8 +16,6 @@
 
 /**
  * The model configuration class, built on top of the analytics/model class.
- * The accompanying db table is needed to preserve a record of the model configuration
- * even if the model has been deleted.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
@@ -44,74 +42,32 @@ class model_configuration {
     /** @var string $modelanalysabletype that will be used for calculating features for the model. */
     private $modelanalysabletype;
     /** @var int[] $versions created of the model config. */
-
-
-
     private $versions;
     /**
-     * Constructor. Deserialize DB object.
+     * Constructor. Import from DB.
      *
-     * @param model $model
+     * @param number $id
      * @return void
      */
     public function __construct($id) {
         global $DB;
         // Fill properties from DB.
-        $modelconfig = $DB->get_record('tool_laaudit_model_configs', array('id' => $id), '*', MUST_EXIST);
+        $modelconfig = $DB->get_record('tool_laaudit_model_configs', ['id' => $id], '*', MUST_EXIST);
 
         $this->id = $modelconfig->id;
         $this->modelid = $modelconfig->modelid;
 
-        $modelobj = $DB->get_record('analytics_models', array('id' => $this->modelid), '*', MUST_EXIST);
+        $modelobj = $DB->get_record('analytics_models', ['id' => $this->modelid], '*', MUST_EXIST);
         $this->modeltarget = $modelobj->target;
 
         $model = new model($this->modelid);
 
-        $this->modelname = $model->get_name() ?? "model" . $this->modelid;
+        $this->modelname = $model->get_name() ?? 'model' . $this->modelid;
 
         $target = $model->get_target();
         $this->modelanalysabletype = $target->get_analyser_class();
 
         $this->versions = $this->get_versions_from_db();
-    }
-
-    /**
-     * Create a new model configuration for a model id, or if it already exists, retrieve that config.
-     *
-     * @param int $modelid of an analytics model
-     * @return int id of created or retrieved object
-     */
-    public static function get_or_create_and_get_for_model($modelid) {
-        global $DB;
-
-        if ($DB->record_exists('tool_laaudit_model_configs', array('modelid' => $modelid))) {
-            $record = $DB->get_record('tool_laaudit_model_configs', array('modelid' => $modelid), 'id', MUST_EXIST);
-            return $record->id;
-        }
-
-        $obj = new stdClass();
-        $obj->modelid = $modelid;
-
-        return $DB->insert_record('tool_laaudit_model_configs', $obj);
-    }
-
-    /**
-     * Returns a plain stdClass with the model config data (id, modelid, versions) plus modelname and modeltarget.
-     *
-     * @return stdClass
-     */
-    public function get_model_config_obj() {
-        $obj = new stdClass();
-
-        // Add info about the model configuration.
-        $obj->id = $this->id;
-        $obj->modelid = $this->modelid;
-        $obj->modelname = $this->modelname;
-        $obj->modeltarget = $this->modeltarget;
-        $obj->modelanalysabletype = $this->modelanalysabletype;
-        $obj->versions = $this->versions;
-
-        return $obj;
     }
 
     /**
@@ -130,5 +86,63 @@ class model_configuration {
             $versions[] = $version->get_model_version_obj();
         }
         return $versions;
+    }
+
+    /**
+     * Create a new model configuration for a model id, or if it already exists, retrieve that config.
+     * The accompanying db table is needed to preserve a record of the model configuration
+     * even if the model has been deleted.
+     *
+     * @param int $modelid of an analytics model
+     * @return int id of created or retrieved object
+     */
+    public static function get_or_create_and_get_for_model($modelid) {
+        global $DB;
+
+        if ($DB->record_exists('tool_laaudit_model_configs', ['modelid' => $modelid])) {
+            $record = $DB->get_record('tool_laaudit_model_configs', ['modelid' => $modelid], 'id', MUST_EXIST);
+            return $record->id;
+        }
+
+        $obj = new stdClass();
+        $obj->modelid = $modelid;
+
+        return $DB->insert_record('tool_laaudit_model_configs', $obj);
+    }
+
+    /**
+     * Returns a plain stdClass with the model config data.
+     *
+     * @return stdClass
+     */
+    public function get_model_config_obj() {
+        $obj = new stdClass();
+
+        // Add info about the model configuration.
+        $obj->id = $this->id;
+        $obj->modelid = $this->modelid;
+        $obj->modelname = $this->modelname;
+        $obj->modeltarget = $this->modeltarget;
+        $obj->modelanalysabletype = $this->modelanalysabletype;
+        $obj->versions = $this->versions;
+
+        return $obj;
+    }
+
+    public function get_id() {
+        return $this->id;
+    }
+
+    public function get_modelid() {
+        return $this->modelid;
+    }
+
+    public function get_modelname() {
+        return $this->modelname;
+    }
+
+    public function get_modeltarget() {
+        return $this->modeltarget;
+        ;
     }
 }

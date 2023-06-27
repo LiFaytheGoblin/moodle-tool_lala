@@ -25,6 +25,7 @@
 namespace tool_laaudit;
 
 use \core_analytics\manager;
+use Phpml\Classification\Linear\LogisticRegression;
 
 defined('MOODLE_INTERNAL') || die();
 class test_version {
@@ -65,5 +66,22 @@ class test_version {
         global $DB;
         $predictionsprocessorstring = $DB->get_fieldset_select('tool_laaudit_model_versions', 'predictionsprocessor', 'id='.$versionid)[0];
         return manager::get_predictions_processor($predictionsprocessorstring);
+    }
+
+    /**
+     * Trains a classifier for a model version and returns it.
+     *
+     * @return LogisticRegression classifier
+     */
+    public static function get_classifier($versionid) : LogisticRegression {
+        $dataset = test_dataset_evidence::create(3);
+        $evidence = model::create_scaffold_and_get_for_version($versionid);
+        $predictor = test_version::get_predictor($versionid);
+        $options=[
+                'data' => $dataset,
+                'predictor' => $predictor,
+        ];
+        $evidence->collect($options);
+        return $evidence->get_raw_data();
     }
 }

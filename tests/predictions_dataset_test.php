@@ -37,7 +37,7 @@ require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
  */
 class predictions_dataset_test extends \advanced_testcase {
     private $evidence;
-    private $predictor;
+    private $classifier;
     protected function setUp(): void {
         $this->resetAfterTest(true);
 
@@ -47,7 +47,7 @@ class predictions_dataset_test extends \advanced_testcase {
 
         $this->evidence = predictions_dataset::create_scaffold_and_get_for_version($versionid);
 
-        $this->predictor = test_version::get_predictor($versionid);
+        $this->classifier = test_version::get_classifier($versionid);
     }
     /**
      * Data provider for {@see test_training_dataset_collect()}.
@@ -74,14 +74,21 @@ class predictions_dataset_test extends \advanced_testcase {
      */
     public function test_predictions_dataset_collect($ndatapoints) {
         $options=[
-                'model' => $this->predictor, //Nope, need to hand over a trained model (LogisticRegression), not a predictor
+                'model' => $this->classifier,
                 'data' => test_dataset_evidence::create($ndatapoints),
         ];
         $this->evidence->collect($options);
 
         $rawdata = $this->evidence->get_raw_data();
 
-        // todo: verify rawdata
+        $res = $rawdata[test_model::ANALYSISINTERVAL];
+        $resheader = array_slice($res, 0, 1, true)[0];
+        $resdata = array_slice($res, 1, null, true);
+
+        $expectedheadersize = 2; // The header should have target (=truth) and prediction, the sampleid is the index.
+        $this->assertEquals($expectedheadersize, sizeof($resheader));
+
+        $this->assertEquals($ndatapoints, sizeof($resdata));
     }
     /**
      * Check that collect throws an error if trying to call it twice for the same object.
@@ -90,10 +97,9 @@ class predictions_dataset_test extends \advanced_testcase {
      */
     public function test_predictions_dataset_collect_error_again() {
         $options=[
-                'model' => $this->predictor,
+                'model' => $this->classifier,
                 'data' => test_dataset_evidence::create(3),
         ];
-        $this->assertEquals('Phpml\Classification\Linear\LogisticRegression', get_class($this->predictor));
         $this->evidence->collect($options);
 
         $this->expectException(\Exception::class); // Expect exception if trying to collect again.

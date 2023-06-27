@@ -44,7 +44,7 @@ abstract class evidence {
     private $timecollectionfinished;
     /** @var string $serializedfilelocation path of the evidence. */
     private $serializedfilelocation;
-    /** @var data $data raw data of the evidence. */
+    /** @var array|mixed $data raw data of the evidence. */
     protected $data;
     /** @var string $filestring serialized data of the evidence. */
     protected $filestring;
@@ -149,9 +149,9 @@ abstract class evidence {
 
     /**
      * Returns the raw data of the evidence. Used by the model version.
-     * @return data raw data
+     * @return array|mixed raw data
      */
-    public function get_raw_data() {
+    public function get_raw_data(): mixed {
         return $this->data;
     }
 

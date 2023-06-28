@@ -42,6 +42,13 @@ class test_dataset extends dataset {
         if (!isset($options['testsize'])) {
             throw new \Exception('Missing test size');
         }
+        if (sizeof($options['data']) == 0) {
+            throw new \Exception('Dataset is empty. No training data can be extracted from it.');
+        }
+
+        if (isset($this->data) && sizeof($this->data) > 0) {
+            throw new \Exception('Data has already been collected and can not be changed.');
+        }
 
         $key = array_keys((array) ($options['data']))[0];
         $testdatawithheader = [];

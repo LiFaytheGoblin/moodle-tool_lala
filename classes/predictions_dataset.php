@@ -39,9 +39,12 @@ class predictions_dataset extends dataset {
         if (!isset($options['model'])) {
             throw new \Exception('Missing trained model');
         }
-
         if (!isset($options['data'])) {
             throw new \Exception('Missing test dataset');
+        }
+
+        if (isset($this->data) && sizeof($this->data) > 0) {
+            throw new \Exception('Data has already been collected and can not be changed.');
         }
 
         // Get the test data without analysisinterval container and header.

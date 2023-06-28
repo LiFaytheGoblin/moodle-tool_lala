@@ -49,6 +49,9 @@ class dataset extends evidence {
         if (!isset($options['modelid'])) {
             throw new \Exception('Missing model id');
         }
+        if (isset($this->data) && sizeof($this->data) > 0) {
+            throw new \Exception('Data has already been collected and can not be changed.');
+        }
 
         $this->heavy_duty_mode();
 
@@ -82,6 +85,10 @@ class dataset extends evidence {
      */
     public function serialize() {
         if (!isset($this->data)) throw new \Exception('No evidence has been collected yet that could be serialized. Make sure to collect the evidence first.');
+        if (isset($this->filestring)) {
+            throw new \Exception('Data has already been serialized.');
+        }
+
         $str = '';
         $columns = null;
 

@@ -48,6 +48,9 @@ class model extends evidence {
         if (sizeof($options['data']) == 0) {
             throw new \Exception('Training dataset is empty.');
         }
+        if (isset($this->data)) {
+            throw new \Exception('Model has already been trained and can not be changed.');
+        }
 
         // Get only samples and targets.
         $datawithoutheader = [];
@@ -86,6 +89,9 @@ class model extends evidence {
      */
     public function serialize() {
         if (!isset($this->data)) throw new \Exception('No evidence has been collected yet that could be serialized. Make sure to train a model first.');
+        if (isset($this->filestring)) {
+            throw new \Exception('Model has already been serialized.');
+        }
         $str = serialize($this->data);
         $this->filestring = $str;
     }

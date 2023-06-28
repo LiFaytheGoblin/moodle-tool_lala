@@ -37,10 +37,13 @@ class training_dataset extends dataset {
      */
     public function collect($options) {
         if (!isset($options['data'])) {
-            throw new \Exception('Missing split dataset');
+            throw new \Exception('Missing dataset that can be split.');
         }
         if (!isset($options['testsize'])) {
-            throw new \Exception('Missing test size');
+            throw new \Exception('Missing test size.');
+        }
+        if (sizeof($options['data']) == 0) {
+            throw new \Exception('Dataset is empty. No training data can be extracted from it.');
         }
 
         $key = array_keys((array) ($options['data']))[0];
@@ -48,11 +51,18 @@ class training_dataset extends dataset {
         foreach ($options['data'] as $arr) { // Each analysisinterval has an object.
             $totaldatapoints = count($arr) - 1;
             $testdatapoints = round($options['testsize'] * $totaldatapoints);
+            if($testdatapoints < 1) {
+                throw new \Exception('Not enough data available for creating a training and testing split. Need at least 1 datapoint for testing, and 2 for training.');
+            }
 
             $lowerlimit = $testdatapoints + 1;
 
             $header = array_slice($arr, 0, 1, true);
             $trainingdata = array_slice($arr, $lowerlimit, null, true);
+
+            if (count($trainingdata) < 2) {
+                throw new \Exception('Not enough data available for creating a training split. Need at least 2 datapoints.');
+            }
 
             $trainingdatawithheader[$key] = $header + $trainingdata;
             break;

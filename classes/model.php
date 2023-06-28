@@ -45,6 +45,9 @@ class model extends evidence {
         if (!isset($options['predictor'])) {
             throw new \Exception('Missing predictor');
         }
+        if (sizeof($options['data']) == 0) {
+            throw new \Exception('Training dataset is empty.');
+        }
 
         // Get only samples and targets.
         $datawithoutheader = [];
@@ -52,12 +55,16 @@ class model extends evidence {
             $datawithoutheader = array_slice($arr, 1, null, true);
             break;
         }
+        if (sizeof($datawithoutheader) < 2) {
+            throw new \Exception('Not enough training data. Need to provide at least 2 datapoints.');
+        }
 
         $trainx = [];
         $trainy = [];
         $ncolumns = count(end($datawithoutheader));
         foreach ($datawithoutheader as $row) {
             $xs = array_slice($row, 0, $ncolumns - 1);
+            if (sizeof($xs) < 1) throw new \Exception('Need to provide at least one column of indicator values in the training data.');
             $y = end($row);
 
             $trainx[] = $xs;
@@ -78,6 +85,7 @@ class model extends evidence {
      * @return void
      */
     public function serialize() {
+        if (!isset($this->data)) throw new \Exception('No evidence has been collected yet that could be serialized. Make sure to train a model first.');
         $str = serialize($this->data);
         $this->filestring = $str;
     }

@@ -32,7 +32,7 @@ require_once(__DIR__ . '/fixtures/test_model.php');
  */
 class dataset_get_shuffled_test extends \advanced_testcase {
     public function test_dataset_get_shuffled() {
-        $data = test_dataset_evidence::create();
+        $data = test_dataset_evidence::create(10);
 
         $res = dataset::get_shuffled($data);
 

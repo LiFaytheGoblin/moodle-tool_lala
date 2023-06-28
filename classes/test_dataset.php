@@ -48,6 +48,9 @@ class test_dataset extends dataset {
         foreach ($options['data'] as $arr) { // Each analysisinterval has an object.
             $totaldatapoints = count($arr) - 1;
             $testdatapoints = round($options['testsize'] * $totaldatapoints);
+            if($testdatapoints < 1) {
+                throw new \Exception('Not enough data available for creating a training and testing split. Need at least 1 datapoint for testing, and 2 for training.');
+            }
 
             $upperlimit = $testdatapoints + 1; // Add +1 for the heading, upper limit is exclusive.
 

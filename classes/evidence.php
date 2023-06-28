@@ -78,6 +78,10 @@ abstract class evidence {
 
         $obj = new stdClass();
 
+        if(!$DB->record_exists('tool_laaudit_model_versions', ['id' => $versionid])) {
+            throw new \Exception('No evidence can be created for version with id '.$versionid.'because this version does not exist.');
+        }
+
         $obj->versionid = $versionid;
         $classname = get_called_class();
         $classnameparts = explode('\\', $classname);

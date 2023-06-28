@@ -61,7 +61,7 @@ class evidence_test extends \advanced_testcase {
      * @covers ::tool_laaudit_evidence_create_scaffold_and_get_for_version
      */
     public function test_evidence_create_scaffold_and_get_for_version_error() {
-        $this->expectException(\dml_missing_record_exception::class);
+        $this->expectException(\Exception::class);
         test_evidence::create_scaffold_and_get_for_version(test_version::get_highest_id() + 1);
     }
 

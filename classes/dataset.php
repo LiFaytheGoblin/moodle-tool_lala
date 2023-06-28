@@ -81,6 +81,7 @@ class dataset extends evidence {
      * @return void
      */
     public function serialize() {
+        if (!isset($this->data)) throw new \Exception('No evidence has been collected yet that could be serialized. Make sure to collect the evidence first.');
         $str = '';
         $columns = null;
 

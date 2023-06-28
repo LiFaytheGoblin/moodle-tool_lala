@@ -47,7 +47,7 @@ class model_error_nodata_test extends \advanced_testcase {
         $this->predictor = test_version::get_predictor();
     }
     /**
-     * Data provider for {@see test_model_error_nodata()}.
+     * Data provider for {@see test_model_collect_error_nodata()}.
      *
      * @return array List of source data information
      */
@@ -70,14 +70,19 @@ class model_error_nodata_test extends \advanced_testcase {
      * @covers ::tool_laaudit_model_collect
      *
      * @dataProvider tool_laaudit_get_source_data_parameters_provider
-     * @param int $ndatapoints amount of datapoints in training data
+     * @param int $dataset training dataset
      */
-    public function test_model_error_nodata($dataset) {
+    public function test_model_collect_error_nodata($dataset) {
         $options=[
                 'data' => $dataset,
                 'predictor' => $this->predictor,
         ];
         $this->expectException(\Exception::class); // Expect exception if trying to collect but no(t enough) data exists.
         $this->evidence->collect($options);
+    }
+
+    public function test_model_serialize_error_nodata() {
+        $this->expectException(\Exception::class); // Expect exception if no data collected yet.
+        $this->evidence->serialize();
     }
 }

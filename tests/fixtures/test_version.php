@@ -62,10 +62,10 @@ class test_version {
         return isset($error);
     }
 
-    public static function get_predictor(int $versionid) {
-        global $DB;
-        $predictionsprocessorstring = $DB->get_fieldset_select('tool_laaudit_model_versions', 'predictionsprocessor', 'id='.$versionid)[0];
-        return manager::get_predictions_processor($predictionsprocessorstring);
+    public static function get_predictor() {
+        $predictor = manager::get_predictions_processor(test_model::PREDICTIONSPROCESSOR);
+        if(!$predictor) throw new \Exception('Predictor not found for predictionsprocessor with name '.test_model::PREDICTIONSPROCESSOR);
+        return $predictor;
     }
 
     /**
@@ -76,7 +76,7 @@ class test_version {
     public static function get_classifier($versionid) : LogisticRegression {
         $dataset = test_dataset_evidence::create(3);
         $evidence = model::create_scaffold_and_get_for_version($versionid);
-        $predictor = test_version::get_predictor($versionid);
+        $predictor = test_version::get_predictor();
         $options=[
                 'data' => $dataset,
                 'predictor' => $predictor,

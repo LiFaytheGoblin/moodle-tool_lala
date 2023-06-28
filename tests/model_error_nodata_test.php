@@ -44,7 +44,7 @@ class model_error_nodata_test extends \advanced_testcase {
 
         $this->evidence = model::create_scaffold_and_get_for_version($versionid);
 
-        $this->predictor = test_version::get_predictor($versionid);
+        $this->predictor = test_version::get_predictor();
     }
     /**
      * Data provider for {@see test_model_error_nodata()}.

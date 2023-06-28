@@ -77,8 +77,7 @@ class test_model {
     }
 
     public static function get_target_instance($modelid) {
-        $moodlemodel = new model($modelid);
-        return $moodlemodel->get_target();
+        return \core_analytics\manager::get_target(self::TARGET);
     }
 
     public static function get_indicator_instances() {

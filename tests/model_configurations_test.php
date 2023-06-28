@@ -29,7 +29,7 @@ require_once(__DIR__ . '/fixtures/test_model.php');
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class _model_configurations_test extends \advanced_testcase {
+class model_configurations_test extends \advanced_testcase {
     /**
      * Check that init_and_get_all_model_config_objs() creates model configurations and returns them.
      *

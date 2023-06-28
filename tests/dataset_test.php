@@ -104,9 +104,6 @@ class dataset_test extends \advanced_testcase {
         $expectedheadersize = sizeof(test_model::get_indicator_instances()) + 1;
         $this->assertTrue(strlen($serializedstring) >= $expectedheadersize); // The string should contain at least a header.
         $this->assertTrue(str_contains($serializedstring, ',')); // the string should have commas.
-
-        $this->expectException(\Exception::class); // Expect exception if no data collected yet.
-        $this->evidence->serialize();
     }
 
     public function test_dataset_collect_error_again() {
@@ -157,6 +154,22 @@ class dataset_test extends \advanced_testcase {
     }
 
     public function test_dataset_serialize_error_nodata() {
+        $this->expectException(\Exception::class); // Expect exception if no data collected yet.
+        $this->evidence->serialize();
+    }
+
+    public function test_dataset_serialize_error_againa() {
+        test_course_with_students::create($this->getDataGenerator(), 1, 3);
+
+        $options=[
+                'contexts' => [],
+                'analyser' => test_analyser::create($this->modelid),
+                'modelid' => $this->modelid,
+        ];
+
+        $this->evidence->collect($options);
+        $this->evidence->serialize();
+
         $this->expectException(\Exception::class); // Expect exception if no data collected yet.
         $this->evidence->serialize();
     }

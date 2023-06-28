@@ -38,8 +38,8 @@ class model_version_complete_creation_test extends \advanced_testcase {
     protected function setUp(): void {
         $this->resetAfterTest(true);
 
-        $modelid = test_model::create();
-        $configid = test_config::create($modelid);
+        $this->modelid = test_model::create();
+        $configid = test_config::create($this->modelid);
         $this->versionid = test_version::create($configid);
         // Create a model configuration from a config with an existing model.
         $this->version = new model_version($this->versionid);
@@ -52,6 +52,41 @@ class model_version_complete_creation_test extends \advanced_testcase {
     public function test_model_version_complete_creation() {
         // Generate test data
         test_course_with_students::create($this->getDataGenerator(), 10);
+
+        // Data is available for gathering
+        $this->version->gather_dataset();
+        $dataset = $this->version->get_dataset();
+        $this->assertTrue(isset($dataset));
+
+        // Now get split data
+        $this->version->split_training_test_data();
+        $testdataset = $this->version->get_testdataset();
+        $this->assertTrue(isset($testdataset));
+        $trainingdataset = $this->version->get_trainingdataset();
+        $this->assertTrue(isset($trainingdataset));
+
+        // Train the model
+        $this->version->train();
+        $model = $this->version->get_model();
+        $this->assertTrue(isset($model));
+
+        // Get predictions
+        $this->version->predict();
+        $predictionsdataset = $this->version->get_predictionsdataset();
+        $this->assertTrue(isset($predictionsdataset));
+
+        $error = test_version::haserror($this->versionid);
+        $this->assertFalse($error); // An error has not been registered
+    }
+    /**
+     * Check the happy path of the automatic model creation process still works of model was deleted
+     *
+     * @covers ::tool_laaudit_model_version
+     */
+    public function test_model_version_complete_creation_modeldeleted() {
+        // Generate test data
+        test_course_with_students::create($this->getDataGenerator(), 10);
+        test_model::delete($this->modelid);
 
         // Data is available for gathering
         $this->version->gather_dataset();

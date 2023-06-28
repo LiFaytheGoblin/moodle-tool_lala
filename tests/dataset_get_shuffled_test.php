@@ -20,8 +20,8 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/admin/tool/laaudit/classes/dataset.php');
-require_once(__DIR__ . '/fixtures/test_dataset_evidence.php.php');
-
+require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
+require_once(__DIR__ . '/fixtures/test_model.php');
 
 /**
  * Dataset get_shuffled test.
@@ -31,7 +31,7 @@ require_once(__DIR__ . '/fixtures/test_dataset_evidence.php.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class dataset_get_shuffled_test extends \advanced_testcase {
-    public function test_dataset_serialize_error_again() {
+    public function test_dataset_get_shuffled() {
         $data = test_dataset_evidence::create();
 
         $res = dataset::get_shuffled($data);

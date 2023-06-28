@@ -46,7 +46,7 @@ class model_test extends \advanced_testcase {
 
         $this->evidence = model::create_scaffold_and_get_for_version($versionid);
 
-        $this->predictor = test_version::get_predictor($versionid);
+        $this->predictor = test_version::get_predictor();
     }
     /**
      * Data provider for {@see model_collect()}.
@@ -138,7 +138,7 @@ class model_test extends \advanced_testcase {
         $this->assertEquals('Phpml\Classification\Linear\LogisticRegression', get_class($trained_model));
     }
 
-    public function test_dataset_serialize_error_nodata() {
+    public function test_model_serialize_error_nodata() {
         $this->expectException(\Exception::class); // Expect exception if no data collected yet.
         $this->evidence->serialize();
     }

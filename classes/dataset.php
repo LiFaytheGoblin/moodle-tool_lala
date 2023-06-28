@@ -116,10 +116,15 @@ class dataset extends evidence {
      * @return array shuffled data
      */
     public static function get_shuffled($data) {
+        if(!isset($data) || sizeof($data) == 0) throw new \Exception('No data to shuffle.');
         $keys = array_keys((array) $data);
         $key = $keys[0];
         $datawithheader = [];
         foreach ($data as $arr) { // Each analysisinterval has an array.
+            if(sizeof($arr) == 1) {
+                throw new \Exception('This function needs the data parameter to be at least of size 2. 
+        The first item is kept as item one, being treated as the header.');
+            }
             $header = array_slice($arr, 0, 1, true);
             $remainingdata = array_slice($arr, 1, null, true);
 

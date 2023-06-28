@@ -51,12 +51,14 @@ class model_version_complete_creation_test extends \advanced_testcase {
      */
     public function test_model_version_complete_creation() {
         // Generate test data
-        test_course_with_students::create($this->getDataGenerator(), 10);
+        $nstudents = 10;
+        test_course_with_students::create($this->getDataGenerator(), $nstudents, 3);
 
         // Data is available for gathering
         $this->version->gather_dataset();
         $dataset = $this->version->get_dataset();
         $this->assertTrue(isset($dataset));
+        $this->assertTrue(sizeof($dataset[test_model::ANALYSISINTERVAL]) == $nstudents + 1); // +1 for the header.
 
         // Now get split data
         $this->version->split_training_test_data();

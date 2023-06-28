@@ -24,7 +24,6 @@
 
 namespace tool_laaudit;
 
-use core_analytics\model;
 use core_analytics\manager;
 use stdClass;
 
@@ -33,25 +32,25 @@ use stdClass;
  */
 class model_configuration {
     /** @var int $id id assigned to the configuration by the db. */
-    private $id;
+    private int $id;
     /** @var int $modelid of the belonging analytics model. */
-    private $modelid;
+    private int $modelid;
     /** @var string $name of the belonging analytics model. */
-    private $name;
+    private string $name;
     /** @var string $target of the belonging analytics model. */
-    private $target;
+    private string $target;
     /** @var string $modelanalysabletype that will be used for calculating features for the model. */
-    private $modelanalysabletype;
+    private string $modelanalysabletype;
     /** @var string $analysisinterval used for the model version */
-    private $analysisinterval;
+    private string $analysisinterval;
     /** @var string $predictionsprocessor used by the model version */
-    private $predictionsprocessor;
-    /** @var string defaultcontextids used as data by the model version */
-    private $defaultcontextids;
+    private string $predictionsprocessor;
+    /** @var string|null defaultcontextids used as data by the model version */
+    private ?string $defaultcontextids;
     /** @var string $indicators used by the model version */
-    private $indicators;
+    private string $indicators;
     /** @var int[] $versions created of the model config. */
-    private $versions;
+    private array $versions;
 
 
     /**
@@ -86,7 +85,7 @@ class model_configuration {
      *
      * @return stdClass[] versions
      */
-    public function get_versions_from_db() {
+    public function get_versions_from_db(): array {
         global $DB;
 
         $versionids = $DB->get_fieldset_select('tool_laaudit_model_versions', 'id', 'configid='.$this->id);
@@ -154,7 +153,7 @@ class model_configuration {
      * @param string|null $value to check
      * @return boolean
      */
-    private static function valid_exists($value) {
+    private static function valid_exists(?string $value): bool {
         return isset($value) && $value != "" && $value != "[]";
     }
 
@@ -163,7 +162,7 @@ class model_configuration {
      *
      * @return stdClass
      */
-    public function get_model_config_obj() {
+    public function get_model_config_obj(): stdClass {
         $obj = new stdClass();
 
         // Add info about the model configuration.
@@ -181,19 +180,19 @@ class model_configuration {
         return $obj;
     }
 
-    public function get_id() {
+    public function get_id(): int {
         return $this->id;
     }
 
-    public function get_modelid() {
+    public function get_modelid(): int {
         return $this->modelid;
     }
 
-    public function get_name() {
+    public function get_name(): string {
         return $this->name;
     }
 
-    public function get_target() {
+    public function get_target(): string {
         return $this->target;
     }
 }

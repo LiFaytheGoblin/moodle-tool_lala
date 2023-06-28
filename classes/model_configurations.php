@@ -24,9 +24,6 @@
 
 namespace tool_laaudit;
 
-use core_analytics\manager;
-use single_button;
-
 /**
  * Class for the list of model configurations.
  */
@@ -35,7 +32,7 @@ class model_configurations {
     /**
      * Collect all model configuration objects.
      *
-     * @return object[] of model config objects
+     * @return stdClass[] of model config objects
      */
     public static function init_and_get_all_model_config_objs(): array {
         global $DB;

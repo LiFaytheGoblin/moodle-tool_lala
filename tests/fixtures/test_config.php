@@ -38,7 +38,9 @@ class test_config {
                 'modelid' => $modelid,
                 'target' => test_model::TARGET,
                 'timecreated' => time(),
-                'name' => test_model::NAME
+                'name' => test_model::NAME,
+                'analysisinterval' => test_model::ANALYSISINTERVAL,
+                'indicators' => test_model::INDICATORS
         ];
         $configid = $DB->insert_record('tool_laaudit_model_configs', $valididconfigobject);
         return $configid;

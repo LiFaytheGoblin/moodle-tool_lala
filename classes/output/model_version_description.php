@@ -66,11 +66,6 @@ class model_version_description implements templatable, renderable {
         $data->timecreationfinished = $finished ?
                 userdate((int) $this->version->timecreationfinished) : get_string('unfinished', 'tool_laaudit');
 
-        $analysisintervalnameparts = explode('\\', $this->version->analysisinterval);
-        $data->analysisinterval = end($analysisintervalnameparts);
-
-        $data->predictionsprocessor = explode('\\', $this->version->predictionsprocessor)[1];
-
         $params = new stdClass();
         $params->testsize = $this->version->relativetestsetsize * 100;
         $params->trainsize = 100 - $params->testsize;
@@ -82,14 +77,6 @@ class model_version_description implements templatable, renderable {
             $data->contextids = implode(', ', $contextids);
         } else if (gettype($contextids) == 'string') {
             $data->contextids = $contextids;
-        }
-
-        $data->indicators = '';
-        $indicators = json_decode($this->version->indicators);
-        if (gettype($indicators) == 'array') {
-            $data->indicators = implode(', ', $indicators);
-        } else if (gettype($indicators) == 'string') {
-            $data->indicators = $indicators;
         }
 
         $data->haserror = isset($this->version->error);

@@ -42,8 +42,18 @@ class model_configuration {
     private $target;
     /** @var string $modelanalysabletype that will be used for calculating features for the model. */
     private $modelanalysabletype;
+    /** @var string $analysisinterval used for the model version */
+    private $analysisinterval;
+    /** @var string $predictionsprocessor used by the model version */
+    private $predictionsprocessor;
+    /** @var string defaultcontextids used as data by the model version */
+    private $defaultcontextids;
+    /** @var string $indicators used by the model version */
+    private $indicators;
     /** @var int[] $versions created of the model config. */
     private $versions;
+
+
     /**
      * Constructor. Import from DB.
      *
@@ -59,6 +69,10 @@ class model_configuration {
         $this->modelid = $modelconfig->modelid;
         $this->target = $modelconfig->target;
         $this->name = $modelconfig->name ??  'model' . $this->modelid;
+        $this->predictionsprocessor = $modelconfig->predictionsprocessor;
+        $this->analysisinterval = $modelconfig->analysisinterval;
+        $this->defaultcontextids = $modelconfig->defaultcontextids;
+        $this->indicators = $modelconfig->indicators;
 
         $targetinstance = manager::get_target($this->target);
         if (!$targetinstance) throw new \Exception('Target could not be retrieved from target name '.$this->target);
@@ -107,10 +121,41 @@ class model_configuration {
         $obj->modelid = $modelid;
         $obj->name = $modelobj->name;
         $obj->target = $modelobj->target;
+
+        if (self::valid_exists($modelobj->predictionsprocessor)) {
+            $obj->predictionsprocessor = $modelobj->predictionsprocessor;
+        } else {
+            $default = manager::default_mlbackend();
+            $obj->predictionsprocessor = $default;
+        }
+
+        if (self::valid_exists($modelobj->timesplitting)) {
+            $obj->analysisinterval = $modelobj->timesplitting;
+        } else {
+            $analysisintervals = manager::get_time_splitting_methods_for_evaluation();
+            $firstanalysisinterval = array_keys($analysisintervals)[0];
+            $obj->analysisinterval = $firstanalysisinterval;
+        }
+
+        if (self::valid_exists($modelobj->contextids)) {
+            $obj->defaultcontextids = $modelobj->contextids;
+        }
+
+        $obj->indicators = $modelobj->indicators;
+
         $obj->timecreated = time(); //later check: if model modified after this, create a new config for it.
-        // store analysisinterval? indicators?
 
         return $DB->insert_record('tool_laaudit_model_configs', $obj);
+    }
+
+    /**
+     * Helper method: Short check to verify whether the provided value is valid, and thus a valid list exists.
+     *
+     * @param string|null $value to check
+     * @return boolean
+     */
+    private static function valid_exists($value) {
+        return isset($value) && $value != "" && $value != "[]";
     }
 
     /**
@@ -127,6 +172,10 @@ class model_configuration {
         $obj->name = $this->name;
         $obj->target = $this->target;
         $obj->modelanalysabletype = $this->modelanalysabletype;
+        $obj->analysisinterval = $this->analysisinterval;
+        $obj->predictionsprocessor = $this->predictionsprocessor;
+        $obj->defaultcontextids = $this->defaultcontextids;
+        $obj->indicators = $this->indicators;
         $obj->versions = $this->versions;
 
         return $obj;

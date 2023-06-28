@@ -66,6 +66,27 @@ class model_configuration implements templatable, renderable {
         $modelanalysabletypenameparts = explode('\\', $this->modelconfig->modelanalysabletype);
         $data->modelanalysabletype = end($modelanalysabletypenameparts);
 
+        $data->predictionsprocessor = explode('\\', $this->modelconfig->predictionsprocessor)[1];
+
+        $analysisintervalnameparts = explode('\\', $this->modelconfig->analysisinterval);
+        $data->analysisinterval = end($analysisintervalnameparts);
+
+        $data->defaultcontextids = get_string('allcontexts', 'tool_laaudit');
+        $contextids = json_decode($this->modelconfig->defaultcontextids);
+        if (gettype($contextids) == 'array') {
+            $data->defaultcontextids = implode(', ', $contextids);
+        } else if (gettype($contextids) == 'string') {
+            $data->defaultcontextids = $contextids;
+        }
+
+        $data->indicators = '';
+        $indicators = json_decode($this->modelconfig->indicators);
+        if (gettype($indicators) == 'array') {
+            $data->indicators = implode(', ', $indicators);
+        } else if (gettype($indicators) == 'string') {
+            $data->indicators = $indicators;
+        }
+
         // Add buttons.
         $buttons = [];
         $buttons[] = new single_button(new moodle_url('modelversion.php', ['configid' => $this->modelconfig->id, 'sesskey' => sesskey()]),

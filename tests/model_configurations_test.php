@@ -41,6 +41,8 @@ class _model_configurations_test extends \advanced_testcase {
         $nmodels = test_model::count_models();
         $configs = model_configurations::init_and_get_all_model_config_objs();
         $this->assertEquals($nmodels, sizeOf($configs)); // A config is created for each existing model.
+        $this->assertEquals([], $configs[0]->versions);
+        $this->assertTrue($configs[0]->modelanalysabletype != null);
 
         $tobedeletedmodelid = test_model::create();
         $configs2 = model_configurations::init_and_get_all_model_config_objs();

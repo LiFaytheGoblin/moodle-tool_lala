@@ -61,7 +61,7 @@ class model_version {
     private $contextids;
     /** @var string $indicators used by the model version */
     private $indicators;
-    /** @var \core_analytics\indicator[] $indicatorinstances for this version */
+    /** @var \core_analytics\local\indicator\base[] $indicatorinstances for this version */
     private $indicatorinstances;
     /** @var \core_analytics\analysis_interval[] $analysisintervalinstances for this version */
     private $analysisintervalinstances;
@@ -77,14 +77,12 @@ class model_version {
     private $testdataset;
     /** @var array $predictionsdataset */
     private $predictionsdataset;
-    /** @var \core_analytics\model $moodlemodel / moodle model this version belongs to */
-    private $moodlemodel;
     /** @var \Phpml\Classification\Linear\LogisticRegression $model trained for this version */
     private $model;
-    /** @var stdClass $analyser for this version */
+    /** @var \core_analytics\local\analyser\base $analyser for this version */
     private $analyser;
-    /** @var stdClass $target for this version */
-    private $target;
+    /** @var \core_analytics\local\target\base $targetinstance for this version */
+    private $targetinstance;
     /** @var context[] $contexts for this version */
     private $contexts;
     /** @var \core_analytics\predictor $predictor for this version */
@@ -107,17 +105,19 @@ class model_version {
         $this->name = $version->name;
         $this->timecreationstarted = $version->timecreationstarted;
         $this->timecreationfinished = $version->timecreationfinished;
-        $this->analysisinterval = $version->analysisinterval;
-        $this->predictionsprocessor = $version->predictionsprocessor;
+
         $this->relativetestsetsize = $version->relativetestsetsize;
         $this->contextids = $version->contextids;
-        $this->indicators = $version->indicators;
         $this->error = $version->error;
         $this->evidence = $DB->get_records('tool_laaudit_evidence', ['versionid' => $this->id]);
-        $this->modelid = $DB->get_fieldset_select('tool_laaudit_model_configs', 'modelid', 'id='.$this->configid)[0];
-        if (!isset($this->modelid)) {
-            $this->modelid = 0; // Todo: Model was maybe deleted. Catch this case!
-        }
+
+        $this->config = $DB->get_record('tool_laaudit_model_configs', ['id' => $this->configid], '*', MUST_EXIST);
+        $this->modelid = $this->config->modelid;
+        $this->target = $this->config->target;
+        $this->predictionsprocessor = $this->config->predictionsprocessor;
+        $this->analysisinterval =  $this->config->analysisinterval;
+        $this->indicators = $this->config->indicators;
+
         $this->load_objects();
     }
 
@@ -130,10 +130,17 @@ class model_version {
      * @return void
      */
     private function load_objects() {
-        $this->moodlemodel = new model($this->modelid);
-        $this->target = $this->moodlemodel->get_target();
-        $this->contexts = $this->moodlemodel->get_contexts();
-        $this->predictor = $this->moodlemodel->get_predictions_processor();
+        $this->targetinstance = \core_analytics\manager::get_target($this->target);
+        if (!$this->targetinstance) throw new \Exception('Target could not be retrieved from target name '.$this->target);
+
+        $this->contexts = [];
+        if (isset($this->contextids)) {
+            foreach($this->contextids as $contextid) {
+                $this->contexts[] = \core_analytics\context::instance_by_id($contextid, IGNORE_MISSING);
+            }
+        }
+
+        $this->predictor = manager::get_predictions_processor($this->predictionsprocessor, true);
 
         // Convert indicators from string[] to instances.
         $fullclassnames = json_decode($this->indicators);
@@ -157,8 +164,8 @@ class model_version {
 
         // Create an analyser.
         $options = ['evaluation' => true, 'mode' => 'configuration'];
-        $analyzerclassname = $this->target->get_analyser_class();
-        $this->analyser = new $analyzerclassname($this->modelid, $this->target, $this->indicatorinstances,
+        $analyzerclassname = $this->targetinstance->get_analyser_class();
+        $this->analyser = new $analyzerclassname($this->modelid, $this->targetinstance, $this->indicatorinstances,
                 $this->analysisintervalinstances, $options);
     }
 
@@ -180,27 +187,8 @@ class model_version {
         $obj->relativetestsetsize = self::DEFAULT_RELATIVE_TEST_SET_SIZE;
 
         // Copy values from model.
-        $modelconfig = $DB->get_record('tool_laaudit_model_configs', ['id' => $configid], 'modelid', MUST_EXIST);
-        $modelid = $modelconfig->modelid;
-        $moodlemodel = $DB->get_record('analytics_models', ['id' => $modelid],
-                'timesplitting, predictionsprocessor, contextids, indicators', MUST_EXIST);
-        if (self::valid_exists($moodlemodel->timesplitting)) {
-            $obj->analysisinterval = $moodlemodel->timesplitting;
-        } else {
-            $analysisintervals = manager::get_time_splitting_methods_for_evaluation();
-            $firstanalysisinterval = array_keys($analysisintervals)[0];
-            $obj->analysisinterval = $firstanalysisinterval;
-        }
-        if (self::valid_exists($moodlemodel->predictionsprocessor)) {
-            $obj->predictionsprocessor = $moodlemodel->predictionsprocessor;
-        } else {
-            $default = manager::default_mlbackend();
-            $obj->predictionsprocessor = $default;
-        }
-        if (self::valid_exists($moodlemodel->contextids)) {
-            $obj->contextids = $moodlemodel->contextids;
-        }
-        $obj->indicators = $moodlemodel->indicators;
+        $modelconfig = $DB->get_record('tool_laaudit_model_configs', ['id' => $configid], 'defaultcontextids', MUST_EXIST);
+        $obj->contextids = $modelconfig->defaultcontextids;
 
         return $DB->insert_record('tool_laaudit_model_versions', $obj);
     }
@@ -228,8 +216,6 @@ class model_version {
         $obj->name = $this->name;
         $obj->timecreationstarted = $this->timecreationstarted;
         $obj->timecreationfinished = $this->timecreationfinished;
-        $obj->analysisinterval = $this->analysisinterval;
-        $obj->predictionsprocessor = $this->predictionsprocessor;
         $obj->relativetestsetsize = $this->relativetestsetsize;
         $obj->contextids = $this->contextids;
         $obj->indicators = $this->indicators;

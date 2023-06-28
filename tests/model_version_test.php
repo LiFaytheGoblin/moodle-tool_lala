@@ -31,7 +31,7 @@ require_once(__DIR__ . '/fixtures/test_version.php');
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class model_version__test extends \advanced_testcase {
+class model_version_test extends \advanced_testcase {
     /**
      * Check that __construct() creates a model version.
      *

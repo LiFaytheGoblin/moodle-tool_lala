@@ -40,8 +40,8 @@ class model_configurations {
     public static function init_and_get_all_model_config_objs(): array {
         global $DB;
 
-        // Get all existing model configs.
-        $modelconfigs = $DB->get_records('tool_laaudit_model_configs');
+        // Get all existing model configs ids.
+        $modelconfigids = $DB->get_fieldset_select('tool_laaudit_model_configs', 'id', '1=1');
 
         // Add configs for new models/ models that have not received a config entry yet.
         // Can we use something else than modelid? The version is stored somewhere I think?
@@ -49,7 +49,11 @@ class model_configurations {
         $modelidsinanalyticsmodelstabel = $DB->get_fieldset_select('analytics_models', 'id', '1=1');
         $missingmodelids = array_diff($modelidsinanalyticsmodelstabel, $modelidsinconfigtable);
         foreach ($missingmodelids as $missingmodelid) {
-            $configid = model_configuration::create_and_get_for_model($missingmodelid);
+            $modelconfigids[] = model_configuration::create_and_get_for_model($missingmodelid);
+        }
+
+        $modelconfigs = [];
+        foreach($modelconfigids as $configid) {
             $modelconfig = new model_configuration($configid);
             $modelconfigs[] = $modelconfig->get_model_config_obj();
         }

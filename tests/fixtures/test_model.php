@@ -26,7 +26,7 @@ namespace tool_laaudit;
 
 defined('MOODLE_INTERNAL') || die();
 
-use core_analytics\model;
+use core_analytics\manager;
 class test_model {
     const NAME = 'testmodel';
     const TARGET = '\core_course\analytics\target\no_recent_accesses';
@@ -50,24 +50,35 @@ class test_model {
                 'timemodified' => time(),
                 'usermodified' => 1,
         ];
-        $modelid = $DB->insert_record('analytics_models', $validmodelobject);
-        return $modelid;
+        return $DB->insert_record('analytics_models', $validmodelobject);
     }
 
     /**
      * Deletes a model from the db
+     *
+     * @param int $modelid
      */
-    public static function delete($modelid) {
+    public static function delete(int $modelid): void {
         global $DB;
         $DB->delete_records('analytics_models', ['id' => $modelid]);
     }
 
-    public static function count_models() {
+    /**
+     * Counts the existing models.
+     *
+     * @return int amount of models
+     */
+    public static function count_models(): int {
         global $DB;
         return $DB->count_records('analytics_models');
     }
 
-    public static function get_highest_id() {
+    /**
+     * Get the highest model id that is currently in use.
+     *
+     * @return int modelid
+     */
+    public static function get_highest_id(): int {
         global $DB;
         $existingmodelidsinconfigs = $DB->get_fieldset_select('tool_laaudit_model_configs', 'modelid', '1=1');
         $existingmodelidsinmodels = $DB->get_fieldset_select('analytics_models', 'id', '1=1');
@@ -76,22 +87,38 @@ class test_model {
         return max($allmodelids);
     }
 
-    public static function get_target_instance($modelid) {
-        return \core_analytics\manager::get_target(self::TARGET);
+    /**
+     * Get an instance of the test target.
+     *
+     * @return \core_analytics\local\target\base target
+     */
+    public static function get_target_instance(): \core_analytics\local\target\base {
+        return manager::get_target(self::TARGET);
     }
 
-    public static function get_indicator_instances() {
+    /**
+     * Get instances for the test indicators
+     *
+     * @return \core_analytics\local\indicator\base[] indicators
+     */
+    public static function get_indicator_instances(): array {
         $fullclassnames = json_decode(self::INDICATORS);
         $indicatorinstances = array();
         foreach ($fullclassnames as $fullclassname) {
-            $instance = \core_analytics\manager::get_indicator($fullclassname);
+            $instance = manager::get_indicator($fullclassname);
             $indicatorinstances[$fullclassname] = $instance;
         }
         return $indicatorinstances;
     }
 
-    public static function get_analysisinterval_instances() {
-        $analysisintervalinstanceinstance = \core_analytics\manager::get_time_splitting(test_model::ANALYSISINTERVAL);
+    /**
+     * Get instances for the test analysisinterval(s)
+     *
+     * @return \core_analytics\local\time_splitting\base[] analysisinterval(s)
+     */
+    public static function get_analysisinterval_instances(): array {
+        $analysisintervalinstanceinstance = manager::get_time_splitting(test_model::ANALYSISINTERVAL);
+        if(!$analysisintervalinstanceinstance) throw new \Exception('Analysisinterval instance not found for analysis interval with name '.test_model::ANALYSISINTERVAL);
         return [$analysisintervalinstanceinstance];
     }
 }

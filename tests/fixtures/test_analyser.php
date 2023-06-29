@@ -24,15 +24,17 @@
 
 namespace tool_laaudit;
 
+use core_analytics\local\analyser\base;
+
 defined('MOODLE_INTERNAL') || die();
 class test_analyser {
-
     /**
-     * Stores a model in the db and returns a modelid
+     * Creates an analyser for a specific modelid.
      *
-     * @return analyser
+     * @param int $modelid
+     * @return base analyser
      */
-    public static function create($modelid) {
+    public static function create(int $modelid): base {
         $options = ['evaluation' => true, 'mode' => 'configuration'];
 
         $target = test_model::get_target_instance($modelid);

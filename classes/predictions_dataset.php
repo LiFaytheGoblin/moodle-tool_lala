@@ -35,7 +35,7 @@ class predictions_dataset extends dataset {
      * @param array $options = [$model, $data]
      * @return void
      */
-    public function collect($options) {
+    public function collect(array $options): void {
         if (!isset($options['model'])) {
             throw new \Exception('Missing trained model');
         }

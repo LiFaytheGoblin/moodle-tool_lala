@@ -38,7 +38,7 @@ class model extends evidence {
      * @param array $options = [$data, $predictor]
      * @return void
      */
-    public function collect($options) {
+    public function collect(array $options): void {
         if (!isset($options['data'])) {
             throw new \Exception('Missing training data');
         }
@@ -87,7 +87,7 @@ class model extends evidence {
      *
      * @return void
      */
-    public function serialize() {
+    public function serialize(): void {
         if (!isset($this->data)) throw new \Exception('No evidence has been collected yet that could be serialized. Make sure to train a model first.');
         if (isset($this->filestring)) {
             throw new \Exception('Model has already been serialized.');
@@ -100,7 +100,7 @@ class model extends evidence {
      * Returns the type of the stored file.
      * @return string
      */
-    protected function get_file_type() {
+    protected function get_file_type(): string {
         return 'ser';
     }
 }

@@ -34,13 +34,13 @@ use stdClass;
  */
 class model_version implements templatable, renderable {
     /** @var stdClass $version of a model config */
-    protected $version;
+    protected stdClass $version;
     /**
      * Constructor for this object.
      *
      * @param stdClass $version The model version object
      */
-    public function __construct($version) {
+    public function __construct(stdClass $version) {
         $this->version = $version;
     }
 
@@ -48,22 +48,21 @@ class model_version implements templatable, renderable {
      * Data for use with a template.
      *
      * @param renderer_base $output Renderer information.
-     * @return stdClass Said data.
+     * @return array Said data.
      */
-    public function export_for_template(renderer_base $output) {
-        $data = new stdClass();
+    public function export_for_template(renderer_base $output) : array {
+        $data = [];
 
         // Add info about the model version.
-        $data->description = [];
         $descriptionrenderer = new model_version_description($this->version);
-        $data->description[] = $descriptionrenderer->export_for_template($output);
+        $data['description'] = [$descriptionrenderer->export_for_template($output)];
 
         $evidenceitems = [];
         foreach ($this->version->evidence as $evidenceitem) {
             $evidencerenderer = new evidence_item($evidenceitem);
             $evidenceitems[] = $evidencerenderer->export_for_template($output);
         }
-        $data->evidence = $evidenceitems;
+        $data['evidence'] = $evidenceitems;
 
         return $data;
     }

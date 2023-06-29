@@ -53,16 +53,18 @@ class model_version {
     private int $configid;
     /** @var int $modelid of the model this version belongs to */
     private int $modelid;
+    /** @var string $target for this version */
+    private string $target;
+    /** @var string $indicators used by the model version */
+    private string $indicators;
     /** @var string $analysisinterval used for the model version */
     private string $analysisinterval;
     /** @var string $predictionsprocessor used by the model version */
     private string $predictionsprocessor;
-    /** @var float $relativetestsetsize relative amount of available data to be used for testing */
-    private float $relativetestsetsize;
     /** @var string|null $contextids used as data by the model version */
     private ?string $contextids;
-    /** @var string $indicators used by the model version */
-    private string $indicators;
+    /** @var float $relativetestsetsize relative amount of available data to be used for testing */
+    private float $relativetestsetsize;
     /** @var stdClass[] $evidence used by the model version */
     private array $evidence;
     /** @var string|null $error that occurred first when creating this model version and gathering evidence */
@@ -83,8 +85,6 @@ class model_version {
     private array $contexts;
     /** @var predictor $predictor for this version */
     private predictor $predictor;
-    /** @var string $target for this version */
-    private string $target;
 
     /**
      * Constructor. Deserialize DB object.
@@ -122,14 +122,14 @@ class model_version {
     /**
      * Loads php objects instead of just ids or names for some of the model properties,
      * so they can be reused later.
-     * Objects that are being loaded:
-     * $modelconfig, $target, $contexts, $predictor, $indicatorinstances, $analysisintervalinstances, $analyser
+     * Objects that are being loaded for later use:
+     * $contexts, $predictor, $analyser
+     * Other loaded objects ($targetinstance, $indicatorinstances, $analysisintervalinstances) are only needed temporarily.
      *
      * @return void
      */
     private function load_objects(): void {
-        $targetinstance = manager::get_target($this->target);
-        if (!$targetinstance) throw new Exception('Target could not be retrieved from target name '.$this->target);
+        $this->predictor = manager::get_predictions_processor($this->predictionsprocessor, true);
 
         $this->contexts = [];
         if (isset($this->contextids)) {
@@ -138,7 +138,9 @@ class model_version {
             }
         }
 
-        $this->predictor = manager::get_predictions_processor($this->predictionsprocessor, true);
+        // Convert analysisintervals from string[] to instances.
+        $analysisintervalinstanceinstance = manager::get_time_splitting($this->analysisinterval);
+        $analysisintervalinstances = [$analysisintervalinstanceinstance];
 
         // Convert indicators from string[] to instances.
         $fullclassnames = json_decode($this->indicators);
@@ -154,16 +156,13 @@ class model_version {
         if (empty($indicatorinstances)) {
             throw new moodle_exception('errornoindicators', 'analytics');
         }
-        $indicatorinstances1 = $indicatorinstances;
-
-        // Convert analysisintervals from string[] to instances.
-        $analysisintervalinstanceinstance = manager::get_time_splitting($this->analysisinterval);
-        $analysisintervalinstances = [$analysisintervalinstanceinstance];
 
         // Create an analyser.
         $options = ['evaluation' => true, 'mode' => 'configuration'];
+        $targetinstance = manager::get_target($this->target);
+        if (!$targetinstance) throw new Exception('Target could not be retrieved from target name '.$this->target);
         $analyzerclassname = $targetinstance->get_analyser_class();
-        $this->analyser = new $analyzerclassname($this->modelid, $targetinstance, $indicatorinstances1,
+        $this->analyser = new $analyzerclassname($this->modelid, $targetinstance, $indicatorinstances,
                 $analysisintervalinstances, $options);
     }
 
@@ -171,9 +170,9 @@ class model_version {
      * Returns a stdClass with the model version data.
      *
      * @param int $configid
-     * @return stdClass
+     * @return int id of the created config
      */
-    public static function create_scaffold_and_get_for_config(int $configid): stdClass {
+    public static function create_scaffold_and_get_for_config(int $configid): int {
         global $DB;
 
         $obj = new stdClass();
@@ -206,7 +205,6 @@ class model_version {
         $obj->timecreationfinished = $this->timecreationfinished;
         $obj->relativetestsetsize = $this->relativetestsetsize;
         $obj->contextids = $this->contextids;
-        $obj->indicators = $this->indicators;
         $obj->evidence = $this->evidence;
         $obj->error = $this->error;
 
@@ -262,6 +260,7 @@ class model_version {
      * @return void
      */
     public function split_training_test_data(): void {
+        if (!isset($this->dataset)) throw new Exception('No data available to split into training and testing data. Have you gathered data?');
         $data = dataset::get_shuffled($this->dataset);
         $options = ['data' => $data, 'testsize' => $this->relativetestsetsize];
 
@@ -275,6 +274,7 @@ class model_version {
      * @return void
      */
     public function train(): void {
+        if (!isset($this->trainingdataset)) throw new Exception('No training data is available for training. Have you gathered data and split it into training and testing data?');
         $options = ['data' => $this->trainingdataset, 'predictor' => $this->predictor];
 
         $this->add('model', $options);
@@ -286,6 +286,9 @@ class model_version {
      * @return void
      */
     public function predict(): void {
+        if (!isset($this->testdataset)) throw new Exception('No test data is available for getting predictions. Have you gathered data and split it into training and testing data?');
+        if (!isset($this->model)) throw new Exception('No model is available for getting predictions. Have you trained a model?');
+
         $options = ['model' => $this->model, 'data' => $this->testdataset];
 
         $this->add('predictions_dataset', $options);

@@ -18,15 +18,10 @@ namespace tool_laaudit;
 
 defined('MOODLE_INTERNAL') || die();
 
-global $CFG;
-require_once($CFG->dirroot . '/admin/tool/laaudit/classes/dataset.php');
-require_once(__DIR__ . '/fixtures/test_config.php');
 require_once(__DIR__ . '/fixtures/test_model.php');
 require_once(__DIR__ . '/fixtures/test_version.php');
-require_once(__DIR__ . '/fixtures/test_course_with_students.php');
-require_once(__DIR__ . '/fixtures/test_analyser.php');
 require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
-
+require_once(__DIR__ . '/evidence_testcase.php');
 
 /**
  * Training dataset test.
@@ -35,19 +30,13 @@ require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class predictions_dataset_test extends \advanced_testcase {
-    private $evidence;
+class predictions_dataset_test extends evidence_testcase {
     private $classifier;
     protected function setUp(): void {
-        $this->resetAfterTest(true);
+        parent::setUp();
 
-        $modelid = test_model::create();
-        $configid = test_config::create($modelid);
-        $versionid = test_version::create($configid);
-
-        $this->evidence = predictions_dataset::create_scaffold_and_get_for_version($versionid);
-
-        $this->classifier = test_version::get_classifier($versionid);
+        $this->evidence = predictions_dataset::create_scaffold_and_get_for_version($this->versionid);
+        $this->classifier = test_version::get_classifier($this->versionid);
     }
     /**
      * Data provider for {@see test_training_dataset_collect()}.
@@ -72,7 +61,7 @@ class predictions_dataset_test extends \advanced_testcase {
      * @dataProvider tool_laaudit_get_source_data_parameters_provider
      * @param $ndatapoints  amount of datapoints in training data
      */
-    public function test_predictions_dataset_collect($ndatapoints) {
+    public function test_evidence_collect($ndatapoints) {
         $options=[
                 'model' => $this->classifier,
                 'data' => test_dataset_evidence::create($ndatapoints),
@@ -90,19 +79,11 @@ class predictions_dataset_test extends \advanced_testcase {
 
         $this->assertEquals($ndatapoints, sizeof($resdata));
     }
-    /**
-     * Check that collect throws an error if trying to call it twice for the same object.
-     *
-     * @covers ::tool_laaudit_training_dataset_collect
-     */
-    public function test_predictions_dataset_collect_error_again() {
-        $options=[
+
+    function get_options(): array {
+        return [
                 'model' => $this->classifier,
                 'data' => test_dataset_evidence::create(3),
         ];
-        $this->evidence->collect($options);
-
-        $this->expectException(\Exception::class); // Expect exception if trying to collect again.
-        $this->evidence->collect($options);
     }
 }

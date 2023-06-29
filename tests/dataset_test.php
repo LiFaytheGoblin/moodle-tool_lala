@@ -18,13 +18,10 @@ namespace tool_laaudit;
 
 defined('MOODLE_INTERNAL') || die();
 
-global $CFG;
-require_once($CFG->dirroot . '/admin/tool/laaudit/classes/dataset.php');
-require_once(__DIR__ . '/fixtures/test_config.php');
 require_once(__DIR__ . '/fixtures/test_model.php');
-require_once(__DIR__ . '/fixtures/test_version.php');
 require_once(__DIR__ . '/fixtures/test_course_with_students.php');
 require_once(__DIR__ . '/fixtures/test_analyser.php');
+require_once(__DIR__ . '/evidence_testcase.php');
 
 /**
  * Dataset test.
@@ -33,24 +30,18 @@ require_once(__DIR__ . '/fixtures/test_analyser.php');
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class dataset_test extends \advanced_testcase {
-    private $evidence;
-    private $modelid;
+class dataset_test extends evidence_testcase {
     protected function setUp(): void {
-        $this->resetAfterTest(true);
+        parent::setUp();
 
-        $this->modelid = test_model::create();
-        $configid = test_config::create($this->modelid);
-        $versionid = test_version::create($configid);
-
-        $this->evidence = dataset::create_scaffold_and_get_for_version($versionid);
+        $this->evidence = dataset::create_scaffold_and_get_for_version($this->versionid);
     }
     /**
      * Data provider for {@see test_dataset_collect()}.
      *
      * @return array List of source data information
      */
-    public function tool_laaudit_get_source_data_parameters_provider() {
+    public function tool_laaudit_get_source_data_parameters_provider() : array {
         return [
                 'Min user, min days' => [
                         'nstudents' => 1,
@@ -75,14 +66,10 @@ class dataset_test extends \advanced_testcase {
      * @param int $nstudents amount of students
      * @param int $createddaysago how many days ago a sample course should have been started
      */
-    public function test_dataset_collect($nstudents, $createddaysago) {
-        test_course_with_students::create($this->getDataGenerator(), $nstudents, $createddaysago);
+    public function test_evidence_collect(int $nstudents, int $createddaysago): void {
+        $this->create_test_data($nstudents, $createddaysago);
 
-        $options=[
-            'contexts' => [],
-            'analyser' => test_analyser::create($this->modelid),
-            'modelid' => $this->modelid,
-        ];
+        $options = $this->get_options();
         $this->evidence->collect($options);
 
         $rawdata = $this->evidence->get_raw_data();
@@ -106,44 +93,40 @@ class dataset_test extends \advanced_testcase {
         $this->assertTrue(str_contains($serializedstring, ',')); // the string should have commas.
     }
 
-    public function test_dataset_collect_error_again() {
-        test_course_with_students::create($this->getDataGenerator(), 1, 3);
-
-        $options=[
-                'contexts' => [],
-                'analyser' => test_analyser::create($this->modelid),
-                'modelid' => $this->modelid,
-        ];
-
-        $this->evidence->collect($options);
-
-        $this->expectException(\Exception::class); // Expect exception if trying to collect again.
-        $this->evidence->collect($options);
+    /**
+     * Check that collect throws an error if trying to call it twice for the same evidence.
+     *
+     * @covers ::tool_laaudit_training_dataset_collect
+     */
+    public function test_evidence_collect_error_again(): void {
+        $this->create_test_data();
+        parent::test_evidence_collect_error_again();
     }
 
-    public function test_dataset_collect_error_nodata() {
-        $options=[
-                'contexts' => [],
-                'analyser' => test_analyser::create($this->modelid),
-                'modelid' => $this->modelid,
-        ];
+    /**
+     * Check that collect throws an error if data is missing.
+     *
+     * @covers ::tool_laaudit_training_dataset_collect
+     */
+    public function test_evidence_collect_error_nodata(): void {
+        $options = $this->get_options();
 
         $this->expectException(\Exception::class); // Expect exception if trying to collect but no data exists.
         $this->evidence->collect($options);
     }
 
-    public function test_dataset_collect_deletedmodel() {
+    /**
+     * Check that collect works even if the original model has been deleted.
+     *
+     * @covers ::tool_laaudit_training_dataset_collect
+     */
+    public function test_dataset_collect_deletedmodel(): void {
         $nstudents = 1;
         $createddaysago = 3;
-        test_course_with_students::create($this->getDataGenerator(), $nstudents, $createddaysago);
-
+        $this->create_test_data($nstudents, $createddaysago);
         test_model::delete($this->modelid);
 
-        $options=[
-                'contexts' => [],
-                'analyser' => test_analyser::create($this->modelid),
-                'modelid' => $this->modelid,
-        ];
+        $options = $this->get_options();
 
         $this->evidence->collect($options);
 
@@ -153,24 +136,52 @@ class dataset_test extends \advanced_testcase {
         $this->assertEquals(sizeof($resdata), $nstudents * floor($createddaysago / 3));
     }
 
-    public function test_dataset_serialize_error_nodata() {
+    /**
+     * Check that serialize throws an error if no data can be serialized.
+     *
+     * @covers ::tool_laaudit_training_dataset_serialize
+     */
+    public function test_dataset_serialize_error_nodata(): void {
         $this->expectException(\Exception::class); // Expect exception if no data collected yet.
         $this->evidence->serialize();
     }
 
-    public function test_dataset_serialize_error_againa() {
-        test_course_with_students::create($this->getDataGenerator(), 1, 3);
-
-        $options=[
-                'contexts' => [],
-                'analyser' => test_analyser::create($this->modelid),
-                'modelid' => $this->modelid,
-        ];
+    /**
+     * Check that serialize throws an error if being called again.
+     *
+     * @covers ::tool_laaudit_training_dataset_serialize
+     */
+    public function test_dataset_serialize_error_again(): void {
+        $this->create_test_data();
+        $options = $this->get_options();
 
         $this->evidence->collect($options);
         $this->evidence->serialize();
 
         $this->expectException(\Exception::class); // Expect exception if no data collected yet.
         $this->evidence->serialize();
+    }
+
+    /**
+     * Create test data.
+     *
+     * @param int $nstudents amount of students
+     * @param int $createddaysago how many days ago a sample course should have been started
+     * @return void
+     */
+    protected function create_test_data(int $nstudents = 1, int $createddaysago = 3): void {
+        test_course_with_students::create($this->getDataGenerator(), $nstudents, $createddaysago);
+    }
+
+    /**
+     * Get the options object needed for collecting this evidence.
+     * @return array
+     */
+    public function get_options(): array {
+        return [
+                'contexts' => [],
+                'analyser' => test_analyser::create($this->modelid),
+                'modelid' => $this->modelid,
+        ];
     }
 }

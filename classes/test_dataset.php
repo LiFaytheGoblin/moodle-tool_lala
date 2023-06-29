@@ -35,7 +35,7 @@ class test_dataset extends dataset {
      * @param array $options = [$data, $testsize]
      * @return void
      */
-    public function collect($options) {
+    public function collect(array $options): void {
         if (!isset($options['data'])) {
             throw new \Exception('Missing split dataset');
         }

@@ -26,13 +26,13 @@ namespace tool_laaudit;
 
 defined('MOODLE_INTERNAL') || die();
 class test_config {
-
     /**
-     * Stores a model in the db and returns a modelid
+     * Stores a config in the db and returns the id.
      *
-     * @return int
+     * @param int $modelid
+     * @return int configid
      */
-    public static function create($modelid) : int {
+    public static function create(int $modelid) : int {
         global $DB;
         $valididconfigobject = [
                 'modelid' => $modelid,
@@ -42,11 +42,15 @@ class test_config {
                 'analysisinterval' => test_model::ANALYSISINTERVAL,
                 'indicators' => test_model::INDICATORS
         ];
-        $configid = $DB->insert_record('tool_laaudit_model_configs', $valididconfigobject);
-        return $configid;
+        return $DB->insert_record('tool_laaudit_model_configs', $valididconfigobject);
     }
 
-    public static function get_highest_id() {
+    /**
+     * Gets the highest config id that is currently in use.
+     *
+     * @return int highest configid
+     */
+    public static function get_highest_id(): int {
         global $DB;
         $existingconfigids = $DB->get_fieldset_select('tool_laaudit_model_configs', 'id', '1=1');
         return (sizeof($existingconfigids) > 0) ? max($existingconfigids) : 0;

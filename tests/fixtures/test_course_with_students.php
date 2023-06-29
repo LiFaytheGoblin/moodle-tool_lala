@@ -25,11 +25,17 @@
 namespace tool_laaudit;
 
 defined('MOODLE_INTERNAL') || die();
+
+use testing_data_generator;
 class test_course_with_students {
     /**
      * Generates a new course with students, but no activity.
+     *
+     * @param testing_data_generator $generator
+     * @param int $nstudents
+     * @param int $createddaysago
      */
-    public static function create($generator, $nstudents=10, $createddaysago=7) {
+    public static function create(testing_data_generator $generator, int $nstudents = 10, int $createddaysago = 7): void {
         $timestart = time() - (60 * 60 * 24 * $createddaysago);
 
         $users = [];

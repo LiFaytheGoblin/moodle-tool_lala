@@ -44,22 +44,22 @@ class training_dataset_test extends evidence_testcase {
     public function tool_laaudit_get_source_data_parameters_provider(): array {
         return [
                 'Min dataset, min testsize' => [
-                        'data' => test_dataset_evidence::create(),
+                        'ndatapoints' => 2,
                         'testsize' => 0.3,
-                        'expectedressize' => 2
+                        'expectedressize' => 1
                 ],
                 'Small dataset, some testsize' => [
-                        'data' => test_dataset_evidence::create(7),
+                        'ndatapoints' => 7,
                         'testsize' => 0.3,
                         'expectedressize' => 5
                 ],
                 'Small dataset, smaller testsize' => [
-                        'data' => test_dataset_evidence::create(7),
+                        'ndatapoints' => 7,
                         'testsize' => 0.2,
                         'expectedressize' => 6
                 ],
                 'Some dataset, some testsize' => [
-                        'data' => test_dataset_evidence::create(10),
+                        'ndatapoints' => 10,
                         'testsize' => 0.2,
                         'expectedressize' => 8
                 ],
@@ -71,13 +71,13 @@ class training_dataset_test extends evidence_testcase {
      * @covers ::tool_laaudit_training_dataset_collect
      *
      * @dataProvider tool_laaudit_get_source_data_parameters_provider
-     * @param array $data set
+     * @param int $ndatapoints data set size
      * @param float $testsize portion of the dataset to be used for testing
      * @param int $expectedressize absolute nr. of datapoints to be expected for training
      */
-    public function test_evidence_collect(array $data, float $testsize, int $expectedressize) : void {
+    public function test_evidence_collect(int $ndatapoints, float $testsize, int $expectedressize) : void {
         $options = [
-            'data' => $data,
+            'data' => test_dataset_evidence::create($ndatapoints),
             'testsize' => $testsize,
         ];
         $this->evidence->collect($options);

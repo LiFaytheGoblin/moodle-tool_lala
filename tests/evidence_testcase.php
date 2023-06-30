@@ -33,10 +33,16 @@ require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class evidence_testcase extends \advanced_testcase {
+    /** @var mixed $evidence the evidence that is created during set up of an implementing class. */
     protected $evidence;
+    /** @var int $modelid the id of the belonging Moodle model. */
     protected int $modelid;
+    /** @var int $versionid the id of the belonging model version. */
     protected int $versionid;
 
+    /**
+     * Set up resources before each test.
+     */
     protected function setUp(): void {
         $this->resetAfterTest(true);
 

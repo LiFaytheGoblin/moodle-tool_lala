@@ -16,6 +16,8 @@
 
 namespace tool_laaudit;
 
+use Exception;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -33,8 +35,10 @@ require_once(__DIR__ . '/fixtures/test_course_with_students.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class model_version_complete_creation_test extends \advanced_testcase {
-    private $versionid;
-    private $version;
+    /** @var int $versionid the id of the created model version */
+    private int $versionid;
+    /** @var model_version $version the created model version */
+    private model_version $version;
     protected function setUp(): void {
         $this->resetAfterTest(true);
 
@@ -132,7 +136,7 @@ class model_version_complete_creation_test extends \advanced_testcase {
      * @covers ::tool_laaudit_model_version_split_training_test_data
      */
     public function test_model_version_split_training_test_data_error() {
-        $this->expectException(\Exception::class); // No dataset has been gathered.
+        $this->expectException(Exception::class); // No dataset has been gathered.
         $this->version->split_training_test_data();
     }
 
@@ -142,7 +146,7 @@ class model_version_complete_creation_test extends \advanced_testcase {
      * @covers ::tool_laaudit_model_version_train
      */
     public function test_model_version_train_error() {
-        $this->expectException(\Exception::class); // No training and test data is available.
+        $this->expectException(Exception::class); // No training and test data is available.
         $this->version->train();
     }
 
@@ -152,7 +156,7 @@ class model_version_complete_creation_test extends \advanced_testcase {
      * @covers ::tool_laaudit_model_version_predict
      */
     public function test_model_version_predict_error() {
-        $this->expectException(\Exception::class); // No trained model is available.
+        $this->expectException(Exception::class); // No trained model is available.
         $this->version->predict();
     }
 }

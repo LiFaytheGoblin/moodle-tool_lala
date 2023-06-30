@@ -106,7 +106,7 @@ class dataset_test extends evidence_testcase {
     /**
      * Check that collect throws an error if data is missing.
      *
-     * @covers ::tool_laaudit_training_dataset_collect
+     * @covers ::tool_laaudit_dataset_collect
      */
     public function test_evidence_collect_error_nodata(): void {
         $options = $this->get_options();
@@ -118,7 +118,7 @@ class dataset_test extends evidence_testcase {
     /**
      * Check that collect works even if the original model has been deleted.
      *
-     * @covers ::tool_laaudit_training_dataset_collect
+     * @covers ::tool_laaudit_dataset_collect
      */
     public function test_dataset_collect_deletedmodel(): void {
         $nstudents = 1;
@@ -139,7 +139,7 @@ class dataset_test extends evidence_testcase {
     /**
      * Check that serialize throws an error if no data can be serialized.
      *
-     * @covers ::tool_laaudit_training_dataset_serialize
+     * @covers ::tool_laaudit_dataset_serialize
      */
     public function test_dataset_serialize_error_nodata(): void {
         $this->expectException(\Exception::class); // Expect exception if no data collected yet.
@@ -149,7 +149,7 @@ class dataset_test extends evidence_testcase {
     /**
      * Check that serialize throws an error if being called again.
      *
-     * @covers ::tool_laaudit_training_dataset_serialize
+     * @covers ::tool_laaudit_dataset_serialize
      */
     public function test_dataset_serialize_error_again(): void {
         $this->create_test_data();
@@ -163,11 +163,25 @@ class dataset_test extends evidence_testcase {
     }
 
     /**
+     * Check that get_shuffled returns a shuffled array.
+     *
+     * @covers ::tool_laaudit_dataset_get_shuffled
+     */
+    public function test_dataset_get_shuffled() : void {
+        $data = test_dataset_evidence::create(10);
+
+        $res = dataset::get_shuffled($data);
+
+        $this->assertFalse(json_encode($data) == json_encode($res));
+        $this->assertEquals(sizeof($data), sizeof($res));
+        $this->assertTrue(str_contains(json_encode($res), json_encode(test_dataset_evidence::get_header())));
+    }
+
+    /**
      * Create test data.
      *
      * @param int $nstudents amount of students
      * @param int $createddaysago how many days ago a sample course should have been started
-     * @return void
      */
     protected function create_test_data(int $nstudents = 1, int $createddaysago = 3): void {
         test_course_with_students::create($this->getDataGenerator(), $nstudents, $createddaysago);

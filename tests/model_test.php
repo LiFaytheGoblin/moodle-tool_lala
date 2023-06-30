@@ -27,6 +27,7 @@ require_once(__DIR__ . '/evidence_testcase.php');
 
 use Phpml\ModelManager;
 use Phpml\Estimator;
+use \core_analytics\predictor;
 /**
  * Model test.
  *
@@ -35,7 +36,8 @@ use Phpml\Estimator;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class model_test extends evidence_testcase {
-    private $predictor;
+    /** @var predictor $predictor the predictor for the belonging model version. */
+    private predictor $predictor;
     protected function setUp(): void {
         parent::setUp();
 
@@ -43,7 +45,7 @@ class model_test extends evidence_testcase {
         $this->predictor = test_version::get_predictor();
     }
     /**
-     * Data provider for {@see model_collect()}.
+     * Data provider for {@see test_evidence_collect()}.
      *
      * @return array List of source data information
      */
@@ -65,7 +67,7 @@ class model_test extends evidence_testcase {
      * @dataProvider tool_laaudit_get_source_data_parameters_provider
      * @param int $ndatapoints amount of datapoints in training data
      */
-    public function test_model_collect($ndatapoints) {
+    public function test_evidence_collect($ndatapoints) {
         $dataset = test_dataset_evidence::create($ndatapoints);
 
         $options=[
@@ -95,18 +97,6 @@ class model_test extends evidence_testcase {
         $testxforimported = test_dataset_evidence::create_x($size);
         $predictedlabelsforimported = $imported->predict($testxforimported);
         $this->assertEquals($size, sizeof($predictedlabelsforimported));
-    }
-
-    public function test_model_collect_deletedmodel() {
-        test_model::delete($this->modelid);
-
-        $options= $this->get_options();
-
-        $this->evidence->collect($options);
-
-        $trained_model = $this->evidence->get_raw_data();
-        // Check that the $data property is set to a LogisticRegression model.
-        $this->assertEquals('Phpml\Classification\Linear\LogisticRegression', get_class($trained_model));
     }
 
     /**
@@ -142,6 +132,23 @@ class model_test extends evidence_testcase {
         ];
         $this->expectException(\Exception::class); // Expect exception if trying to collect but no(t enough) data exists.
         $this->evidence->collect($options);
+    }
+
+    /**
+     * Check that model collect still works when the original model has been deleted.
+     *
+     * @covers ::tool_laaudit_model_collect
+     */
+    public function test_model_collect_deletedmodel() {
+        test_model::delete($this->modelid);
+
+        $options= $this->get_options();
+
+        $this->evidence->collect($options);
+
+        $trained_model = $this->evidence->get_raw_data();
+        // Check that the $data property is set to a LogisticRegression model.
+        $this->assertEquals('Phpml\Classification\Linear\LogisticRegression', get_class($trained_model));
     }
 
     /**

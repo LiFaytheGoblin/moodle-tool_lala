@@ -19,9 +19,6 @@ namespace tool_laaudit;
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/fixtures/test_model.php');
-require_once(__DIR__ . '/fixtures/test_version.php');
-require_once(__DIR__ . '/fixtures/test_course_with_students.php');
-require_once(__DIR__ . '/fixtures/test_analyser.php');
 require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
 require_once(__DIR__ . '/evidence_testcase.php');
 
@@ -136,8 +133,7 @@ class test_dataset_test extends evidence_testcase {
     }
 
     /** Get the options object needed for collecting this evidence.
-     * @param array $data
-     * @param float $testsize
+     *
      * @return array
      */
     public function get_options(): array {

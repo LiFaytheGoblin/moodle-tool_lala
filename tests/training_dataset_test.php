@@ -132,6 +132,11 @@ class training_dataset_test extends evidence_testcase {
         $this->evidence->collect($options);
     }
 
+    /**
+     * Get the options object needed for collecting this evidence.
+     *
+     * @return array
+     */
     function get_options(): array {
         return [
                 'data' => test_dataset_evidence::create(3),

@@ -23,6 +23,8 @@ require_once(__DIR__ . '/fixtures/test_version.php');
 require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
 require_once(__DIR__ . '/evidence_testcase.php');
 
+use \Phpml\Classification\Linear\LogisticRegression;
+
 /**
  * Training dataset test.
  *
@@ -31,7 +33,8 @@ require_once(__DIR__ . '/evidence_testcase.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class predictions_dataset_test extends evidence_testcase {
-    private $classifier;
+    /** @var LogisticRegression $classifier the predictor for the belonging model version. */
+    private LogisticRegression $classifier;
     protected function setUp(): void {
         parent::setUp();
 
@@ -80,6 +83,11 @@ class predictions_dataset_test extends evidence_testcase {
         $this->assertEquals($ndatapoints, sizeof($resdata));
     }
 
+    /**
+     * Get the options object needed for collecting this evidence.
+     *
+     * @return array
+     */
     function get_options(): array {
         return [
                 'model' => $this->classifier,

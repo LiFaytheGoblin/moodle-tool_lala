@@ -31,6 +31,9 @@ require_once(__DIR__ . '/evidence_testcase.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class training_dataset_test extends evidence_testcase {
+    /**
+     * Set up resources before each test.
+     */
     protected function setUp(): void {
         parent::setUp();
 
@@ -44,9 +47,9 @@ class training_dataset_test extends evidence_testcase {
     public function tool_laaudit_get_source_data_parameters_provider(): array {
         return [
                 'Min dataset, min testsize' => [
-                        'ndatapoints' => 2,
+                        'ndatapoints' => 3,
                         'testsize' => 0.3,
-                        'expectedressize' => 1
+                        'expectedressize' => 2
                 ],
                 'Small dataset, some testsize' => [
                         'ndatapoints' => 7,

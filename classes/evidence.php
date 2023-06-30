@@ -24,6 +24,7 @@
 
 namespace tool_laaudit;
 
+use Exception;
 use stdClass;
 use context_system;
 use moodle_url;
@@ -80,7 +81,7 @@ abstract class evidence {
         $obj = new stdClass();
 
         if(!$DB->record_exists('tool_laaudit_model_versions', ['id' => $versionid])) {
-            throw new \Exception('No evidence can be created for version with id '.$versionid.'because this version does not exist.');
+            throw new Exception('No evidence can be created for version with id '.$versionid.'because this version does not exist.');
         }
 
         $obj->versionid = $versionid;
@@ -92,6 +93,28 @@ abstract class evidence {
         $id = $DB->insert_record('tool_laaudit_evidence', $obj);
 
         return new static($id);
+    }
+
+    /**
+     * Returns a stdClass with the finished evidence data.
+     *
+     * @param int $versionid of the version
+     * @param array $options depending on the implementation
+     * @return evidence of the created evidence
+     */
+    public static function create_for_version_with_options(int $versionid, array $options): evidence {
+        $evidence = static::create_scaffold_and_get_for_version($versionid);
+
+        try {
+            $evidence->collect($options);
+            $evidence->serialize();
+            $evidence->store();
+        } catch (Exception $e) {
+            $evidence->abort();
+            throw $e;
+        }
+
+        return $evidence;
     }
 
     /**
@@ -116,7 +139,7 @@ abstract class evidence {
      */
     public function store(): void {
         if (!isset($this->filestring)) {
-            throw new \Exception('No data has been serialized for this evidence yet.');
+            throw new Exception('No data has been serialized for this evidence yet.');
         }
         $fileinfo = $this->get_file_info();
 
@@ -248,5 +271,7 @@ abstract class evidence {
         global $DB;
 
         $DB->delete_records('tool_laaudit_evidence', ['id' => $this->id]);
+
+        // todo: delete possibly created files.
     }
 }

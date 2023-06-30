@@ -26,6 +26,7 @@
 namespace tool_laaudit;
 
 use Exception;
+use LogicException;
 use moodle_exception;
 use stdClass;
 use core_analytics\manager;
@@ -154,7 +155,7 @@ class model_version {
             }
         }
         if (empty($indicatorinstances)) {
-            throw new moodle_exception('errornoindicators', 'analytics');
+            throw new Exception('No indicator instances could be created from indicator string '.$this->indicators);
         }
 
         // Create an analyser.
@@ -224,23 +225,17 @@ class model_version {
     private function add(string $evidencetype, array $options): void {
         $class = 'tool_laaudit\\'.$evidencetype;
 
-        $evidence = call_user_func_array($class.'::create_scaffold_and_get_for_version', [$this->id]);
-
         try {
-            $evidence->collect($options);
+            $evidence = call_user_func_array($class.'::create_for_version_with_options', [$this->id, $options]);
+
+            $evidence->finish();
+
+            $this->evidence[$evidencetype] = $evidence->get_id(); // Add to evidence array.
+            $fieldname = str_replace('_', '', $evidencetype);
+            $this->$fieldname = $evidence->get_raw_data();
         } catch (moodle_exception | Exception $e) {
-            $evidence->abort();
             $this->register_error($e);
-            throw $e;
         }
-
-        $evidence->serialize();
-        $evidence->store();
-        $evidence->finish();
-
-        $this->evidence[$evidencetype] = $evidence->get_id(); // Add to evidence array.
-        $fieldname = str_replace('_', '', $evidencetype);
-        $this->$fieldname = $evidence->get_raw_data();
     }
 
     /**
@@ -260,7 +255,7 @@ class model_version {
      * @return void
      */
     public function split_training_test_data(): void {
-        if (!isset($this->dataset)) throw new Exception('No data available to split into training and testing data. Have you gathered data?');
+        if (!isset($this->dataset)) throw new LogicException('No data available to split into training and testing data. Have you gathered data?');
         $data = dataset::get_shuffled($this->dataset);
         $options = ['data' => $data, 'testsize' => $this->relativetestsetsize];
 
@@ -274,7 +269,7 @@ class model_version {
      * @return void
      */
     public function train(): void {
-        if (!isset($this->trainingdataset)) throw new Exception('No training data is available for training. Have you gathered data and split it into training and testing data?');
+        if (!isset($this->trainingdataset)) throw new LogicException('No training data is available for training. Have you gathered data and split it into training and testing data?');
         $options = ['data' => $this->trainingdataset, 'predictor' => $this->predictor];
 
         $this->add('model', $options);
@@ -286,8 +281,8 @@ class model_version {
      * @return void
      */
     public function predict(): void {
-        if (!isset($this->testdataset)) throw new Exception('No test data is available for getting predictions. Have you gathered data and split it into training and testing data?');
-        if (!isset($this->model)) throw new Exception('No model is available for getting predictions. Have you trained a model?');
+        if (!isset($this->testdataset)) throw new LogicException('No test data is available for getting predictions. Have you gathered data and split it into training and testing data?');
+        if (!isset($this->model)) throw new LogicException('No model is available for getting predictions. Have you trained a model?');
 
         $options = ['model' => $this->model, 'data' => $this->testdataset];
 

@@ -22,6 +22,7 @@ require_once(__DIR__ . '/fixtures/test_config.php');
 require_once(__DIR__ . '/fixtures/test_model.php');
 require_once(__DIR__ . '/fixtures/test_version.php');
 require_once(__DIR__ . '/fixtures/test_evidence.php');
+require_once(__DIR__ . '/evidence_testcase.php');
 
 use context_system;
 
@@ -32,27 +33,31 @@ use context_system;
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class evidence_test extends \advanced_testcase {
+class evidence_test extends evidence_testcase {
+    /**
+     * Set up resources before each test.
+     */
+    public function setUp(): void {
+        $this->resetAfterTest(true);
+
+        $this->modelid = test_model::create();
+        $configid = test_config::create($this->modelid);
+        $this->versionid = test_version::create($configid);
+    }
     /**
      * Check that create_scaffold_and_get_for_version() creates an evidence scaffold.
      *
      * @covers ::tool_laaudit_evidence_create_scaffold_and_get_for_version
      */
-    public function test_evidence_create_scaffold_and_get_for_version() {
-        $this->resetAfterTest(true);
-
-        $modelid = test_model::create();
-        $configid = test_config::create($modelid);
-        $versionid = test_version::create($configid);
-
+    public function test_evidence_create_scaffold_and_get_for_version() : void {
         // Create a new piece of evidence for the version.
-        $evidence = test_evidence::create_scaffold_and_get_for_version($versionid);
-        $this->assertEquals($evidence->get_versionid(), $versionid);
+        $evidence = test_evidence::create_scaffold_and_get_for_version($this->versionid);
+        $this->assertEquals($evidence->get_versionid(), $this->versionid);
 
         // Delete model and construct evidence from a version of a now deleted model
-        test_model::delete($modelid);
-        $evidence2 = test_evidence::create_scaffold_and_get_for_version($versionid);
-        $this->assertEquals($evidence2->get_versionid(), $versionid);
+        test_model::delete($this->modelid);
+        $evidence2 = test_evidence::create_scaffold_and_get_for_version($this->versionid);
+        $this->assertEquals($evidence2->get_versionid(), $this->versionid);
     }
 
     /**
@@ -60,7 +65,7 @@ class evidence_test extends \advanced_testcase {
      *
      * @covers ::tool_laaudit_evidence_create_scaffold_and_get_for_version
      */
-    public function test_evidence_create_scaffold_and_get_for_version_error() {
+    public function test_evidence_create_scaffold_and_get_for_version_error() : void {
         $this->expectException(\Exception::class);
         test_evidence::create_scaffold_and_get_for_version(test_version::get_highest_id() + 1);
     }
@@ -70,18 +75,12 @@ class evidence_test extends \advanced_testcase {
      *
      * @covers ::tool_laaudit_evidence_store
      */
-    public function test_evidence_store() {
-        $this->resetAfterTest(true);
-
-        $modelid = test_model::create();
-        $configid = test_config::create($modelid);
-        $versionid = test_version::create($configid);
-
+    public function test_evidence_store() : void {
         // Create a new piece of evidence for the version and store it.
-        $evidenceid = test_evidence::create($versionid);
+        $evidenceid = test_evidence::create($this->versionid);
         $evidence = new test_evidence($evidenceid);
 
-        $evidence->collect([]);
+        $evidence->collect($this->get_options());
         $evidence->serialize();
 
         $evidence->store();
@@ -89,7 +88,7 @@ class evidence_test extends \advanced_testcase {
         // Read the file content.
         $fs = get_file_storage();
         $file = $fs->get_file(context_system::instance()->id, 'tool_laaudit', 'tool_laaudit', $evidenceid,
-                '/evidence/', 'modelversion' . $versionid . '-evidence' . $evidence->get_name() . $evidenceid . '.' .
+                '/evidence/', 'modelversion' . $this->versionid . '-evidence' . $evidence->get_name() . $evidenceid . '.' .
                 $evidence::FILETYPE);
         $contents = $file->get_content();
 
@@ -101,15 +100,9 @@ class evidence_test extends \advanced_testcase {
      *
      * @covers ::tool_laaudit_evidence_store
      */
-    public function test_evidence_store_error() {
-        $this->resetAfterTest(true);
-
-        $modelid = test_model::create();
-        $configid = test_config::create($modelid);
-        $versionid = test_version::create($configid);
-
+    public function test_evidence_store_error() : void {
         // Create a new piece of evidence for the version.
-        $evidence = test_evidence::create_scaffold_and_get_for_version($versionid);
+        $evidence = test_evidence::create_scaffold_and_get_for_version($this->versionid);
 
         // Expect that an exception is thrown when trying to store without first collecting evidence.
         $this->expectException(\Exception::class);
@@ -121,15 +114,9 @@ class evidence_test extends \advanced_testcase {
      *
      * @covers ::tool_laaudit_evidence_finish
      */
-    public function test_evidence_finish() {
-        $this->resetAfterTest(true);
-
-        $modelid = test_model::create();
-        $configid = test_config::create($modelid);
-        $versionid = test_version::create($configid);
-
+    public function test_evidence_finish() : void {
         // Create a new piece of evidence for the version and store it.
-        $evidenceid = test_evidence::create($versionid);
+        $evidenceid = test_evidence::create($this->versionid);
         $evidence = new test_evidence($evidenceid);
 
         $evidence->finish();
@@ -146,15 +133,9 @@ class evidence_test extends \advanced_testcase {
      *
      * @covers ::tool_laaudit_evidence_abort
      */
-    public function test_evidence_abort() {
-        $this->resetAfterTest(true);
-
-        $modelid = test_model::create();
-        $configid = test_config::create($modelid);
-        $versionid = test_version::create($configid);
-
+    public function test_evidence_abort() : void {
         // Create a new piece of evidence for the version and store it.
-        $evidenceid = test_evidence::create($versionid);
+        $evidenceid = test_evidence::create($this->versionid);
         $evidence = new test_evidence($evidenceid);
 
         // get db entry
@@ -166,5 +147,9 @@ class evidence_test extends \advanced_testcase {
 
         $resultids = $DB->get_fieldset_select('tool_laaudit_evidence', 'id', 'id='.$evidenceid);
         $this->assertEquals([], $resultids);
+    }
+
+    function get_options(): array {
+        return [];
     }
 }

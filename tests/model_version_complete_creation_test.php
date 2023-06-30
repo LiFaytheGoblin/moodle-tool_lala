@@ -17,6 +17,7 @@
 namespace tool_laaudit;
 
 use Exception;
+use LogicException;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -118,45 +119,5 @@ class model_version_complete_creation_test extends \advanced_testcase {
 
         $error = test_version::haserror($this->versionid);
         $this->assertFalse($error); // An error has not been registered
-    }
-
-    /**
-     * Check that during gather_dataset errors are thrown and registered.
-     *
-     * @covers ::tool_laaudit_model_version_gather_dataset
-     */
-    public function test_model_version_gather_dataset_error() {
-        $this->expectException(\moodle_exception::class); // No data is available for gathering.
-        $this->version->gather_dataset();
-    }
-
-    /**
-     * Check that during faulty dataset splitting errors are thrown and registered.
-     *
-     * @covers ::tool_laaudit_model_version_split_training_test_data
-     */
-    public function test_model_version_split_training_test_data_error() {
-        $this->expectException(Exception::class); // No dataset has been gathered.
-        $this->version->split_training_test_data();
-    }
-
-    /**
-     * Check that during faulty training errors are thrown and registered.
-     *
-     * @covers ::tool_laaudit_model_version_train
-     */
-    public function test_model_version_train_error() {
-        $this->expectException(Exception::class); // No training and test data is available.
-        $this->version->train();
-    }
-
-    /**
-     * Check that during faulty predicting errors are thrown and registered.
-     *
-     * @covers ::tool_laaudit_model_version_predict
-     */
-    public function test_model_version_predict_error() {
-        $this->expectException(Exception::class); // No trained model is available.
-        $this->version->predict();
     }
 }

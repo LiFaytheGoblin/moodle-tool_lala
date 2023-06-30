@@ -24,6 +24,10 @@
 
 namespace tool_laaudit;
 
+use DomainException;
+use InvalidArgumentException;
+use LengthException;
+use LogicException;
 use \Phpml\Classification\Linear\LogisticRegression;
 
 /**
@@ -39,17 +43,17 @@ class model extends evidence {
      * @return void
      */
     public function collect(array $options): void {
-        if (!isset($options['data'])) {
-            throw new \Exception('Missing training data');
-        }
         if (!isset($options['predictor'])) {
-            throw new \Exception('Missing predictor');
+            throw new InvalidArgumentException('Options array is missing predictor.');
+        }
+        if (!isset($options['data'])) {
+            throw new InvalidArgumentException('Options array is missing training data.');
         }
         if (sizeof($options['data']) == 0) {
-            throw new \Exception('Training dataset is empty.');
+            throw new DomainException('Training dataset can not be empty.');
         }
         if (isset($this->data)) {
-            throw new \Exception('Model has already been trained and can not be changed.');
+            throw new LogicException('Model has already been trained and can not be changed.');
         }
 
         // Get only samples and targets.
@@ -59,7 +63,7 @@ class model extends evidence {
             break;
         }
         if (sizeof($datawithoutheader) < 2) {
-            throw new \Exception('Not enough training data. Need to provide at least 2 datapoints.');
+            throw new LengthException('Not enough training data. Need to provide at least 2 datapoints.');
         }
 
         $trainx = [];
@@ -67,7 +71,7 @@ class model extends evidence {
         $ncolumns = count(end($datawithoutheader));
         foreach ($datawithoutheader as $row) {
             $xs = array_slice($row, 0, $ncolumns - 1);
-            if (sizeof($xs) < 1) throw new \Exception('Need to provide at least one column of indicator values in the training data.');
+            if (sizeof($xs) < 1) throw new LengthException('Need to provide at least one column of indicator values in the training data.');
             $y = end($row);
 
             $trainx[] = $xs;
@@ -88,9 +92,9 @@ class model extends evidence {
      * @return void
      */
     public function serialize(): void {
-        if (!isset($this->data)) throw new \Exception('No evidence has been collected yet that could be serialized. Make sure to train a model first.');
+        if (!isset($this->data)) throw new LogicException('No evidence has been collected yet that could be serialized. Make sure to train a model first.');
         if (isset($this->filestring)) {
-            throw new \Exception('Model has already been serialized.');
+            throw new LogicException('Model has already been serialized.');
         }
         $str = serialize($this->data);
         $this->filestring = $str;

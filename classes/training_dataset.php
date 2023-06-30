@@ -24,6 +24,10 @@
 
 namespace tool_laaudit;
 
+use InvalidArgumentException;
+use LengthException;
+use LogicException;
+
 /**
  * Class for the training dataset evidence item.
  */
@@ -37,17 +41,17 @@ class training_dataset extends dataset {
      */
     public function collect(array $options): void {
         if (!isset($options['data'])) {
-            throw new \Exception('Missing dataset that can be split.');
+            throw new InvalidArgumentException('Missing dataset that can be split.');
         }
         if (!isset($options['testsize'])) {
-            throw new \Exception('Missing test size.');
+            throw new InvalidArgumentException('Missing test size.');
         }
         if (sizeof($options['data']) == 0) {
-            throw new \Exception('Dataset is empty. No training data can be extracted from it.');
+            throw new InvalidArgumentException('Dataset can not be empty. No training data can be extracted from it.');
         }
 
         if (isset($this->data) && sizeof($this->data) > 0) {
-            throw new \Exception('Data has already been collected and can not be changed.');
+            throw new LogicException('Data has already been collected and can not be changed.');
         }
 
         $key = array_keys((array) ($options['data']))[0];
@@ -56,7 +60,7 @@ class training_dataset extends dataset {
             $totaldatapoints = count($arr) - 1;
             $testdatapoints = round($options['testsize'] * $totaldatapoints);
             if($testdatapoints < 1) {
-                throw new \Exception('Not enough data available for creating a training and testing split. Need at least 1 datapoint for testing, and 2 for training.');
+                throw new LengthException('Not enough data available for creating a training and testing split. Need at least 1 datapoint for testing, and 2 for training.');
             }
 
             $lowerlimit = $testdatapoints + 1;
@@ -65,7 +69,7 @@ class training_dataset extends dataset {
             $trainingdata = array_slice($arr, $lowerlimit, null, true);
 
             if (count($trainingdata) < 2) {
-                throw new \Exception('Not enough data available for creating a training split. Need at least 2 datapoints.');
+                throw new LengthException('Not enough data available for creating a training split. Need at least 2 datapoints.');
             }
 
             $trainingdatawithheader[$key] = $header + $trainingdata;

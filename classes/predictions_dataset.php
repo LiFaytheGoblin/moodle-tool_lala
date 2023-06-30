@@ -24,6 +24,9 @@
 
 namespace tool_laaudit;
 
+use InvalidArgumentException;
+use LogicException;
+
 /**
  * Class for the predictions dataset evidence item.
  */
@@ -37,14 +40,14 @@ class predictions_dataset extends dataset {
      */
     public function collect(array $options): void {
         if (!isset($options['model'])) {
-            throw new \Exception('Missing trained model');
+            throw new InvalidArgumentException('Missing trained model');
         }
         if (!isset($options['data'])) {
-            throw new \Exception('Missing test dataset');
+            throw new InvalidArgumentException('Missing test dataset');
         }
 
         if (isset($this->data) && sizeof($this->data) > 0) {
-            throw new \Exception('Data has already been collected and can not be changed.');
+            throw new LogicException('Data has already been collected and can not be changed.');
         }
 
         // Get the test data without analysisinterval container and header.

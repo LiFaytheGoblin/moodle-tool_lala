@@ -55,6 +55,7 @@ class test_evidence extends evidence {
      * @return void
      */
     public function collect(array $options): void {
+        if(isset($this->data)) throw new Exception('Already collected.');
         $this->data = self::RAWDATA;
     }
 

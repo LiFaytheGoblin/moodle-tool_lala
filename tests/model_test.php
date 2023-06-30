@@ -20,10 +20,10 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/admin/tool/laaudit/classes/model.php');
-require_once(__DIR__ . '/fixtures/test_config.php');
 require_once(__DIR__ . '/fixtures/test_model.php');
 require_once(__DIR__ . '/fixtures/test_version.php');
 require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
+require_once(__DIR__ . '/evidence_testcase.php');
 
 use Phpml\ModelManager;
 use Phpml\Estimator;
@@ -34,18 +34,12 @@ use Phpml\Estimator;
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class model_test extends \advanced_testcase {
-    private $evidence;
+class model_test extends evidence_testcase {
     private $predictor;
     protected function setUp(): void {
-        $this->resetAfterTest(true);
+        parent::setUp();
 
-        $this->modelid = test_model::create();
-        $configid = test_config::create($this->modelid);
-        $versionid = test_version::create($configid);
-
-        $this->evidence = model::create_scaffold_and_get_for_version($versionid);
-
+        $this->evidence = model::create_scaffold_and_get_for_version($this->versionid);
         $this->predictor = test_version::get_predictor();
     }
     /**
@@ -81,13 +75,8 @@ class model_test extends \advanced_testcase {
         $this->evidence->collect($options);
 
         $trained_model = $this->evidence->get_raw_data();
-        // Check that the $data property is set to a TRAINED LogisticRegression model.
+        // Check that the $data property is set to a LogisticRegression model.
         $this->assertEquals('Phpml\Classification\Linear\LogisticRegression', get_class($trained_model));
-
-        $size = 3;
-        $testx = test_dataset_evidence::create_x($size);
-        $predictedlabels = $trained_model->predict($testx);
-        $this->assertEquals($size, sizeof($predictedlabels));
 
         // Test serialize().
         $this->evidence->serialize();
@@ -108,28 +97,10 @@ class model_test extends \advanced_testcase {
         $this->assertEquals($size, sizeof($predictedlabelsforimported));
     }
 
-    public function test_model_collect_error_again() {
-        $dataset = test_dataset_evidence::create();
-
-        $options=[
-                'data' => $dataset,
-                'predictor' => $this->predictor,
-        ];
-        $this->evidence->collect($options);
-
-        $this->expectException(\Exception::class); // Expect exception if trying to collect again.
-        $this->evidence->collect($options);
-    }
-
     public function test_model_collect_deletedmodel() {
         test_model::delete($this->modelid);
 
-        $dataset = test_dataset_evidence::create();
-
-        $options=[
-                'data' => $dataset,
-                'predictor' => $this->predictor,
-        ];
+        $options= $this->get_options();
 
         $this->evidence->collect($options);
 
@@ -138,25 +109,76 @@ class model_test extends \advanced_testcase {
         $this->assertEquals('Phpml\Classification\Linear\LogisticRegression', get_class($trained_model));
     }
 
-    public function test_model_serialize_error_again() {
-        $dataset = test_dataset_evidence::create(3);
-
+    /**
+     * Data provider for {@see test_model_collect_error_nodata()}.
+     *
+     * @return array List of source data information
+     */
+    public function tool_laaudit_get_source_data_error_parameters_provider() {
+        return [
+                'No dataset' => [
+                        'dataset' => []
+                ],
+                'Just header' => [
+                        'dataset' => test_dataset_evidence::create(0)
+                ],
+                'Too small dataset' => [
+                        'dataset' => test_dataset_evidence::create(1)
+                ]
+        ];
+    }
+    /**
+     * Check that collect throws an exception if no(t enough) training data is available.
+     *
+     * @covers ::tool_laaudit_model_collect
+     *
+     * @dataProvider tool_laaudit_get_source_data_error_parameters_provider
+     * @param int $dataset training dataset
+     */
+    public function test_model_collect_error_nodata($dataset) {
         $options=[
                 'data' => $dataset,
                 'predictor' => $this->predictor,
         ];
+        $this->expectException(\Exception::class); // Expect exception if trying to collect but no(t enough) data exists.
+        $this->evidence->collect($options);
+    }
+
+    /**
+     * Check that serialize throws an error if called again.
+     *
+     * @covers ::tool_laaudit_model_serialize
+     */
+    public function test_model_serialize_error_again() {
+        $options = $this->get_options();
         $this->evidence->collect($options);
 
-        $trained_model = $this->evidence->get_raw_data();
-
-        $testx = test_dataset_evidence::create_x(3);
-        $trained_model->predict($testx);
-
-        // Test serialize()
         $this->evidence->serialize();
 
         // Expect error if trying to serialize again.
         $this->expectException(\Exception::class); // Expect exception if no data collected yet.
         $this->evidence->serialize();
+    }
+
+    /**
+     * Check that serialize throws an error if no data is available to be serialized.
+     *
+     * @covers ::tool_laaudit_model_serialize
+     */
+    public function test_model_serialize_error_nodata() : void {
+        $this->expectException(\Exception::class); // Expect exception if no data collected yet.
+        $this->evidence->serialize();
+    }
+
+    /**
+     * Get the options object needed for collecting this evidence.
+     *
+     * @return array
+     */
+    function get_options(): array {
+        return [
+                'data' => test_dataset_evidence::create(),
+                'predictor' => $this->predictor,
+        ];
     }
 }

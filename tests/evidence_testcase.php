@@ -62,5 +62,4 @@ abstract class evidence_testcase extends \advanced_testcase {
      * @return array
      */
     abstract function get_options(): array;
-
 }

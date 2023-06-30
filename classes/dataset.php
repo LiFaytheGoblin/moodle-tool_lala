@@ -76,7 +76,6 @@ class dataset extends evidence {
         if (count($allresults) < 1) {
             throw new LengthException('No data was gathered from the site. Probably, no fitting data is available.');
         }
-        // todo: Check data more thoroughly.
 
         $this->data = $allresults;
     }

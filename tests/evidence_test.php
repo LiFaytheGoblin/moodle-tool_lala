@@ -25,6 +25,7 @@ require_once(__DIR__ . '/fixtures/test_evidence.php');
 require_once(__DIR__ . '/evidence_testcase.php');
 
 use context_system;
+use Exception;
 
 /**
  * Model evidence test.
@@ -66,7 +67,7 @@ class evidence_test extends evidence_testcase {
      * @covers ::tool_laaudit_evidence_create_scaffold_and_get_for_version
      */
     public function test_evidence_create_scaffold_and_get_for_version_error() : void {
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception::class);
         test_evidence::create_scaffold_and_get_for_version(test_version::get_highest_id() + 1);
     }
 
@@ -105,7 +106,7 @@ class evidence_test extends evidence_testcase {
         $evidence = test_evidence::create_scaffold_and_get_for_version($this->versionid);
 
         // Expect that an exception is thrown when trying to store without first collecting evidence.
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception::class);
         $evidence->store();
     }
 
@@ -126,6 +127,12 @@ class evidence_test extends evidence_testcase {
         global $DB;
         $finished = $DB->get_fieldset_select('tool_laaudit_evidence', 'timecollectionfinished', 'id='.$evidenceid);
         $this->assertTrue($finished !== null);
+
+        $fs = get_file_storage();
+        $file = $fs->get_file(context_system::instance()->id, 'tool_laaudit', 'tool_laaudit', $evidenceid,
+                '/evidence/', 'modelversion' . $this->versionid . '-evidence' . $evidence->get_name() . $evidenceid . '.' .
+                $evidence::FILETYPE);
+        $this->assertFalse($file);
     }
 
     /**
@@ -142,6 +149,9 @@ class evidence_test extends evidence_testcase {
         global $DB;
         $resultid = $DB->get_fieldset_select('tool_laaudit_evidence', 'id', 'id='.$evidenceid)[0];
         $this->assertEquals($evidenceid, $resultid);
+
+        $evidence->serialize();
+        $evidence->store();
 
         $evidence->abort();
 

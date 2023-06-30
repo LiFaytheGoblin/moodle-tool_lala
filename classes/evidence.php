@@ -272,6 +272,12 @@ abstract class evidence {
 
         $DB->delete_records('tool_laaudit_evidence', ['id' => $this->id]);
 
-        // todo: delete possibly created files.
+        if (isset($this->serializedfilelocation)) {
+            $fs = get_file_storage();
+            $fileinfo = $this->get_file_info();
+            $file = $fs->get_file($fileinfo['contextid'], $fileinfo['component'], $fileinfo['filearea'], $fileinfo['itemid'],
+                    $fileinfo['filepath'], $fileinfo['filename']);
+            $file->delete();
+        }
     }
 }

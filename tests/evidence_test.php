@@ -127,12 +127,6 @@ class evidence_test extends evidence_testcase {
         global $DB;
         $finished = $DB->get_fieldset_select('tool_laaudit_evidence', 'timecollectionfinished', 'id='.$evidenceid);
         $this->assertTrue($finished !== null);
-
-        $fs = get_file_storage();
-        $file = $fs->get_file(context_system::instance()->id, 'tool_laaudit', 'tool_laaudit', $evidenceid,
-                '/evidence/', 'modelversion' . $this->versionid . '-evidence' . $evidence->get_name() . $evidenceid . '.' .
-                $evidence::FILETYPE);
-        $this->assertFalse($file);
     }
 
     /**
@@ -157,6 +151,12 @@ class evidence_test extends evidence_testcase {
 
         $resultids = $DB->get_fieldset_select('tool_laaudit_evidence', 'id', 'id='.$evidenceid);
         $this->assertEquals([], $resultids);
+
+        $fs = get_file_storage();
+        $file = $fs->get_file(context_system::instance()->id, 'tool_laaudit', 'tool_laaudit', $evidenceid,
+                '/evidence/', 'modelversion' . $this->versionid . '-evidence' . $evidence->get_name() . $evidenceid . '.' .
+                $evidence::FILETYPE);
+        $this->assertFalse($file);
     }
 
     function get_options(): array {

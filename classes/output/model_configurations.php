@@ -56,6 +56,12 @@ class model_configurations implements templatable, renderable {
             $modelconfig = new model_configuration($modelconfig);
             $items[] = $modelconfig->export_for_template($output);
         }
+        usort($items, "self::sort_configs");
+
         return ['modelconfigs' => $items];
+    }
+
+    static function sort_configs($a, $b) : bool {
+        return $a['name'] > $b['name'];
     }
 }

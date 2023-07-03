@@ -58,7 +58,6 @@ class model_configuration implements templatable, renderable {
 
         // Add info about the model configuration.
         $data['id'] = $this->modelconfig->id;
-        $data['modelid'] = $this->modelconfig->modelid;
         $data['name'] = $this->modelconfig->name;
 
         $targetnameparts = explode('\\', $this->modelconfig->target);

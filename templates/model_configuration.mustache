@@ -17,7 +17,6 @@
     Context variables required for this template:
     - id: int - model config unique identifier
     - name: string - name of the model config
-    - modelid: int - model id
     - target: string - name of the target associated with the model config
     - modelanalysabletype: string - name of the analysable type associated with the model config
     - predictionsprocessor
@@ -29,7 +28,6 @@
     Example context (json):
     {
             "id": 1,
-            "modelid": 4,
             "name": "model4",
             "target": "Prevent devs at risk",
             "modelanalysabletype": "user_enrolments",
@@ -67,9 +65,6 @@
         <div class="activity-basis d-flex w-100 align-items-center flex-column flex-md-row align-self-start">
             <h3 class="activity-instance activity-title">
                 <span title="{{#str}}model, tool_laaudit{{/str}}" id="config{{id}}">{{name}}</span>
-                <span class="badge rounded-pill bg-light ml-2 position-absolute start-0" title="{{#str}}modelid, tool_laaudit{{/str}}">
-                    <i class="icon fa fa-key" aria-hidden="true"></i>{{modelid}}
-                </span>
             </h3>
             <div class="activity-info mt-1 mt-md-0">{{#buttons}}{{> core/single_button}}{{/buttons}}</div>
         </div>

@@ -65,34 +65,40 @@
                     {{timecreationfinished}}
                 </dd>
             </dl>
-        </li> <!-- Todo: only if available? -->
+        </li>
     </ul>
     <ul>
-        <dl class="row  mb-0"  title="{{#str}}traintestsplit, tool_laaudit{{/str}}">
-            <dt class="mb-0 col-sm-0">
-                <i class="icon fa fa-pie-chart" aria-hidden="true"></i>
-            </dt>
-            <dd class="mb-0 px-1 col-sm">
-                {{traintestsplit}}
-            </dd>
-        </dl>
-        <dl class="row  mb-0"  title="{{#str}}contexts, tool_laaudit{{/str}}">
-            <dt class="mb-0 col-sm-0">
-                <i class="icon fa fa-graduation-cap" aria-hidden="true"></i>
-            </dt>
-            <dd class="mb-0 px-1 col-sm">
-                {{contextids}}
-            </dd>
-        </dl>
-        {{#haserror}}
-            <dl class="row mb-0 text-danger" title="{{#str}}error, tool_laaudit{{/str}}">
+        <li class="row mb-0 ml-0" title="{{#str}}traintestsplit, tool_laaudit{{/str}}">
+            <dl class="row mb-0">
                 <dt class="mb-0 col-sm-0">
-                    <i class="icon fa fa-exclamation-circle" aria-hidden="true"></i>
+                    <i class="icon fa fa-pie-chart" aria-hidden="true"></i>
                 </dt>
                 <dd class="mb-0 px-1 col-sm">
-                    {{errormessage}}
+                    {{traintestsplit}}
                 </dd>
             </dl>
+        </li>
+        <li class="row mb-0 ml-0" title="{{#str}}contexts, tool_laaudit{{/str}}">
+            <dl class="row mb-0">
+                <dt class="mb-0 col-sm-0">
+                    <i class="icon fa fa-graduation-cap" aria-hidden="true"></i>
+                </dt>
+                <dd class="mb-0 px-1 col-sm">
+                    {{contextids}}
+                </dd>
+            </dl>
+        </li>
+        {{#haserror}}
+            <li class="row mb-0  ml-0" title="{{#str}}error, tool_laaudit{{/str}}">
+                <dl class="row mb-0 text-danger">
+                    <dt class="mb-0 col-sm-0">
+                        <i class="icon fa fa-exclamation-circle" aria-hidden="true"></i>
+                    </dt>
+                    <dd class="mb-0 px-1 col-sm">
+                        {{errormessage}}
+                    </dd>
+                </dl>
+            </li>
         {{/haserror}}
     </ul>
 </div>

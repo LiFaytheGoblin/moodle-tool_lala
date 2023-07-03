@@ -30,6 +30,10 @@
             "modelid": 4,
             "name": "model4",
             "target": "Prevent devs at risk",
+            "firstindactor": "someindicator",
+            "indicators": ["someindicator"],
+            "analysisinterval": "quarters",
+            "predictionsprocessor": "php",
             "modelanalysabletype": "user_enrolments",
             "buttons": [{
                 "method" : "post",
@@ -41,9 +45,6 @@
                     "id": 1,
                     "name": "AutoSet",
                     "timecreationstarted": "1679987403",
-                    "indicators": ["someindicator"],
-                    "analysisinterval": "quarters",
-                    "predictionsprocessor": "php",
                     "contextids": [1, 2, 3],
                     "timecreationfinished": null,
                     "timecreationfinishedicon": "half"

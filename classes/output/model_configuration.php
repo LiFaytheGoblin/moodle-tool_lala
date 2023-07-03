@@ -80,12 +80,17 @@ class model_configuration implements templatable, renderable {
             $data['defaultcontextids'] = $contextids;
         }
 
-        $data['indicators'] = '';
+        $data['firstindicator'] = '';
         $indicators = json_decode($this->modelconfig->indicators);
         if (gettype($indicators) == 'array') {
-            $data['indicators'] = implode(', ', $indicators);
+            $data['firstindicator'] = $indicators[0];
+            if (sizeof($indicators) > 1) {
+                $data['firstindicator'] = $data['firstindicator'] . ', ';
+                $remainingindicators = array_slice($indicators, 1);
+                $data['indicators'] = implode(', ', $remainingindicators);
+            }
         } else if (gettype($indicators) == 'string') {
-            $data['indicators'] = $indicators;
+            $data['firstindicator'] = $indicators;
         }
 
         // Add buttons.

@@ -41,7 +41,12 @@ class test_model {
      */
     public static function create() : int {
         global $DB;
-        $validmodelobject = [
+        $validmodelobject = self::get_modelobj();
+        return $DB->insert_record('analytics_models', $validmodelobject);
+    }
+
+    public static function get_modelobj() {
+        return [
                 'name' => self::NAME,
                 'target' => self::TARGET,
                 'indicators' => self::INDICATORS,
@@ -50,17 +55,43 @@ class test_model {
                 'timemodified' => time(),
                 'usermodified' => 1,
         ];
-        return $DB->insert_record('analytics_models', $validmodelobject);
     }
 
     /**
-     * Deletes a model from the db
+     * Deletes a model from the db.
      *
      * @param int $modelid
      */
     public static function delete(int $modelid): void {
         global $DB;
         $DB->delete_records('analytics_models', ['id' => $modelid]);
+    }
+
+    /**
+     * Updates a model column.
+     *
+     * @param int $modelid
+     */
+    public static function update(int $modelid, string $column)  : void {
+        global $DB;
+        $newobj = self::get_modelobj();
+        $newobj['id'] = $modelid;
+        $newobj[$column] = 'changed'.time();
+        $newobj['timemodified'] = time();
+        $DB->update_record('analytics_models', $newobj);
+    }
+
+    /**
+     * Resets a model's values to default.
+     *
+     * @param int $modelid
+     */
+    public static function reset(int $modelid) {
+        global $DB;
+        $newobj = self::get_modelobj();
+        $newobj['id'] = $modelid;
+        $newobj['timemodified'] = time();
+        $DB->update_record('analytics_models', $newobj);
     }
 
     /**
@@ -121,4 +152,7 @@ class test_model {
         if(!$analysisintervalinstanceinstance) throw new \Exception('Analysisinterval instance not found for analysis interval with name '.test_model::ANALYSISINTERVAL);
         return [$analysisintervalinstanceinstance];
     }
+
+
+
 }

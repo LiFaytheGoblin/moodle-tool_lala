@@ -110,15 +110,15 @@ class model_configuration {
     public static function create_and_get_for_model(int $modelid) : int {
         global $DB;
 
-        if ($DB->record_exists('tool_laaudit_model_configs', ['modelid' => $modelid])) {
-            return $DB->get_fieldset_select('tool_laaudit_model_configs', 'id', 'modelid='.$modelid)[0];
-        }
-
         $modelobj = $DB->get_record('analytics_models', ['id' => $modelid], '*', MUST_EXIST);
 
         $obj = new stdClass();
         $obj->modelid = $modelid;
         $obj->name = $modelobj->name;
+        if (!isset($obj->name)) {
+            $modelidcount = $DB->count_records('tool_laaudit_model_configs', ['modelid' => $modelid]);
+            $obj->name = 'config' . $modelid . '/' . $modelidcount;
+        }
         $obj->target = $modelobj->target;
 
         if (self::valid_exists($modelobj->predictionsprocessor)) {

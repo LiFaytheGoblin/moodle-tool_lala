@@ -80,15 +80,6 @@ class model_configuration_test extends \advanced_testcase {
         $maxidbeforenewconfigcreation = test_config::get_highest_id();
         $returnedconfigid = model_configuration::create_and_get_for_model($modelid);
         $this->assertGreaterThan($maxidbeforenewconfigcreation, $returnedconfigid); // A new config has been created and is referenced.
-
-        // Even though the model is deleted, the correct config record should still be referenced.
-        test_model::delete($modelid);
-        $returnedconfigid3 = model_configuration::create_and_get_for_model($modelid);
-        $this->assertEquals($returnedconfigid, $returnedconfigid3); // The existing config is referenced, no new config is created.
-
-        // We can not create a config again if it already exists.
-        $returnedconfigid2 = model_configuration::create_and_get_for_model($modelid);
-        $this->assertEquals($returnedconfigid, $returnedconfigid2); // The existing config is referenced, no new config is created.
     }
 
     /**

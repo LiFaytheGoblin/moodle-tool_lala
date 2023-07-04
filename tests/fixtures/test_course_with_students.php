@@ -27,6 +27,10 @@ namespace tool_laaudit;
 defined('MOODLE_INTERNAL') || die();
 
 use testing_data_generator;
+use analytics\target\course_gradetopass;
+use core_analytics\manager;
+use core_analytics\course;
+
 class test_course_with_students {
     /**
      * Generates a new course with students, but no activity.
@@ -36,16 +40,19 @@ class test_course_with_students {
      * @param int $createddaysago
      */
     public static function create(testing_data_generator $generator, int $nstudents = 10, int $createddaysago = 7): void {
-        $timestart = time() - (60 * 60 * 24 * $createddaysago);
+        $secondsperday = 60 * 60 * 24;
+        $timestart = time() - ($secondsperday * $createddaysago);
+        $timeend = time() - 1; // The course must have finished.
 
         $users = [];
         for ($i = 0; $i < $nstudents; $i++) {
             $users[] = $generator->create_user();
         }
-        $course = $generator->create_course(['startdate' => $timestart]);
+        $course = $generator->create_course(['startdate' => $timestart, 'enddate' => $timeend]);
+        $generator->create_grade_item(['itemtype' => 'course', 'courseid' => $course->id, 'gradepass' => 2.0]);
 
         foreach ($users as $user) {
-            $generator->enrol_user($user->id, $course->id, null, 'manual', $timestart + 1);
+            $generator->enrol_user($user->id, $course->id, null, 'manual', $timestart + 1, $timeend);
         }
     }
 }

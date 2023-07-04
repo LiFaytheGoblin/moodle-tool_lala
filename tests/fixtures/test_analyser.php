@@ -37,9 +37,9 @@ class test_analyser {
     public static function create(int $modelid): base {
         $options = ['evaluation' => true, 'mode' => 'configuration'];
 
-        $target = test_model::get_target_instance($modelid);
-        $indicatorinstances = test_model::get_indicator_instances($modelid);
-        $analysisintervalinstanceinstances = test_model::get_analysisinterval_instances($modelid);
+        $target = test_model::get_target_instance();
+        $indicatorinstances = test_model::get_indicator_instances();
+        $analysisintervalinstanceinstances = test_model::get_analysisinterval_instances();
 
         $analyzerclassname = $target->get_analyser_class();
         return new $analyzerclassname($modelid, $target, $indicatorinstances, $analysisintervalinstanceinstances, $options);

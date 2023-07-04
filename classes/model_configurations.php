@@ -25,6 +25,7 @@
 namespace tool_laaudit;
 
 use stdClass;
+use core_analytics\manager;
 
 /**
  * Class for the list of model configurations.
@@ -82,7 +83,13 @@ class model_configurations {
 
         $missingmodelids = array_diff($modelidsinanalyticsmodelstable, $modelidsinconfigtable);
         foreach ($missingmodelids as $missingmodelid) {
-            $modelconfigids[] = model_configuration::create_and_get_for_model($missingmodelid);
+            // Check if the model is a static model
+            $targetname = $DB->get_fieldset_select('analytics_models', 'target', 'id='.$missingmodelid)[0];
+            $target = manager::get_target($targetname);
+            if (!$target->based_on_assumptions()) {
+                // For now, ignore static models and only handle machine learning models.
+                $modelconfigids[] = model_configuration::create_and_get_for_model($missingmodelid);
+            }
         }
 
         $modelconfigs = [];

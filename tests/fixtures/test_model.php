@@ -29,7 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 use core_analytics\manager;
 class test_model {
     const NAME = 'testmodel';
-    const TARGET = '\core_course\analytics\target\no_recent_accesses';
+    const TARGET = '\core_course\analytics\target\course_gradetopass';
     const INDICATORS = "[\"\\\\core\\\\analytics\\\\indicator\\\\any_course_access\"]";
     const ANALYSISINTERVAL = '\core\analytics\time_splitting\past_3_days';
     const PREDICTIONSPROCESSOR = '\mlbackend_php\processor';
@@ -95,13 +95,18 @@ class test_model {
     }
 
     /**
-     * Counts the existing models.
+     * Counts the existing machine learning models.
      *
-     * @return int amount of models
+     * @return int amount of machine learning models
      */
     public static function count_models(): int {
+        $count = 0;
         global $DB;
-        return $DB->count_records('analytics_models');
+        $targetnames = $DB->get_fieldset_select('analytics_models', 'target', '1=1');
+        foreach ($targetnames as $targetname) {
+            $count += (int) !manager::get_target($targetname)->based_on_assumptions();
+        }
+        return $count;
     }
 
     /**

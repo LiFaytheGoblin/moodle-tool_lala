@@ -72,6 +72,8 @@ class model_version {
     private ?string $error;
     /** @var stdClass[]|null $dataset */
     private ?array $dataset;
+    /** @var stdClass[]|null $relateddata */
+    private ?array $relateddata;
     /** @var stdClass[]|null $trainingdataset */
     private ?array $trainingdataset;
     /** @var stdClass[]|null $testdataset */
@@ -247,6 +249,18 @@ class model_version {
         $options = ['modelid' => $this->modelid, 'analyser' => $this->analyser, 'contexts' => $this->contexts];
 
         $this->add('dataset', $options);
+    }
+
+    /**
+     * Call next step: Gather the data that can be used for training and testing this model version.
+     *
+     * @return void
+     */
+    public function gather_related_data(): void {
+        $maintablename = $this->analyser->get_samples_origin();
+        $options = ['tablename' => $maintablename, 'ids' => []];
+
+        $this->add('related_data', $options);
     }
 
     /**

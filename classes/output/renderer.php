@@ -33,30 +33,30 @@ class renderer extends plugin_renderer_base {
     /**
      * Defer to template.
      *
-     * @param index_page $page
+     * @param evidence_item $page
      * @return string html for the page
      */
-    public function render_evidence_item($page) {
+    public function render_evidence_item(evidence_item $page): string {
         $data = $page->export_for_template($this);
         return parent::render_from_template('tool_laaudit/evidence_item', $data);
     }
     /**
      * Defer to template.
      *
-     * @param index_page $page
+     * @param model_version_description $page
      * @return string html for the page
      */
-    public function render_model_version_description($page) {
+    public function render_model_version_description(model_version_description $page): string {
         $data = $page->export_for_template($this);
         return parent::render_from_template('tool_laaudit/model_version_description', $data);
     }
     /**
      * Defer to template.
      *
-     * @param index_page $page
+     * @param model_version $page
      * @return string html for the page
      */
-    public function render_model_version($page) {
+    public function render_model_version(model_version $page): string {
         $data = $page->export_for_template($this);
         return parent::render_from_template('tool_laaudit/model_version', $data);
     }
@@ -64,10 +64,10 @@ class renderer extends plugin_renderer_base {
     /**
      * Defer to template.
      *
-     * @param index_page $page
+     * @param model_configuration $page
      * @return string html for the page
      */
-    public function render_model_configuration($page) {
+    public function render_model_configuration(model_configuration $page): string {
         $data = $page->export_for_template($this);
         return parent::render_from_template('tool_laaudit/model_configuration', $data);
     }
@@ -75,10 +75,10 @@ class renderer extends plugin_renderer_base {
     /**
      * Defer to template.
      *
-     * @param index_page $page
+     * @param model_configurations $page
      * @return string html for the page
      */
-    public function render_model_configurations($page) {
+    public function render_model_configurations(model_configurations $page): string {
         $data = $page->export_for_template($this);
         return parent::render_from_template('tool_laaudit/model_configurations', $data);
     }

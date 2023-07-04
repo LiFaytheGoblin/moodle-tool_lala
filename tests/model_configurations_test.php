@@ -29,7 +29,7 @@ require_once(__DIR__ . '/fixtures/test_model.php');
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class _model_configurations_test extends \advanced_testcase {
+class model_configurations_test extends \advanced_testcase {
     /**
      * Check that init_and_get_all_model_config_objs() creates model configurations and returns them.
      *
@@ -41,13 +41,56 @@ class _model_configurations_test extends \advanced_testcase {
         $nmodels = test_model::count_models();
         $configs = model_configurations::init_and_get_all_model_config_objs();
         $this->assertEquals($nmodels, sizeOf($configs)); // A config is created for each existing model.
+        $this->assertEquals([], $configs[0]->versions);
+        $this->assertTrue($configs[0]->modelanalysabletype != null);
 
         $tobedeletedmodelid = test_model::create();
+        $nmodels = test_model::count_models();
         $configs2 = model_configurations::init_and_get_all_model_config_objs();
-        $this->assertEquals($nmodels + 1, sizeOf($configs2)); // A config has been added for the new model.
+        $this->assertEquals($nmodels, sizeOf($configs2)); // A config has been added for the new model.
 
+        $nmodelsbeforedeletion = test_model::count_models();
         test_model::delete($tobedeletedmodelid);
         $configs3 = model_configurations::init_and_get_all_model_config_objs();
-        $this->assertEquals($nmodels + 1, sizeOf($configs3)); // Config belonging to deleted model should still be there.
+        $this->assertEquals($nmodelsbeforedeletion, sizeOf($configs3)); // Config belonging to deleted model should still be there.
+    }
+
+    public function test_model_configurations_model_update_init_and_get_all_model_config_objs() {
+        $this->resetAfterTest(true);
+
+        $modelid = test_model::create();
+        $nmodels = test_model::count_models();
+        $configs = model_configurations::init_and_get_all_model_config_objs();
+        $this->assertEquals($nmodels, sizeOf($configs)); // A config is created for each existing model.
+        $this->assertEquals([], $configs[0]->versions);
+        $this->assertTrue($configs[0]->modelanalysabletype != null);
+
+        sleep(1);
+
+        // update a model
+        test_model::update($modelid, 'predictionsprocessor');
+        $configs4 = model_configurations::init_and_get_all_model_config_objs();
+        $this->assertEquals($nmodels + 1, sizeOf($configs4)); // New config belonging to updated model should be created.
+
+        sleep(1);
+
+        // update a model again
+        test_model::update($modelid, 'timesplitting');
+        $configs5 = model_configurations::init_and_get_all_model_config_objs();
+        $this->assertEquals($nmodels + 2, sizeOf($configs5)); // New config belonging to updated model should be created.
+
+        sleep(1);
+
+        // update a model again
+        test_model::update($modelid, 'indicators');
+        $configs6 = model_configurations::init_and_get_all_model_config_objs();
+        $this->assertEquals($nmodels + 3, sizeOf($configs6)); // New config belonging to updated model should be created.
+
+        sleep(1);
+
+        // reset model = update model to previous state
+        test_model::reset($modelid);
+        $configs7 = model_configurations::init_and_get_all_model_config_objs();
+        $this->assertEquals($nmodels + 3, sizeOf($configs7)); // No new config belonging to updated model should be created.
     }
 }

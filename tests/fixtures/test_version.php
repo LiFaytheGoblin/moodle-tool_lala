@@ -25,6 +25,7 @@
 namespace tool_laaudit;
 
 use \core_analytics\manager;
+use \core_analytics\predictor;
 use Phpml\Classification\Linear\LogisticRegression;
 
 defined('MOODLE_INTERNAL') || die();
@@ -32,11 +33,12 @@ class test_version {
     const RELATIVETESTSETSIZE = 0.2;
 
     /**
-     * Stores a model in the db and returns a modelid
+     * Stores a version of a config in the db and returns a versionid
      *
+     * @param int $configid
      * @return int
      */
-    public static function create($configid) : int {
+    public static function create(int $configid) : int {
         global $DB;
         $valididversionobject = [
                 'timecreationstarted' => time(),
@@ -50,33 +52,50 @@ class test_version {
         return $versionid;
     }
 
-    public static function get_highest_id() {
+    /**
+     * Get the highest config id that is currently in use.
+     *
+     * @return int configid
+     */
+    public static function get_highest_id(): int {
         global $DB;
         $existingversionids = $DB->get_fieldset_select('tool_laaudit_model_versions', 'id', '1=1');
         return (sizeof($existingversionids) > 0) ? max($existingversionids) : 1;
     }
 
+    /**
+     * Return whether an error has been registered for the version.
+     *
+     * @param int $versionid
+     * @return bool
+     */
     public static function haserror(int $versionid) : bool {
         global $DB;
         $error = $DB->get_fieldset_select('tool_laaudit_model_versions', 'error', 'id='.$versionid)[0];
         return isset($error);
     }
 
-    public static function get_predictor(int $versionid) {
-        global $DB;
-        $predictionsprocessorstring = $DB->get_fieldset_select('tool_laaudit_model_versions', 'predictionsprocessor', 'id='.$versionid)[0];
-        return manager::get_predictions_processor($predictionsprocessorstring);
+    /**
+     * Get a predictor for this version.
+     *
+     * @return predictor predictor
+     */
+    public static function get_predictor() : predictor {
+        $predictor = manager::get_predictions_processor(test_model::PREDICTIONSPROCESSOR);
+        if(!$predictor) throw new \Exception('Predictor not found for predictionsprocessor with name '.test_model::PREDICTIONSPROCESSOR);
+        return $predictor;
     }
 
     /**
      * Trains a classifier for a model version and returns it.
      *
+     * @param int $versionid
      * @return LogisticRegression classifier
      */
-    public static function get_classifier($versionid) : LogisticRegression {
+    public static function get_classifier(int $versionid) : LogisticRegression {
         $dataset = test_dataset_evidence::create(3);
         $evidence = model::create_scaffold_and_get_for_version($versionid);
-        $predictor = test_version::get_predictor($versionid);
+        $predictor = test_version::get_predictor();
         $options=[
                 'data' => $dataset,
                 'predictor' => $predictor,

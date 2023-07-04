@@ -1,30 +1,33 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="admin/tool/laaudit/db" VERSION="20230328" COMMENT="XMLDB file for Moodle admin/tool/laaudit"
+<XMLDB PATH="admin/tool/laaudit/db" VERSION="20230628" COMMENT="XMLDB file for Moodle admin/tool/laaudit"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
 >
     <TABLES>
-        <TABLE NAME="tool_laaudit_model_configs" COMMENT="Model configurations (immutable model properties) derived from analytics_models">
+        <TABLE NAME="tool_laaudit_model_configs" COMMENT="Model configurations derived from analytics_models (differing by their settings)">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" DEFAULT="default" SEQUENCE="false" COMMENT="Name of the model, 'model' + modelid if none was given by the original model"/>
                 <FIELD NAME="modelid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="target" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="predictionsprocessor" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="analysisinterval" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="defaultcontextids" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="indicators" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-                <KEY NAME="modelid" TYPE="unique" FIELDS="modelid"/>
             </KEYS>
         </TABLE>
-        <TABLE NAME="tool_laaudit_model_versions" COMMENT="Versions of model configurations">
+        <TABLE NAME="tool_laaudit_model_versions" COMMENT="Versions of model configurations (differing by the used data)">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="default" SEQUENCE="false" COMMENT="Name of the model version, 'default' if version was created automatically"/>
                 <FIELD NAME="timecreationstarted" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="timecreationfinished" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
-                <FIELD NAME="analysisinterval" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="predictionsprocessor" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="relativetestsetsize" TYPE="number" LENGTH="4" NOTNULL="true" SEQUENCE="false" DECIMALS="2"/>
                 <FIELD NAME="contextids" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
-                <FIELD NAME="indicators" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="configid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="error" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
             </FIELDS>

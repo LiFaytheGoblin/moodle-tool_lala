@@ -27,11 +27,12 @@ namespace tool_laaudit;
 defined('MOODLE_INTERNAL') || die();
 class test_dataset_evidence {
     /**
-     * Stores a model in the db and returns a modelid
+     * Creates a random dataset evidence.
      *
-     * @return array
+     * @param int $size of the dataset
+     * @return array the created dataset
      */
-    public static function create($size = 3) {
+    public static function create(int $size = 3): array {
         $header = self::get_header();
         $content = [
                 '0' => $header
@@ -46,13 +47,24 @@ class test_dataset_evidence {
         ];
     }
 
-    public static function get_header() {
+    /**
+     * Gets a test header fitting the test model.
+     *
+     * @return array the header
+     */
+    public static function get_header(): array {
         $header = json_decode(test_model::INDICATORS);
         $header[] = test_model::TARGET;
         return $header;
     }
 
-    public static function create_x($size = 3) {
+    /**
+     * Create a row of random indicator values.
+     *
+     * @param int $size amount of indicator values
+     * @return array the indicator values
+     */
+    public static function create_x(int $size = 3): array {
         $indicators = json_decode(test_model::INDICATORS);
         $xs = [];
         for($i = 0; $i < $size; $i++) {

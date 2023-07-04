@@ -24,6 +24,10 @@
 
 namespace tool_laaudit;
 
+use InvalidArgumentException;
+use LengthException;
+use LogicException;
+
 /**
  * Class for the test dataset evidence item.
  */
@@ -35,12 +39,19 @@ class test_dataset extends dataset {
      * @param array $options = [$data, $testsize]
      * @return void
      */
-    public function collect($options) {
+    public function collect(array $options): void {
         if (!isset($options['data'])) {
-            throw new \Exception('Missing split dataset');
+            throw new InvalidArgumentException('Missing split dataset');
         }
         if (!isset($options['testsize'])) {
-            throw new \Exception('Missing test size');
+            throw new InvalidArgumentException('Missing test size');
+        }
+        if (sizeof($options['data']) == 0) {
+            throw new InvalidArgumentException('Dataset can not be empty. No training data can be extracted from it.');
+        }
+
+        if (isset($this->data) && sizeof($this->data) > 0) {
+            throw new LogicException('Data has already been collected and can not be changed.');
         }
 
         $key = array_keys((array) ($options['data']))[0];
@@ -48,6 +59,9 @@ class test_dataset extends dataset {
         foreach ($options['data'] as $arr) { // Each analysisinterval has an object.
             $totaldatapoints = count($arr) - 1;
             $testdatapoints = round($options['testsize'] * $totaldatapoints);
+            if($testdatapoints < 1) {
+                throw new LengthException('Not enough data available for creating a training and testing split. Need at least 1 datapoint for testing, and 2 for training.');
+            }
 
             $upperlimit = $testdatapoints + 1; // Add +1 for the heading, upper limit is exclusive.
 

@@ -47,6 +47,7 @@ $string['name'] = 'name';
 $string['serializedfilelocation'] = 'location of file containing serialized data';
 $string['unfinished'] = 'not finished yet';
 $string['allcontexts'] = 'all contexts';
+$string['defaultcontexts'] = 'default contexts used for data gathering';
 $string['analysable'] = 'analysable';
 $string['model'] = 'model';
 $string['error'] = 'error';

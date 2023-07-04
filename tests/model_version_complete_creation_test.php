@@ -16,6 +16,9 @@
 
 namespace tool_laaudit;
 
+use Exception;
+use LogicException;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -33,13 +36,15 @@ require_once(__DIR__ . '/fixtures/test_course_with_students.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class model_version_complete_creation_test extends \advanced_testcase {
-    private $versionid;
-    private $version;
+    /** @var int $versionid the id of the created model version */
+    private int $versionid;
+    /** @var model_version $version the created model version */
+    private model_version $version;
     protected function setUp(): void {
         $this->resetAfterTest(true);
 
-        $modelid = test_model::create();
-        $configid = test_config::create($modelid);
+        $this->modelid = test_model::create();
+        $configid = test_config::create($this->modelid);
         $this->versionid = test_version::create($configid);
         // Create a model configuration from a config with an existing model.
         $this->version = new model_version($this->versionid);
@@ -51,7 +56,44 @@ class model_version_complete_creation_test extends \advanced_testcase {
      */
     public function test_model_version_complete_creation() {
         // Generate test data
+        $nstudents = 10;
+        test_course_with_students::create($this->getDataGenerator(), $nstudents, 3);
+
+        // Data is available for gathering
+        $this->version->gather_dataset();
+        $dataset = $this->version->get_dataset();
+        $this->assertTrue(isset($dataset));
+        $this->assertTrue(sizeof($dataset[test_model::ANALYSISINTERVAL]) == $nstudents + 1); // +1 for the header.
+
+        // Now get split data
+        $this->version->split_training_test_data();
+        $testdataset = $this->version->get_testdataset();
+        $this->assertTrue(isset($testdataset));
+        $trainingdataset = $this->version->get_trainingdataset();
+        $this->assertTrue(isset($trainingdataset));
+
+        // Train the model
+        $this->version->train();
+        $model = $this->version->get_model();
+        $this->assertTrue(isset($model));
+
+        // Get predictions
+        $this->version->predict();
+        $predictionsdataset = $this->version->get_predictionsdataset();
+        $this->assertTrue(isset($predictionsdataset));
+
+        $error = test_version::haserror($this->versionid);
+        $this->assertFalse($error); // An error has not been registered
+    }
+    /**
+     * Check the happy path of the automatic model creation process still works of model was deleted
+     *
+     * @covers ::tool_laaudit_model_version
+     */
+    public function test_model_version_complete_creation_modeldeleted() {
+        // Generate test data
         test_course_with_students::create($this->getDataGenerator(), 10);
+        test_model::delete($this->modelid);
 
         // Data is available for gathering
         $this->version->gather_dataset();
@@ -77,45 +119,5 @@ class model_version_complete_creation_test extends \advanced_testcase {
 
         $error = test_version::haserror($this->versionid);
         $this->assertFalse($error); // An error has not been registered
-    }
-
-    /**
-     * Check that during gather_dataset errors are thrown and registered.
-     *
-     * @covers ::tool_laaudit_model_version_gather_dataset
-     */
-    public function test_model_version_gather_dataset_error() {
-        $this->expectException(\moodle_exception::class); // No data is available for gathering.
-        $this->version->gather_dataset();
-    }
-
-    /**
-     * Check that during faulty dataset splitting errors are thrown and registered.
-     *
-     * @covers ::tool_laaudit_model_version_split_training_test_data
-     */
-    public function test_model_version_split_training_test_data_error() {
-        $this->expectException(\Exception::class); // No dataset has been gathered.
-        $this->version->split_training_test_data();
-    }
-
-    /**
-     * Check that during faulty training errors are thrown and registered.
-     *
-     * @covers ::tool_laaudit_model_version_train
-     */
-    public function test_model_version_train_error() {
-        $this->expectException(\Exception::class); // No training and test data is available.
-        $this->version->train();
-    }
-
-    /**
-     * Check that during faulty predicting errors are thrown and registered.
-     *
-     * @covers ::tool_laaudit_model_version_predict
-     */
-    public function test_model_version_predict_error() {
-        $this->expectException(\Exception::class); // No trained model is available.
-        $this->version->predict();
     }
 }

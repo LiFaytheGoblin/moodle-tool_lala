@@ -18,14 +18,9 @@ namespace tool_laaudit;
 
 defined('MOODLE_INTERNAL') || die();
 
-global $CFG;
-require_once($CFG->dirroot . '/admin/tool/laaudit/classes/dataset.php');
-require_once(__DIR__ . '/fixtures/test_config.php');
 require_once(__DIR__ . '/fixtures/test_model.php');
-require_once(__DIR__ . '/fixtures/test_version.php');
-require_once(__DIR__ . '/fixtures/test_course_with_students.php');
-require_once(__DIR__ . '/fixtures/test_analyser.php');
 require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
+require_once(__DIR__ . '/evidence_testcase.php');
 
 
 /**
@@ -35,42 +30,39 @@ require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class training_dataset_test extends \advanced_testcase {
-    private $evidence;
-    private $modelid;
+class training_dataset_test extends evidence_testcase {
+    /**
+     * Set up resources before each test.
+     */
     protected function setUp(): void {
-        $this->resetAfterTest(true);
+        parent::setUp();
 
-        $this->modelid = test_model::create();
-        $configid = test_config::create($this->modelid);
-        $versionid = test_version::create($configid);
-
-        $this->evidence = training_dataset::create_scaffold_and_get_for_version($versionid);
+        $this->evidence = training_dataset::create_scaffold_and_get_for_version($this->versionid);
     }
     /**
      * Data provider for {@see test_training_dataset_collect()}.
      *
      * @return array List of source data information
      */
-    public function tool_laaudit_get_source_data_parameters_provider() {
+    public function tool_laaudit_get_source_data_parameters_provider(): array {
         return [
                 'Min dataset, min testsize' => [
-                        'data' => test_dataset_evidence::create(),
+                        'ndatapoints' => 3,
                         'testsize' => 0.3,
                         'expectedressize' => 2
                 ],
                 'Small dataset, some testsize' => [
-                        'data' => test_dataset_evidence::create(7),
+                        'ndatapoints' => 7,
                         'testsize' => 0.3,
                         'expectedressize' => 5
                 ],
                 'Small dataset, smaller testsize' => [
-                        'data' => test_dataset_evidence::create(7),
+                        'ndatapoints' => 7,
                         'testsize' => 0.2,
                         'expectedressize' => 6
                 ],
                 'Some dataset, some testsize' => [
-                        'data' => test_dataset_evidence::create(10),
+                        'ndatapoints' => 10,
                         'testsize' => 0.2,
                         'expectedressize' => 8
                 ],
@@ -82,13 +74,13 @@ class training_dataset_test extends \advanced_testcase {
      * @covers ::tool_laaudit_training_dataset_collect
      *
      * @dataProvider tool_laaudit_get_source_data_parameters_provider
-     * @param array $data set
+     * @param int $ndatapoints data set size
      * @param float $testsize portion of the dataset to be used for testing
-     * @param number $expectedressize absolute nr. of datapoints to be expected for training
+     * @param int $expectedressize absolute nr. of datapoints to be expected for training
      */
-    public function test_training_dataset_collect($data, $testsize, $expectedressize) {
-        $options=[
-            'data' => $data,
+    public function test_evidence_collect(int $ndatapoints, float $testsize, int $expectedressize) : void {
+        $options = [
+            'data' => test_dataset_evidence::create($ndatapoints),
             'testsize' => $testsize,
         ];
         $this->evidence->collect($options);
@@ -105,18 +97,53 @@ class training_dataset_test extends \advanced_testcase {
         $this->assertEquals($expectedressize, sizeof($resdata));
     }
     /**
-     * Check that collect throws an error if trying to call it twice for the same object.
+     * Data provider for {@see test_training_dataset_error_nodata()}.
+     *
+     * @return array List of source data information
+     */
+    public function tool_laaudit_get_source_data_error_parameters_provider(): array {
+        return [
+                'No dataset, small testsize' => [
+                        'data' => [],
+                        'testsize' => 0.2
+                ],
+                'Just header, small testsize' => [
+                        'data' => test_dataset_evidence::create(0),
+                        'testsize' => 0.2
+                ],
+                'Too small dataset, small testsize' => [
+                        'data' => test_dataset_evidence::create(2),
+                        'testsize' => 0.2
+                ]
+        ];
+    }
+    /**
+     * Check that collect throws error if not enough data available.
      *
      * @covers ::tool_laaudit_training_dataset_collect
+     *
+     * @dataProvider tool_laaudit_get_source_data_error_parameters_provider
+     * @param array $data set
+     * @param float $testsize portion of the dataset to be used as test data
      */
-    public function test_training_dataset_collect_error_again() {
+    public function test_training_dataset_error_nodata(array $data, float $testsize) : void {
         $options=[
+                'data' => $data,
+                'testsize' => $testsize,
+        ];
+        $this->expectException(\Exception::class); // Expect exception if trying to collect but no data exists.
+        $this->evidence->collect($options);
+    }
+
+    /**
+     * Get the options object needed for collecting this evidence.
+     *
+     * @return array
+     */
+    function get_options(): array {
+        return [
                 'data' => test_dataset_evidence::create(3),
                 'testsize' => 0.2,
         ];
-        $this->evidence->collect($options);
-
-        $this->expectException(\Exception::class); // Expect exception if trying to collect again.
-        $this->evidence->collect($options);
     }
 }

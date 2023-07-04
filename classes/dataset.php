@@ -26,12 +26,15 @@ namespace tool_laaudit;
 
 use core_analytics\local\analysis\result_array;
 use core_analytics\analysis;
+use DomainException;
+use InvalidArgumentException;
+use LengthException;
+use LogicException;
 
 /**
  * Class for the complete dataset evidence item.
  */
 class dataset extends evidence {
-
     /**
      * Retrieve all available analysable samples, calculate features and label.
      * Store resulting data (sampleid, features, label) in the data field.
@@ -39,15 +42,18 @@ class dataset extends evidence {
      * @param array $options = [$modelid, $analyser, $contexts]
      * @return void
      */
-    public function collect($options) {
+    public function collect(array $options): void {
         if (!isset($options['contexts'])) {
-            throw new \Exception('Missing contexts');
+            throw new InvalidArgumentException('Options is missing contexts.');
         }
         if (!isset($options['analyser'])) {
-            throw new \Exception('Missing analyser');
+            throw new InvalidArgumentException('Options is missing analyser.');
         }
         if (!isset($options['modelid'])) {
-            throw new \Exception('Missing model id');
+            throw new InvalidArgumentException('Options is missing model id.');
+        }
+        if (isset($this->data) && sizeof($this->data) > 0) {
+            throw new LogicException('Data has already been collected and can not be changed.');
         }
 
         $this->heavy_duty_mode();
@@ -68,7 +74,7 @@ class dataset extends evidence {
         $allresults = $resultarray->get();
 
         if (count($allresults) < 1) {
-            throw new \moodle_exception('nodata', 'analytics');
+            throw new LengthException('No data was gathered from the site. Probably, no fitting data is available.');
         }
 
         $this->data = $allresults;
@@ -80,7 +86,12 @@ class dataset extends evidence {
      *
      * @return void
      */
-    public function serialize() {
+    public function serialize(): void {
+        if (!isset($this->data)) throw new LogicException('No evidence has been collected yet that could be serialized. Make sure to collect the evidence first.');
+        if (isset($this->filestring)) {
+            throw new LogicException('Data has already been serialized.');
+        }
+
         $str = '';
         $columns = null;
 
@@ -105,7 +116,7 @@ class dataset extends evidence {
      *
      * @return string the file type of the serialized data.
      */
-    public function get_file_type() {
+    public function get_file_type(): string {
         return 'csv';
     }
 
@@ -115,11 +126,16 @@ class dataset extends evidence {
      * @param array $data
      * @return array shuffled data
      */
-    public static function get_shuffled($data) {
-        $keys = array_keys((array) $data);
+    public static function get_shuffled(array $data): array {
+        if(sizeof($data) == 0) throw new DomainException('Data array to be shuffled can not be empty.');
+        $keys = array_keys($data);
         $key = $keys[0];
         $datawithheader = [];
         foreach ($data as $arr) { // Each analysisinterval has an array.
+            if(sizeof($arr) == 1) {
+                throw new DomainException('Data array to be shuffled needs to be at least of size 2. 
+        The first item is kept as item one, being treated as the header.');
+            }
             $header = array_slice($arr, 0, 1, true);
             $remainingdata = array_slice($arr, 1, null, true);
 
@@ -144,7 +160,7 @@ class dataset extends evidence {
      *
      * @return void
      */
-    private function heavy_duty_mode() {
+    private function heavy_duty_mode(): void {
         if (ini_get('memory_limit') != -1) {
             raise_memory_limit(MEMORY_HUGE);
         }

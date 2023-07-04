@@ -36,13 +36,14 @@ use stdClass;
  */
 class model_configuration implements templatable, renderable {
     /** @var stdClass $modelconfig of a model config */
-    protected $modelconfig;
+    protected stdClass $modelconfig;
+
     /**
      * Constructor for this object.
      *
      * @param stdClass $modelconfig The model config object
      */
-    public function __construct($modelconfig) {
+    public function __construct(stdClass $modelconfig) {
         $this->modelconfig = $modelconfig;
     }
 
@@ -50,21 +51,46 @@ class model_configuration implements templatable, renderable {
      * Data for use with a template.
      *
      * @param renderer_base $output Renderer information.
-     * @return stdClass Said data.
+     * @return array Said data.
      */
-    public function export_for_template(renderer_base $output) {
-        $data = new stdClass();
+    public function export_for_template(renderer_base $output): array {
+        $data = [];
 
         // Add info about the model configuration.
-        $data->id = $this->modelconfig->id;
-        $data->modelid = $this->modelconfig->modelid;
-        $data->modelname = $this->modelconfig->modelname;
+        $data['id'] = $this->modelconfig->id;
+        $data['name'] = $this->modelconfig->name;
 
-        $modeltargetnameparts = explode('\\', $this->modelconfig->modeltarget);
-        $data->modeltarget = end($modeltargetnameparts);
+        $targetnameparts = explode('\\', $this->modelconfig->target);
+        $data['target'] = end($targetnameparts);
 
         $modelanalysabletypenameparts = explode('\\', $this->modelconfig->modelanalysabletype);
-        $data->modelanalysabletype = end($modelanalysabletypenameparts);
+        $data['modelanalysabletype'] = end($modelanalysabletypenameparts);
+
+        $data['predictionsprocessor'] = explode('\\', $this->modelconfig->predictionsprocessor)[1];
+
+        $analysisintervalnameparts = explode('\\', $this->modelconfig->analysisinterval);
+        $data['analysisinterval'] = end($analysisintervalnameparts);
+
+        $data['defaultcontextids'] = get_string('allcontexts', 'tool_laaudit');
+        $contextids = json_decode($this->modelconfig->defaultcontextids);
+        if (gettype($contextids) == 'array') {
+            $data['defaultcontextids'] = implode(', ', $contextids);
+        } else if (gettype($contextids) == 'string') {
+            $data['defaultcontextids'] = $contextids;
+        }
+
+        $data['firstindicator'] = '';
+        $indicators = json_decode($this->modelconfig->indicators);
+        if (gettype($indicators) == 'array') {
+            $data['firstindicator'] = $indicators[0];
+            if (sizeof($indicators) > 1) {
+                $data['firstindicator'] = $data['firstindicator'] . ', ';
+                $remainingindicators = array_slice($indicators, 1);
+                $data['indicators'] = implode(', ', $remainingindicators);
+            }
+        } else if (gettype($indicators) == 'string') {
+            $data['firstindicator'] = $indicators;
+        }
 
         // Add buttons.
         $buttons = [];
@@ -73,7 +99,7 @@ class model_configuration implements templatable, renderable {
         foreach ($buttons as $key => $button) {
             $buttons[$key] = $button->export_for_template($output);
         }
-        $data->buttons = $buttons;
+        $data['buttons'] = $buttons;
 
         // Add started evidence sets.
         $versions = []; // Todo: Differentiate started and finished evidence sets? Sort?
@@ -81,7 +107,7 @@ class model_configuration implements templatable, renderable {
             $versionrenderer = new model_version($version);
             $versions[] = $versionrenderer->export_for_template($output);
         }
-        $data->versions = $versions;
+        $data['versions'] = $versions;
 
         return $data;
     }

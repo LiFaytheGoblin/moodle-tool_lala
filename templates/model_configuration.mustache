@@ -16,19 +16,26 @@
     Template for model configuration item.
     Context variables required for this template:
     - id: int - model config unique identifier
-    - modelname: string - name of the model config
-    - modelid: int - model id
-    - modeltarget: string - name of the target associated with the model config
+    - name: string - name of the model config
+    - target: string - name of the target associated with the model config
     - modelanalysabletype: string - name of the analysable type associated with the model config
+    - predictionsprocessor
+    - analysisinterval
+    - defaultcontextids
+    - indicators
     - buttons: [{}]
     - versions: [{}]
     Example context (json):
     {
             "id": 1,
-            "modelid": 4,
-            "modelname": "model4",
-            "modeltarget": "Prevent devs at risk",
+            "name": "model4",
+            "target": "Prevent devs at risk",
             "modelanalysabletype": "user_enrolments",
+            "predictionsprocessor": "php",
+            "analysisinterval": "quarters",
+            "defaultcontextids": [1, 2, 3],
+            "firstindactor": "someindicator",
+            "indicators": ["someindicator"],
             "buttons": [{
                 "method" : "post",
                 "url" : "/config/1/version",
@@ -39,9 +46,6 @@
                     "id": 1,
                     "name": "AutoSet",
                     "timecreationstarted": "1679987403",
-                    "indicators": ["someindicator"],
-                    "analysisinterval": "quarters",
-                    "predictionsprocessor": "php",
                     "contextids": [1, 2, 3],
                     "timecreationfinished": null,
                     "timecreationfinishedicon": "half"
@@ -60,10 +64,7 @@
     <div class="activity-item">
         <div class="activity-basis d-flex w-100 align-items-center flex-column flex-md-row align-self-start">
             <h3 class="activity-instance activity-title">
-                <span title="{{#str}}model, tool_laaudit{{/str}}" id="config{{id}}">{{modelname}}</span>
-                <span class="badge rounded-pill bg-light ml-2 position-absolute start-0" title="{{#str}}modelid, tool_laaudit{{/str}}">
-                    <i class="icon fa fa-key" aria-hidden="true"></i>{{modelid}}
-                </span>
+                <span title="{{#str}}model, tool_laaudit{{/str}}" id="config{{id}}">{{name}}</span>
             </h3>
             <div class="activity-info mt-1 mt-md-0">{{#buttons}}{{> core/single_button}}{{/buttons}}</div>
         </div>
@@ -75,7 +76,7 @@
                             <i class="fa fa-bullseye" aria-hidden="true"></i>
                         </dt>
                         <dd  class="mb-0 px-1 col-sm">
-                            {{modeltarget}}
+                            {{target}}
                         </dd>
                     </dl>
                 </li>
@@ -86,6 +87,61 @@
                         </dt>
                         <dd  class="mb-0 px-1 col-sm">
                             {{modelanalysabletype}}
+                        </dd>
+                    </dl>
+                </li>
+            </ul>
+            <ul class="p-0 list-unstyled list-group list-group-horizontal">
+                <li class="col-sm-5" title="{{#str}}predictionsprocessor, tool_laaudit{{/str}}">
+                    <dl class="row  mb-0">
+                        <dt   class="mb-0 col-sm-0">
+                            <i class="icon fa fa-server" aria-hidden="true"></i>
+                        </dt>
+                        <dd   class="mb-0 px-1 col-sm">
+                            {{predictionsprocessor}}
+                        </dd>
+                    </dl>
+                </li>
+                <li class="col-sm" title="{{#str}}analysisinterval, tool_laaudit{{/str}}">
+                    <dl class="row  mb-0">
+                        <dt  class="mb-0 col-sm-0">
+                            <i class="icon fa fa-arrows-h" aria-hidden="true"></i>
+                        </dt>
+                        <dd  class="mb-0 px-1 col-sm">
+                            {{analysisinterval}}
+                        </dd>
+                    </dl>
+                </li>
+            </ul>
+            <ul>
+                <li class="row mb-0 ml-0" title="{{#str}}defaultcontexts, tool_laaudit{{/str}}">
+                    <dl class="row  mb-0">
+                        <dt class="mb-0 col-sm-0">
+                            <i class="icon fa fa-graduation-cap" aria-hidden="true"></i>
+                        </dt>
+                        <dd class="mb-0 px-1 col-sm">
+                            {{defaultcontextids}}
+                        </dd>
+                    </dl>
+                </li>
+                <li class="row mb-0 ml-0"  title="{{#str}}indicators, tool_laaudit{{/str}}">
+                    <dl class="row  mb-0">
+                        <dt class="mb-0 col-sm-0">
+                            <i class="icon fa fa-bar-chart" aria-hidden="true"></i>
+                        </dt>
+                        <dd class="mb-0 px-1 col-sm">
+                            {{firstindicator}}
+                            {{#indicators}}
+                                <a class="collapse multi-collapse{{id}} show text-dark bg-secondary rounded-right px-1" data-toggle="collapse" href=".multi-collapse{{id}}" role="button" aria-expanded="false" aria-controls="indicators{{id}} more{{id}}" title="more indicators" id="more{{id}}">
+                                    display more
+                                </a>
+                                <span class="collapse multi-collapse{{id}}" id="indicators{{id}}">
+                                    {{indicators}}
+                                    <a class="border border-primary border-1 text-dark bg-secondary rounded-left px-1" data-toggle="collapse" href=".multi-collapse{{id}}" role="button" aria-expanded="true" aria-controls="indicators{{id}} more{{id}}" title="less indicators">
+                                        display less
+                                    </a>
+                                </span>
+                            {{/indicators}}
                         </dd>
                     </dl>
                 </li>

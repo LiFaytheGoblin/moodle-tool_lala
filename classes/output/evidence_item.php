@@ -27,9 +27,6 @@ namespace tool_laaudit\output;
 use renderer_base;
 use templatable;
 use renderable;
-use moodle_url;
-use help_icon;
-use single_button;
 use stdClass;
 
 /**
@@ -37,13 +34,13 @@ use stdClass;
  */
 class evidence_item implements templatable, renderable {
     /** @var stdClass $item of evidence of a model version */
-    protected $item;
+    protected stdClass $item;
     /**
      * Constructor for this object.
      *
      * @param stdClass $item The evidence item object
      */
-    public function __construct($item) {
+    public function __construct(stdClass $item) {
         $this->item = $item;
     }
 
@@ -51,20 +48,20 @@ class evidence_item implements templatable, renderable {
      * Data for use with a template.
      *
      * @param renderer_base $output Renderer information.
-     * @return stdClass Said data.
+     * @return array Said data.
      */
-    public function export_for_template(renderer_base $output) {
-        $data = new stdClass();
+    public function export_for_template(renderer_base $output): array {
+        $data = [];
 
-        $data->id = $this->item->id;
+        $data['id'] = $this->item->id;
 
         $nameparts = explode('\\', $this->item->name);
         $name = end($nameparts);
-        $data->name = $name;
+        $data['name'] = $name;
 
-        $data->timecollectionstarted = userdate((int) $this->item->timecollectionstarted);
-        $data->timecollectionfinished = userdate((int) $this->item->timecollectionfinished);
-        $data->serializedfilelocation = $this->item->serializedfilelocation;
+        $data['timecollectionstarted'] = userdate((int) $this->item->timecollectionstarted);
+        $data['timecollectionfinished'] = userdate((int) $this->item->timecollectionfinished);
+        $data['serializedfilelocation'] = $this->item->serializedfilelocation;
 
         return $data;
     }

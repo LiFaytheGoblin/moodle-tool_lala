@@ -40,7 +40,7 @@ class model_version_description implements templatable, renderable {
      *
      * @param stdClass $version The model version object
      */
-    public function __construct($version) {
+    public function __construct(stdClass $version) {
         $this->version = $version;
     }
 
@@ -48,52 +48,38 @@ class model_version_description implements templatable, renderable {
      * Data for use with a template.
      *
      * @param renderer_base $output Renderer information.
-     * @return stdClass Said data.
+     * @return array Said data.
      */
-    public function export_for_template(renderer_base $output) {
-
-        $data = new stdClass();
+    public function export_for_template(renderer_base $output) : array {
+        $data = [];
 
         // Add info about the model version.
-        $data->id = $this->version->id;
+        $data['id'] = $this->version->id;
 
-        $data->name = $this->version->name;
+        $data['name'] = $this->version->name;
 
-        $data->timecreationstarted = userdate((int) $this->version->timecreationstarted);
+        $data['timecreationstarted'] = userdate((int) $this->version->timecreationstarted);
 
         $finished = (int) $this->version->timecreationfinished > 0;
-        $data->timecreationfinishedicon = $finished ? 'end' : 'half';
-        $data->timecreationfinished = $finished ?
+        $data['timecreationfinishedicon'] = $finished ? 'end' : 'half';
+        $data['timecreationfinished'] = $finished ?
                 userdate((int) $this->version->timecreationfinished) : get_string('unfinished', 'tool_laaudit');
-
-        $analysisintervalnameparts = explode('\\', $this->version->analysisinterval);
-        $data->analysisinterval = end($analysisintervalnameparts);
-
-        $data->predictionsprocessor = explode('\\', $this->version->predictionsprocessor)[1];
 
         $params = new stdClass();
         $params->testsize = $this->version->relativetestsetsize * 100;
         $params->trainsize = 100 - $params->testsize;
-        $data->traintestsplit = get_string('traintest', 'tool_laaudit', $params);
+        $data['traintestsplit'] = get_string('traintest', 'tool_laaudit', $params);
 
-        $data->contextids = get_string('allcontexts', 'tool_laaudit');
+        $data['contextids'] = get_string('allcontexts', 'tool_laaudit');
         $contextids = json_decode($this->version->contextids);
         if (gettype($contextids) == 'array') {
-            $data->contextids = implode(', ', $contextids);
+            $data['contextids'] = implode(', ', $contextids);
         } else if (gettype($contextids) == 'string') {
-            $data->contextids = $contextids;
+            $data['contextids'] = $contextids;
         }
 
-        $data->indicators = '';
-        $indicators = json_decode($this->version->indicators);
-        if (gettype($indicators) == 'array') {
-            $data->indicators = implode(', ', $indicators);
-        } else if (gettype($indicators) == 'string') {
-            $data->indicators = $indicators;
-        }
-
-        $data->haserror = isset($this->version->error);
-        $data->errormessage = $this->version->error;
+        $data['haserror'] = isset($this->version->error);
+        $data['errormessage'] = $this->version->error;
 
         return $data;
     }

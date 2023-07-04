@@ -34,32 +34,34 @@ use stdClass;
  */
 class model_configurations implements templatable, renderable {
     /** @var stdClass[] $modelconfigs of model configs */
-    protected $modelconfigs;
+    protected array $modelconfigs;
     /**
      * Constructor for this object.
      *
-     * @param stdClass $modelconfigs An array of model config objects
+     * @param stdClass[] $modelconfigs An array of model config objects
      */
-    public function __construct($modelconfigs) {
+    public function __construct(array $modelconfigs) {
         $this->modelconfigs = $modelconfigs;
-
     }
 
     /**
      * Data for use with a template.
      *
      * @param renderer_base $output Renderer information.
-     * @return stdClass Said data.
+     * @return array Said data.
      */
-    public function export_for_template(renderer_base $output) {
-        $data = new stdClass();
-        $data->modelconfigs = [];
-
+    public function export_for_template(renderer_base $output) : array {
+        $items = [];
         foreach ($this->modelconfigs as $modelconfig) {
             $modelconfig = new model_configuration($modelconfig);
-            $data->modelconfigs[] = $modelconfig->export_for_template($output);
+            $items[] = $modelconfig->export_for_template($output);
         }
+        usort($items, "self::sort_configs");
 
-        return $data;
+        return ['modelconfigs' => $items];
+    }
+
+    static function sort_configs($a, $b) : bool {
+        return $a['name'] > $b['name'];
     }
 }

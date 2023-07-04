@@ -38,7 +38,7 @@ abstract class evidence {
     /** @var int $versionid id of the belonging model version. */
     protected int $versionid;
     /** @var string $name of the evidence. */
-    private string $name;
+    protected string $name;
     /** @var int $timecollectionstarted of the evidence. */
     private int $timecollectionstarted;
     /** @var int|null $timecollectionfinished of the evidence. */
@@ -80,7 +80,7 @@ abstract class evidence {
 
         $obj = new stdClass();
 
-        if(!$DB->record_exists('tool_laaudit_model_versions', ['id' => $versionid])) {
+        if (!$DB->record_exists('tool_laaudit_model_versions', ['id' => $versionid])) {
             throw new Exception('No evidence can be created for version with id '.$versionid.'because this version does not exist.');
         }
 

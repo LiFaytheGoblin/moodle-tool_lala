@@ -31,10 +31,14 @@ use LogicException;
  * Class for the complete dataset evidence item.
  */
 class related_data extends dataset {
+    /** @var string|null $tablename to which the related data belongs */
+    private ?string $tablename;
+    const IGNORED_COLUMNS = ['timecreated', 'timemodified', 'modifierid'];
+
     /**
-     * Retrieve all available data related to the analysable samples.
+     * Retrieve all relevant data related to the analysable samples.
      *
-     * @param array $options = [$modelid, $analyser, $contexts]
+     * @param array $options = [$tablename, $ids]
      * @return void
      */
     public function collect(array $options): void {
@@ -48,10 +52,29 @@ class related_data extends dataset {
             throw new LogicException('Data has already been collected and can not be changed.');
         }
 
+        $this->tablename = $options['tablename'];
+
         global $DB;
-        $records = $DB->get_records($options['tablename']);
-        // todo: filter out only those records that we need.
+        $possiblecolumns = $this->get_possible_column_names();
+        foreach (self::IGNORED_COLUMNS as $columnname) {
+            unset($possiblecolumns[$columnname]);
+        }
+        $fieldsstring = implode(',', $possiblecolumns);
+
+        $records = $DB->get_records($this->tablename, null, null, $fieldsstring);
+
         $this->data = $records;
+    }
+
+    private function get_possible_column_names() {
+        global $DB;
+        $possiblecolumns = $DB->get_columns($this->tablename);
+        echo (json_encode($possiblecolumns->name));
+        $fieldnames = [];
+        foreach ($possiblecolumns as $columninfo) {
+            $fieldnames[] = $columninfo['name'];
+        }
+        return $fieldnames;
     }
 
     /**
@@ -80,4 +103,17 @@ class related_data extends dataset {
         $heading = $columns;
         $this->filestring = $heading.$str;
     }
+
+    /**
+     * Returns info on the serialized data file on the server.
+     * @return array
+     */
+    public function get_file_info(): array {
+        $info = parent::get_file_info();
+        $info['filename'] = 'modelversion' . $this->versionid . '-evidence' . $this->name . $this->id . $this->tablename . '.' .
+        $this->get_file_type();
+        return $info;
+    }
+
+
 }

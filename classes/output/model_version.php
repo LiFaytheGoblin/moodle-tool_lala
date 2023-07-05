@@ -58,8 +58,8 @@ class model_version implements templatable, renderable {
         $data['description'] = [$descriptionrenderer->export_for_template($output)];
 
         $evidenceitems = [];
-        foreach ($this->version->evidence as $evidenceitem) {
-            $evidencerenderer = new evidence_item($evidenceitem);
+        foreach ($this->version->evidenceobjects as $evidenceobject) {
+            $evidencerenderer = new evidence_item($evidenceobject);
             $evidenceitems[] = $evidencerenderer->export_for_template($output);
         }
         $data['evidence'] = $evidenceitems;

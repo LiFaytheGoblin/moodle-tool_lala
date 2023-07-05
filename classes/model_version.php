@@ -66,22 +66,12 @@ class model_version {
     private ?string $contextids;
     /** @var float $relativetestsetsize relative amount of available data to be used for testing */
     private float $relativetestsetsize;
-    /** @var stdClass[] $evidence used by the model version */
+    /** @var array[] $evidence used by the model version */
     private array $evidence;
+    /** @var stdClass[] $evidenceobjects used by the model version */
+    private array $evidenceobjects;
     /** @var string|null $error that occurred first when creating this model version and gathering evidence */
     private ?string $error;
-    /** @var stdClass[]|null $dataset */
-    private ?array $dataset;
-    /** @var stdClass[]|null $relateddata */
-    private ?array $relateddata;
-    /** @var stdClass[]|null $trainingdataset */
-    private ?array $trainingdataset;
-    /** @var stdClass[]|null $testdataset */
-    private ?array $testdataset;
-    /** @var stdClass[]|null $predictionsdataset */
-    private ?array $predictionsdataset;
-    /** @var LogisticRegression|null $model trained for this version */
-    private ?LogisticRegression $model;
     /** @var base $analyser for this version */
     private base $analyser;
     /** @var context[] $contexts for this version */
@@ -110,7 +100,7 @@ class model_version {
         $this->relativetestsetsize = $version->relativetestsetsize;
         $this->contextids = $version->contextids;
         $this->error = $version->error;
-        $this->evidence = $DB->get_records('tool_laaudit_evidence', ['versionid' => $this->id]);
+        $this->evidenceobjects = $DB->get_records('tool_laaudit_evidence', ['versionid' => $this->id]);
 
         $config = $DB->get_record('tool_laaudit_model_configs', ['id' => $this->configid], '*', MUST_EXIST);
         $this->modelid = $config->modelid;
@@ -208,7 +198,7 @@ class model_version {
         $obj->timecreationfinished = $this->timecreationfinished;
         $obj->relativetestsetsize = $this->relativetestsetsize;
         $obj->contextids = $this->contextids;
-        $obj->evidence = $this->evidence;
+        $obj->evidenceobjects = $this->evidenceobjects;
         $obj->error = $this->error;
 
         return $obj;
@@ -232,9 +222,12 @@ class model_version {
 
             $evidence->finish();
 
-            $this->evidence[$evidencetype] = $evidence->get_id(); // Add to evidence array. maybe store more than just id?
-            $fieldname = str_replace('_', '', $evidencetype);
-            $this->$fieldname = $evidence->get_raw_data();
+            if (!isset($this->evidence[$evidencetype])) $this->evidence[$evidencetype] = [];
+
+            $evidenceid = $evidence->get_id();
+            $this->evidence[$evidencetype][$evidenceid] = $evidence->get_raw_data();
+
+            // possibly need to add object to evidenceobjects prop
         } catch (moodle_exception | Exception $e) {
             $this->register_error($e);
         }
@@ -259,8 +252,10 @@ class model_version {
     public function gather_related_data(): void {
         $origintablename = $this->analyser->get_samples_origin();
         $originids = $this->get_sampleids();
-        $tablestohandle = [$origintablename => $originids];
+        $tablestohandle = [];
+        $tablestohandle[$origintablename] = $originids;
 
+        // might need to do the recursion differently if value of tablestohandle is cached.
         foreach ($tablestohandle as $tablenametohandle=>$relevantids) {
             if (!$relevantids) continue;
             $options = ['tablename' => $tablenametohandle, 'ids' =>$relevantids];
@@ -274,17 +269,15 @@ class model_version {
     }
 
     private function get_sampleids() : array {
-        if (!isset($this->dataset)) throw new LogicException('No data available to get sample ids from. Gather data first.');
+        if (!isset($this->evidence['dataset'])) throw new LogicException('No data available to get sample ids from. Gather data first.');
         $ids = [];
 
-        // go through $dataset
-        foreach ($this->dataset as $dataset) { // necessary because there's only one element with key analysisinterval in the set
-            $sampleids = array_keys($dataset);
-            unset($ids['0']); // remove the header
-            foreach ($sampleids as $sampleid) {
-                $id = explode('-', $sampleid)[0];
-                $ids[$id] = $id;
-            }
+        $dataset = array_values($this->get_single_evidence('dataset'))[0]; // First gathered dataset, first analysisinterval type
+        $sampleids = array_keys($dataset);
+        unset($sampleids['0']); // remove the header
+        foreach ($sampleids as $sampleid) {
+            $id = explode('-', $sampleid)[0];
+            $ids[$id] = $id;
         }
 
         return array_keys($ids);
@@ -323,8 +316,8 @@ class model_version {
      * @return void
      */
     public function split_training_test_data(): void {
-        if (!isset($this->dataset)) throw new LogicException('No data available to split into training and testing data. Have you gathered data?');
-        $data = dataset::get_shuffled($this->dataset);
+        if (!isset($this->evidence['dataset'])) throw new LogicException('No data available to split into training and testing data. Have you gathered data?');
+        $data = dataset::get_shuffled($this->get_single_evidence('dataset'));
         $options = ['data' => $data, 'testsize' => $this->relativetestsetsize];
 
         $this->add('training_dataset', $options);
@@ -337,8 +330,8 @@ class model_version {
      * @return void
      */
     public function train(): void {
-        if (!isset($this->trainingdataset)) throw new LogicException('No training data is available for training. Have you gathered data and split it into training and testing data?');
-        $options = ['data' => $this->trainingdataset, 'predictor' => $this->predictor];
+        if (!isset($this->evidence['training_dataset'])) throw new LogicException('No training data is available for training. Have you gathered data and split it into training and testing data?');
+        $options = ['data' => $this->get_single_evidence('training_dataset'), 'predictor' => $this->predictor];
 
         $this->add('model', $options);
     }
@@ -349,10 +342,10 @@ class model_version {
      * @return void
      */
     public function predict(): void {
-        if (!isset($this->testdataset)) throw new LogicException('No test data is available for getting predictions. Have you gathered data and split it into training and testing data?');
-        if (!isset($this->model)) throw new LogicException('No model is available for getting predictions. Have you trained a model?');
+        if (!isset($this->evidence['test_dataset'])) throw new LogicException('No test data is available for getting predictions. Have you gathered data and split it into training and testing data?');
+        if (!isset($this->evidence['model'])) throw new LogicException('No model is available for getting predictions. Have you trained a model?');
 
-        $options = ['model' => $this->model, 'data' => $this->testdataset];
+        $options = ['model' => $this->get_single_evidence('model'), 'data' => $this->get_single_evidence('test_dataset')];
 
         $this->add('predictions_dataset', $options);
     }
@@ -391,23 +384,13 @@ class model_version {
         return $this->id;
     }
 
-    public function get_dataset(): ?array {
-        return $this->dataset;
-    }
-
-    public function get_testdataset(): ?array {
-        return $this->testdataset;
-    }
-
-    public function get_trainingdataset(): ?array {
-        return $this->testdataset;
-    }
-
-    public function get_model(): ?LogisticRegression {
-        return $this->model;
-    }
-
-    public function get_predictionsdataset(): ?array {
-        return $this->predictionsdataset;
+    /**
+     * Register a thrown error in the error column of the model version table.
+     *
+     * @param string $evidencetype a valid name of an evidence inheriting class
+     * @return array|Phpml\Classification\Linear\LogisticRegression|mixed the evidence raw data
+     */
+    public function get_single_evidence(string $evidencetype): mixed {
+        return array_values($this->evidence[$evidencetype])[0];
     }
 }

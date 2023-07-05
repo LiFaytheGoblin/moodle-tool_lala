@@ -91,9 +91,9 @@ class related_data extends dataset {
         foreach ($this->data as $record) {
             $arr = (array) $record;
             if (!isset($columns)) {
-                $columns = implode(',', array_keys($arr))."\n";;
+                $columns = implode(',', array_keys($arr))."\n";
             }
-            $str = $str . implode(',', $arr) . "\n";;
+            $str = $str . implode(',', $arr) . "\n";
         }
 
         $heading = $columns;
@@ -110,6 +110,4 @@ class related_data extends dataset {
         $this->get_file_type();
         return $info;
     }
-
-
 }

@@ -61,25 +61,25 @@ class model_version_complete_creation_test extends \advanced_testcase {
 
         // Data is available for gathering
         $this->version->gather_dataset();
-        $dataset = $this->version->get_dataset();
+        $dataset = $this->version->get_single_evidence('dataset');
         $this->assertTrue(isset($dataset));
         $this->assertTrue(sizeof($dataset[test_model::ANALYSISINTERVAL]) == $nstudents + 1); // +1 for the header.
 
         // Now get split data
         $this->version->split_training_test_data();
-        $testdataset = $this->version->get_testdataset();
+        $testdataset = $this->version->get_single_evidence('test_dataset');
         $this->assertTrue(isset($testdataset));
-        $trainingdataset = $this->version->get_trainingdataset();
+        $trainingdataset = $this->version->get_single_evidence('training_dataset');
         $this->assertTrue(isset($trainingdataset));
 
         // Train the model
         $this->version->train();
-        $model = $this->version->get_model();
+        $model = $this->version->get_single_evidence('model');
         $this->assertTrue(isset($model));
 
         // Get predictions
         $this->version->predict();
-        $predictionsdataset = $this->version->get_predictionsdataset();
+        $predictionsdataset = $this->version->get_single_evidence('predictions_dataset');
         $this->assertTrue(isset($predictionsdataset));
 
         $error = test_version::haserror($this->versionid);
@@ -97,24 +97,24 @@ class model_version_complete_creation_test extends \advanced_testcase {
 
         // Data is available for gathering
         $this->version->gather_dataset();
-        $dataset = $this->version->get_dataset();
+        $dataset = $this->version->get_single_evidence('dataset');
         $this->assertTrue(isset($dataset));
 
         // Now get split data
         $this->version->split_training_test_data();
-        $testdataset = $this->version->get_testdataset();
+        $testdataset = $this->version->get_single_evidence('test_dataset');
         $this->assertTrue(isset($testdataset));
-        $trainingdataset = $this->version->get_trainingdataset();
+        $trainingdataset = $this->version->get_single_evidence('training_dataset');
         $this->assertTrue(isset($trainingdataset));
 
         // Train the model
         $this->version->train();
-        $model = $this->version->get_model();
+        $model = $this->version->get_single_evidence('model');
         $this->assertTrue(isset($model));
 
         // Get predictions
         $this->version->predict();
-        $predictionsdataset = $this->version->get_predictionsdataset();
+        $predictionsdataset = $this->version->get_single_evidence('predictions_dataset');
         $this->assertTrue(isset($predictionsdataset));
 
         $error = test_version::haserror($this->versionid);

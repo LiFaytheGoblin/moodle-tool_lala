@@ -35,6 +35,9 @@ use LogicException;
  * Class for the complete dataset evidence item.
  */
 class dataset extends evidence {
+    public static function get_ids(?array $dataset) {
+    }
+
     /**
      * Retrieve all available analysable samples, calculate features and label.
      * Store resulting data (sampleid, features, label) in the data field.

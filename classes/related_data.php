@@ -38,15 +38,15 @@ class related_data extends dataset {
     /**
      * Retrieve all relevant data related to the analysable samples.
      *
-     * @param array $options = [$tablename, $ids]
+     * @param array $options = [string $tablename, array $ids]
      * @return void
      */
     public function collect(array $options): void {
         if (!isset($options['tablename'])) {
-            throw new InvalidArgumentException('Options is missing analyser.');
+            throw new InvalidArgumentException('Options is missing the name of the related table.');
         }
         if (!isset($options['ids'])) {
-            throw new InvalidArgumentException('Options is missing ids.');
+            throw new InvalidArgumentException('Options is missing the ids the data should be related to.');
         }
         if (isset($this->data) && sizeof($this->data) > 0) {
             throw new LogicException('Data has already been collected and can not be changed.');
@@ -55,24 +55,20 @@ class related_data extends dataset {
         $this->tablename = $options['tablename'];
 
         global $DB;
-        $possiblecolumns = $this->get_possible_column_names();
-        foreach (self::IGNORED_COLUMNS as $columnname) {
-            unset($possiblecolumns[$columnname]);
-        }
-        $fieldsstring = implode(',', $possiblecolumns);
-
-        $records = $DB->get_records($this->tablename, null, null, $fieldsstring);
+        $possiblecolumns = self::get_possible_column_names($this->tablename);
+        $keptcolumns = array_diff($possiblecolumns, self::IGNORED_COLUMNS);
+        $fieldsstring = implode(',', $keptcolumns);
+        $records = $DB->get_records_list($this->tablename, 'id', $options['ids'], null, $fieldsstring);
 
         $this->data = $records;
     }
 
-    private function get_possible_column_names() {
+    public static function get_possible_column_names($tablename) : array {
         global $DB;
-        $possiblecolumns = $DB->get_columns($this->tablename);
-        echo (json_encode($possiblecolumns->name));
+        $possiblecolumns = $DB->get_columns($tablename);
         $fieldnames = [];
         foreach ($possiblecolumns as $columninfo) {
-            $fieldnames[] = $columninfo['name'];
+            $fieldnames[] = $columninfo->name;
         }
         return $fieldnames;
     }

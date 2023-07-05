@@ -232,7 +232,7 @@ class model_version {
 
             $evidence->finish();
 
-            $this->evidence[$evidencetype] = $evidence->get_id(); // Add to evidence array.
+            $this->evidence[$evidencetype] = $evidence->get_id(); // Add to evidence array. maybe store more than just id?
             $fieldname = str_replace('_', '', $evidencetype);
             $this->$fieldname = $evidence->get_raw_data();
         } catch (moodle_exception | Exception $e) {
@@ -257,10 +257,64 @@ class model_version {
      * @return void
      */
     public function gather_related_data(): void {
-        $maintablename = $this->analyser->get_samples_origin();
-        $options = ['tablename' => $maintablename, 'ids' => []];
+        $origintablename = $this->analyser->get_samples_origin();
+        $originids = $this->get_sampleids();
+        $tablestohandle = [$origintablename => $originids];
 
-        $this->add('related_data', $options);
+        foreach ($tablestohandle as $tablenametohandle=>$relevantids) {
+            if (!$relevantids) continue;
+            $options = ['tablename' => $tablenametohandle, 'ids' =>$relevantids];
+            $this->add('related_data', $options);
+            $newtablenames = $this->get_related_tables($tablenametohandle, $relevantids); //also add ids
+            if (sizeof($newtablenames) > 0) {
+                $tablestohandle = array_merge($tablestohandle, $newtablenames);
+            }
+            unset($tablenametohandle, $tablestohandle);
+        }
+    }
+
+    private function get_sampleids() : array {
+        if (!isset($this->dataset)) throw new LogicException('No data available to get sample ids from. Gather data first.');
+        $ids = [];
+
+        // go through $dataset
+        foreach ($this->dataset as $dataset) { // necessary because there's only one element with key analysisinterval in the set
+            $sampleids = array_keys($dataset);
+            unset($ids['0']); // remove the header
+            foreach ($sampleids as $sampleid) {
+                $id = explode('-', $sampleid)[0];
+                $ids[$id] = $id;
+            }
+        }
+
+        return array_keys($ids);
+    }
+
+    private function get_related_tables(string $tablenametohandle, array $relevantids): array {
+        $res = [];
+
+        global $DB;
+        $availabletables = $DB->get_tables();
+
+        // get related tablenames from columns -> all columns that have a name that ends on "id" and has at leastlen = 4
+        $columnnames = related_data::get_possible_column_names($tablenametohandle);
+        foreach ($columnnames as $columnname) {
+            if (count_chars($columnname) < 3) continue;
+            $idpos = stripos($columnname, 'id');
+            if ($idpos === false) continue;
+            $tablename = substr($columnname, 0, $idpos);
+
+            if (in_array($tablename, $availabletables)) { // If table exists...
+                $relatedidrecords = $DB->get_records_list($tablenametohandle, 'id', $relevantids, null, $columnname);
+                $relatedids = [];
+                foreach ($relatedidrecords as $relatedidrecord) { // Unpack the retrieved records
+                    $relatedids[] = $relatedidrecord->$columnname;
+                }
+                $res[$tablename] = $relatedids;
+            }
+        }
+
+        return $res;
     }
 
     /**

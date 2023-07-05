@@ -82,6 +82,11 @@ class model_version_complete_creation_test extends \advanced_testcase {
         $predictionsdataset = $this->version->get_single_evidence('predictions_dataset');
         $this->assertTrue(isset($predictionsdataset));
 
+        // Get related data
+        $this->version->gather_related_data();
+        $relateddata = $this->version->get_array_of_evidences('related_data');
+        $this->assertEquals(5, sizeof($relateddata));
+
         $error = test_version::haserror($this->versionid);
         $this->assertFalse($error); // An error has not been registered
     }

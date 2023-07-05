@@ -252,19 +252,11 @@ class model_version {
     public function gather_related_data(): void {
         $origintablename = $this->analyser->get_samples_origin();
         $originids = $this->get_sampleids();
-        $tablestohandle = [];
-        $tablestohandle[$origintablename] = $originids;
+        $relatedtables = $this->get_related_tables($origintablename, $originids, [$origintablename => $originids]);
 
-        // might need to do the recursion differently if value of tablestohandle is cached.
-        foreach ($tablestohandle as $tablenametohandle=>$relevantids) {
-            if (!$relevantids) continue;
-            $options = ['tablename' => $tablenametohandle, 'ids' =>$relevantids];
+        foreach ($relatedtables as $relatedtablename => $relevantids) {
+            $options = ['tablename' => $relatedtablename, 'ids' =>$relevantids];
             $this->add('related_data', $options);
-            $newtablenames = $this->get_related_tables($tablenametohandle, $relevantids); //also add ids
-            if (sizeof($newtablenames) > 0) {
-                $tablestohandle = array_merge($tablestohandle, $newtablenames);
-            }
-            unset($tablenametohandle, $tablestohandle);
         }
     }
 
@@ -283,8 +275,8 @@ class model_version {
         return array_keys($ids);
     }
 
-    private function get_related_tables(string $tablenametohandle, array $relevantids): array {
-        $res = [];
+    private function get_related_tables(string $tablenametohandle, array $relevantids, array $relatedtables): array {
+        $res = $relatedtables;
 
         global $DB;
         $availabletables = $DB->get_tables();
@@ -298,12 +290,13 @@ class model_version {
             $tablename = substr($columnname, 0, $idpos);
 
             if (in_array($tablename, $availabletables)) { // If table exists...
-                $relatedidrecords = $DB->get_records_list($tablenametohandle, 'id', $relevantids, null, $columnname);
+                $relatedidrecords = $DB->get_records_list($tablenametohandle, 'id', $relevantids, null, 'id,' . $columnname);
                 $relatedids = [];
                 foreach ($relatedidrecords as $relatedidrecord) { // Unpack the retrieved records
                     $relatedids[] = $relatedidrecord->$columnname;
                 }
                 $res[$tablename] = $relatedids;
+                $res = $this->get_related_tables($tablename, $relatedids, $res);
             }
         }
 
@@ -385,12 +378,22 @@ class model_version {
     }
 
     /**
-     * Register a thrown error in the error column of the model version table.
+     * Get the first evidence item of a type.
      *
      * @param string $evidencetype a valid name of an evidence inheriting class
-     * @return array|Phpml\Classification\Linear\LogisticRegression|mixed the evidence raw data
+     * @return array|Phpml\Classification\Linear\LogisticRegression|null the evidence raw data
      */
     public function get_single_evidence(string $evidencetype): mixed {
         return array_values($this->evidence[$evidencetype])[0];
+    }
+
+    /**
+     * Get all evidence items of a type.
+     *
+     * @param string $evidencetype a valid name of an evidence inheriting class
+     * @return array[]|Phpml\Classification\Linear\LogisticRegression[]|null the evidence raw data
+     */
+    public function get_array_of_evidences(string $evidencetype): mixed {
+        return array_values($this->evidence[$evidencetype]);
     }
 }

@@ -17,6 +17,7 @@
     Context variables required for this template:
     - id: 1
     - name: "training data"
+    - tablename: "course"
     - timecollectionstarted: "1679987403"
     - timecollectionfinished: "1679987953"
     - serializedfilelocation: "/evidencecollections/1"
@@ -24,6 +25,7 @@
     {
         "id": 1,
         "name": "training data",
+        "tablename": "course",
         "timecollectionstarted": "1679987403",
         "timecollectionfinished": "1679987953",
         "serializedfilelocation": "/evidencecollections/1"
@@ -39,7 +41,7 @@
                         <i class="icon fa fa-download" aria-hidden="true" title="{{#str}}serializedfilelocation, tool_laaudit{{/str}}"></i>
                     </dt>
                     <dd  class="m-0 p-0 col-sm">
-                        {{name}}
+                        {{name}} {{#tablename}}({{tablename}}){{/tablename}}
                     </dd>
                 </dl>
             </a>

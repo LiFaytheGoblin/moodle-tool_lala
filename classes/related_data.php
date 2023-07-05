@@ -106,7 +106,7 @@ class related_data extends dataset {
      */
     public function get_file_info(): array {
         $info = parent::get_file_info();
-        $info['filename'] = 'modelversion' . $this->versionid . '-evidence' . $this->name . $this->id . $this->tablename . '.' .
+        $info['filename'] = 'modelversion' . $this->versionid . '-evidence' . $this->name . $this->id . '-' . $this->tablename . '.' .
         $this->get_file_type();
         return $info;
     }

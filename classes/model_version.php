@@ -226,8 +226,6 @@ class model_version {
 
             $evidenceid = $evidence->get_id();
             $this->evidence[$evidencetype][$evidenceid] = $evidence->get_raw_data();
-
-            // possibly need to add object to evidenceobjects prop
         } catch (moodle_exception | Exception $e) {
             $this->register_error($e);
         }
@@ -238,10 +236,13 @@ class model_version {
      *
      * @return void
      */
-    public function gather_dataset(): void {
+    public function gather_dataset(bool $anonymous = true): void {
         $options = ['modelid' => $this->modelid, 'analyser' => $this->analyser, 'contexts' => $this->contexts];
 
-        $this->add('dataset', $options);
+        $evidencetype = 'dataset';
+        if ($anonymous) $evidencetype = $evidencetype . '_anonymized';
+
+        $this->add($evidencetype, $options);
     }
 
     /**
@@ -251,7 +252,7 @@ class model_version {
      */
     public function gather_related_data(): void {
         $origintablename = $this->analyser->get_samples_origin();
-        $originids = $this->get_sampleids();
+        $originids = $this->get_sampleids(); // todo: get the real ids!
         $relatedtables = $this->get_related_tables($origintablename, $originids, [$origintablename => $originids]);
 
         foreach ($relatedtables as $relatedtablename => $relevantids) {
@@ -269,7 +270,7 @@ class model_version {
         unset($sampleids['0']); // remove the header
         foreach ($sampleids as $sampleid) {
             $id = explode('-', $sampleid)[0];
-            $ids[$id] = $id;
+            $ids[$id] = $id; // Preserve the order
         }
 
         return array_keys($ids);
@@ -310,7 +311,7 @@ class model_version {
      */
     public function split_training_test_data(): void {
         if (!isset($this->evidence['dataset'])) throw new LogicException('No data available to split into training and testing data. Have you gathered data?');
-        $data = dataset::get_shuffled($this->get_single_evidence('dataset'));
+        $data = $this->get_single_evidence('dataset');
         $options = ['data' => $data, 'testsize' => $this->relativetestsetsize];
 
         $this->add('training_dataset', $options);

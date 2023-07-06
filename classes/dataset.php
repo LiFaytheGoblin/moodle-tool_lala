@@ -77,7 +77,8 @@ class dataset extends evidence {
             throw new LengthException('No data was gathered from the site. Probably, no fitting data is available.');
         }
 
-        $this->data = $allresults;
+        $shuffled = $this->get_shuffled($allresults);
+        $this->data = $shuffled;
     }
 
     /**

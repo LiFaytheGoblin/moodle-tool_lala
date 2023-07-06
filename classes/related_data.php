@@ -60,6 +60,8 @@ class related_data extends dataset {
         $fieldsstring = implode(',', $keptcolumns);
         $records = $DB->get_records_list($this->tablename, 'id', $options['ids'], null, $fieldsstring);
 
+        // todo: pseudonomize records with the look up table
+
         $this->data = $records;
     }
 

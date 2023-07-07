@@ -26,10 +26,6 @@ namespace tool_laaudit;
 
 use core_analytics\local\analysis\result_array;
 use core_analytics\analysis;
-use DomainException;
-use InvalidArgumentException;
-use LengthException;
-use LogicException;
 
 /**
  * Class for the complete dataset evidence item.
@@ -44,24 +40,46 @@ class dataset_anonymized extends dataset {
      */
     public function collect(array $options): void {
         parent::collect($options);
-        $pseudonomized = $this->pseudonomize($this->data);
-        $this->data = $pseudonomized;
+        $idmap = $this->get_idmap();
+        $this->pseudonomize($idmap);
     }
 
     /**
-     * @return array [$data, $oldkeys, $newkeys]
+     * Pseudonomize the gathered dataset by applying new keys.
+     * Make sure that the used data is shuffled, so that the order of keys does not give away the identity.
+     *
+     * @param array $idmap [oldkey => newkey]
      */
-    public static function pseudonomize(array $data): array {
+    private function pseudonomize(array $idmap): void {
         $res = [];
-        foreach ($data as $resultskey => $results) {
-            $values = array_values($results);
+        foreach ($this->data as $resultskey => $results) {
+            $replacements = [];
+            foreach ($results as $oldkey => $result) {
+                $newkey = $idmap[$oldkey];
+                $res[$newkey] = $result;
+            }
+            $res[$resultskey] = $replacements;
+        }
+        $this->data = $res;
+    }
+
+    /**
+     * Get id map.
+     *
+     * @return array idmap [oldid => newid]
+     */
+    private function get_idmap(): array {
+        $res = [];
+        foreach ($this->data as $results) {
             $keysold = array_keys($results);
             $header = $keysold['0'];
 
             $keysnew = range(1, sizeof($keysold) - 1); // minus header
-            array_unshift($keysnew, $header);
+            array_unshift($keysnew, $header); // add header - the id of the header stays the same!
 
-            $res[$resultskey] = array_combine($keysnew, $values);
+            $res = array_combine($keysold, $keysnew);
+
+            break;
         }
         return $res;
     }

@@ -36,6 +36,7 @@ use core_analytics\local\analyser\base;
 use Phpml\Classification\Linear\LogisticRegression;
 use tool_laaudit\event\model_version_created;
 
+require_once(__DIR__ . '/dataset_anonymized.php');
 /**
  * Class for the model configuration.
  */
@@ -215,10 +216,10 @@ class model_version {
      * @return void
      */
     private function add(string $evidencetype, array $options): void {
-        $class = 'tool_laaudit\\'.$evidencetype;
+        $class = '\tool_laaudit\\'.$evidencetype;
 
         try {
-            $evidence = call_user_func_array($class.'::create_for_version_with_options', [$this->id, $options]);
+            $evidence = $class::create_for_version_with_options($this->id, $options);//call_user_func_array($class.'::create_for_version_with_options', [$this->id, $options]);
 
             $evidence->finish();
 
@@ -239,8 +240,7 @@ class model_version {
     public function gather_dataset(bool $anonymous = true): void {
         $options = ['modelid' => $this->modelid, 'analyser' => $this->analyser, 'contexts' => $this->contexts];
 
-        $evidencetype = 'dataset';
-        if ($anonymous) $evidencetype = $evidencetype . '_anonymized';
+        $evidencetype = $anonymous ? 'dataset_anonymized' : 'dataset';
 
         $this->add($evidencetype, $options);
     }
@@ -250,18 +250,21 @@ class model_version {
      *
      * @return void
      */
-    public function gather_related_data(): void {
+    public function gather_related_data(bool $anonymous = true): void {
+        $evidencetype = $anonymous ? 'related_data_anonymized' : 'related_data';
+
         $origintablename = $this->analyser->get_samples_origin();
         $originids = $this->get_sampleids(); // todo: get the real ids!
         $relatedtables = $this->get_related_tables($origintablename, $originids, [$origintablename => $originids]);
 
         foreach ($relatedtables as $relatedtablename => $relevantids) {
             $options = ['tablename' => $relatedtablename, 'ids' =>$relevantids];
-            $this->add('related_data', $options);
+            $this->add($evidencetype, $options);
         }
     }
 
     private function get_sampleids() : array {
+        // todo: update to get original ids
         if (!isset($this->evidence['dataset'])) throw new LogicException('No data available to get sample ids from. Gather data first.');
         $ids = [];
 
@@ -309,9 +312,12 @@ class model_version {
      *
      * @return void
      */
-    public function split_training_test_data(): void {
-        if (!isset($this->evidence['dataset'])) throw new LogicException('No data available to split into training and testing data. Have you gathered data?');
-        $data = $this->get_single_evidence('dataset');
+    public function split_training_test_data(bool $anonymous = true): void {
+        $sourcedataset = $anonymous ? 'dataset_anonymized' : 'dataset';
+
+        if (!isset($this->evidence[$sourcedataset])) throw new LogicException('No data available to split into training and testing data. Have you gathered data?');
+        $data = $this->get_single_evidence($sourcedataset);
+
         $options = ['data' => $data, 'testsize' => $this->relativetestsetsize];
 
         $this->add('training_dataset', $options);

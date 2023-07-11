@@ -34,7 +34,11 @@ class dataset_test extends evidence_testcase {
     protected function setUp(): void {
         parent::setUp();
 
-        $this->evidence = dataset::create_scaffold_and_get_for_version($this->versionid);
+        $this->evidence = $this->get_evidence_instance();
+    }
+
+    protected function get_evidence_instance() : evidence {
+        return dataset::create_scaffold_and_get_for_version($this->versionid);
     }
     /**
      * Data provider for {@see test_dataset_collect()}.
@@ -73,8 +77,12 @@ class dataset_test extends evidence_testcase {
         $this->evidence->collect($options);
 
         $rawdata = $this->evidence->get_raw_data();
+        $this->assertTrue(isset($rawdata));
+        $this->assertEquals(1, sizeof($rawdata));
 
         $res = $rawdata[test_model::ANALYSISINTERVAL];
+        $this->assertTrue(sizeof($res) > 1); // Size is at least 2: 1 row for the header, and at least one row from the provider.
+
         $resheader = array_slice($res, 0, 1, true)[0];
         $resdata = array_slice($res, 1, null, true);
 
@@ -121,7 +129,7 @@ class dataset_test extends evidence_testcase {
      * @covers ::tool_laaudit_dataset_collect
      */
     public function test_dataset_collect_deletedmodel(): void {
-        $nstudents = 1;
+        $nstudents = 3;
         $createddaysago = 3;
         $this->create_test_data($nstudents, $createddaysago);
         test_model::delete($this->modelid);
@@ -131,7 +139,11 @@ class dataset_test extends evidence_testcase {
         $this->evidence->collect($options);
 
         $rawdata = $this->evidence->get_raw_data();
+        $this->assertTrue(isset($rawdata));
+        $this->assertEquals(1, sizeof($rawdata));
+
         $res = $rawdata[test_model::ANALYSISINTERVAL];
+        $this->assertTrue(sizeof($res) == $nstudents + 1);
         $resdata = array_slice($res, 1, null, true);
         $this->assertEquals(sizeof($resdata), $nstudents * floor($createddaysago / 3));
     }
@@ -183,7 +195,7 @@ class dataset_test extends evidence_testcase {
      * @param int $nstudents amount of students
      * @param int $createddaysago how many days ago a sample course should have been started
      */
-    protected function create_test_data(int $nstudents = 1, int $createddaysago = 3): void {
+    protected function create_test_data(int $nstudents = 3, int $createddaysago = 3): void {
         test_course_with_students::create($this->getDataGenerator(), $nstudents, $createddaysago);
     }
 

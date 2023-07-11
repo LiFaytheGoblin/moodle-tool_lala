@@ -77,8 +77,7 @@ class dataset extends evidence {
             throw new LengthException('No data was gathered from the site. Probably, no fitting data is available.');
         }
 
-        $shuffled = $this->get_shuffled($allresults);
-        $this->data = $shuffled;
+        $this->data = $allresults;
     }
 
     /**
@@ -154,6 +153,20 @@ class dataset extends evidence {
         }
 
         return $datawithheader;
+    }
+
+    public static function get_sampleids_used_in_dataset(array $data) : array {
+        $ids = [];
+
+        $dataset = array_values($data)[0]; // First gathered dataset, first analysisinterval type
+        $sampleids = array_keys($dataset);
+        unset($sampleids['0']); // remove the header
+        foreach ($sampleids as $sampleid) {
+            $id = explode('-', $sampleid)[0];
+            $ids[$id] = $id; // Preserve the order, avoid duplicates
+        }
+
+        return array_keys($ids);
     }
 
     /**

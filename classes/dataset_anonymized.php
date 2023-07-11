@@ -40,47 +40,59 @@ class dataset_anonymized extends dataset {
      */
     public function collect(array $options): void {
         parent::collect($options);
-        $idmap = $this->get_idmap();
-        $this->pseudonomize($idmap);
+        $idmap = self::create_new_idmap_from_ids_in_data($this->data);
+        $n = sizeof($idmap);
+        if ($n < 3) throw new \Exception('Too few samples available. Found only '.$n.' sample(s) to gather. To preserve anonymity, at least 3 samples are needed.');
+        $this->data = $this->pseudonomize($this->data, $idmap);
     }
 
     /**
      * Pseudonomize the gathered dataset by applying new keys.
      * Make sure that the used data is shuffled, so that the order of keys does not give away the identity.
      *
+     * @param array $data the data to anonymize ['analysisintervaltype' => ['0' => headerrow, 'someformerid' => datarow, ...]
      * @param array $idmap [oldkey => newkey]
+     * @return array pseudonomized data ['analysisintervaltype' => ['0' => headerrow, 'somenewid' => datarow, ...]
      */
-    private function pseudonomize(array $idmap): void {
+    public function pseudonomize(array $data, array $idmap): array {
         $res = [];
-        foreach ($this->data as $resultskey => $results) {
+        foreach ($data as $resultskey => $results) {
             $replacements = [];
+            $header = [];
             foreach ($results as $oldkey => $result) {
-                $newkey = $idmap[$oldkey];
-                $res[$newkey] = $result;
+                if ($oldkey == '0') { // Skip header row.
+                    $header = ['0' =>$results['0']];
+                    continue;
+                }
+                $oldkeyparts = explode('-', $oldkey);
+                $oldid = $oldkeyparts[0];
+                $analysisintervalpart = array_key_exists(1, $oldkeyparts) ? '-'.$oldkeyparts[1] : '';
+
+                $newkey = $idmap[$oldid];
+                if (!isset($newkey)) throw new \Exception('Idmap is incomplete. No pseudonym found for id '.$oldkey);
+
+                $replacements[$newkey.$analysisintervalpart] = $result;
             }
-            $res[$resultskey] = $replacements;
+            ksort($replacements); // Re-sort so that order of keys does not give away identity.
+
+            $res[$resultskey] = array_merge($header, $replacements);
         }
-        $this->data = $res;
+        return $res;
     }
 
     /**
      * Get id map.
      *
+     * @param array data
      * @return array idmap [oldid => newid]
      */
-    private function get_idmap(): array {
-        $res = [];
-        foreach ($this->data as $results) {
-            $keysold = array_keys($results);
-            $header = $keysold['0'];
+    public static function create_new_idmap_from_ids_in_data(array $data): array {
+        $oldids = dataset::get_sampleids_used_in_dataset($data);
 
-            $keysnew = range(1, sizeof($keysold) - 1); // minus header
-            array_unshift($keysnew, $header); // add header - the id of the header stays the same!
+        $newids = range(1, sizeof($oldids));
 
-            $res = array_combine($keysold, $keysnew);
+        $idmap = array_combine($oldids, $newids);
 
-            break;
-        }
-        return $res;
+        return $idmap;
     }
 }

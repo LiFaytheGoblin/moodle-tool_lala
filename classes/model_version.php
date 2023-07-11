@@ -243,6 +243,8 @@ class model_version {
         $evidencetype = $anonymous ? 'dataset_anonymized' : 'dataset';
 
         $this->add($evidencetype, $options);
+
+        // Todo: Change this, so that $this->idmap is also set!
     }
 
     /**
@@ -251,33 +253,33 @@ class model_version {
      * @return void
      */
     public function gather_related_data(bool $anonymous = true): void {
-        $evidencetype = $anonymous ? 'related_data_anonymized' : 'related_data';
+        $source = $anonymous ? 'dataset_anonymized' : 'dataset';
+        if (!isset($this->evidence[$source])) throw new LogicException('No data available for which to get related data. Have you gathered data?');
+
+        $options = [];
+        $data = $this->get_single_evidence($source);
+
+        if ($anonymous === true) {
+            $evidencetype = 'related_data_anonymized';
+            if (!isset($this->idmap)) throw LogicException('No idmap available.');
+            $options['idmap'] = $this->idmap;
+            $originids = array_values($this->idmap);
+        } else {
+            $evidencetype = 'related_data';
+            $originids = dataset::get_sampleids_used_in_dataset($data);
+        }
 
         $origintablename = $this->analyser->get_samples_origin();
-        $originids = $this->get_sampleids(); // todo: get the real ids!
         $relatedtables = $this->get_related_tables($origintablename, $originids, [$origintablename => $originids]);
 
         foreach ($relatedtables as $relatedtablename => $relevantids) {
-            $options = ['tablename' => $relatedtablename, 'ids' =>$relevantids];
+            $options['tablename'] = $relatedtablename;
+            $options['ids'] = $relevantids;
             $this->add($evidencetype, $options);
         }
     }
 
-    private function get_sampleids() : array {
-        // todo: update to get original ids
-        if (!isset($this->evidence['dataset'])) throw new LogicException('No data available to get sample ids from. Gather data first.');
-        $ids = [];
 
-        $dataset = array_values($this->get_single_evidence('dataset'))[0]; // First gathered dataset, first analysisinterval type
-        $sampleids = array_keys($dataset);
-        unset($sampleids['0']); // remove the header
-        foreach ($sampleids as $sampleid) {
-            $id = explode('-', $sampleid)[0];
-            $ids[$id] = $id; // Preserve the order
-        }
-
-        return array_keys($ids);
-    }
 
     private function get_related_tables(string $tablenametohandle, array $relevantids, array $relatedtables): array {
         $res = $relatedtables;
@@ -318,7 +320,9 @@ class model_version {
         if (!isset($this->evidence[$sourcedataset])) throw new LogicException('No data available to split into training and testing data. Have you gathered data?');
         $data = $this->get_single_evidence($sourcedataset);
 
-        $options = ['data' => $data, 'testsize' => $this->relativetestsetsize];
+        $datashuffled = dataset::get_shuffled($data);
+
+        $options = ['data' => $datashuffled, 'testsize' => $this->relativetestsetsize];
 
         $this->add('training_dataset', $options);
         $this->add('test_dataset', $options);

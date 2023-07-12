@@ -43,22 +43,22 @@ class test_dataset_test extends evidence_testcase {
     public function tool_laaudit_get_source_data_parameters_provider() : array {
         return [
                 'Min dataset, min testsize' => [
-                        '$ndatapoints' => 2,
+                        'ndatapoints' => 2,
                         'testsize' => 0.3,
                         'expectedressize' => 1
                 ],
                 'Small dataset, some testsize' => [
-                        '$ndatapoints' => 7,
+                        'ndatapoints' => 7,
                         'testsize' => 0.3,
                         'expectedressize' => 2
                 ],
                 'Small dataset, smaller testsize' => [
-                        '$ndatapoints' => 7,
+                        'ndatapoints' => 7,
                         'testsize' => 0.2,
                         'expectedressize' => 1
                 ],
                 'Some dataset, some testsize' => [
-                        '$ndatapoints' => 10,
+                        'ndatapoints' => 10,
                         'testsize' => 0.2,
                         'expectedressize' => 2
                 ],

@@ -50,23 +50,54 @@ class model_version_complete_creation_test extends \advanced_testcase {
         $this->version = new model_version($this->versionid);
     }
     /**
+     * Data provider for {@see test_model_version_complete_creation()}.
+     *
+     * @return array with the info whether the data should be anonymized.
+     */
+    public function tool_laaudit_model_creation_parameters_provider() : array {
+        return [
+                'Anonymous' => [
+                        'anonymous' => true,
+                ],
+                'Not anonymous' => [
+                        'anonymous' => false,
+                ]
+        ];
+    }
+    /**
      * Check the happy path of the automatic model creation process
      *
      * @covers ::tool_laaudit_model_version
+     *
+     * @dataProvider tool_laaudit_model_creation_parameters_provider
+     * @param bool $anonymous
      */
-    public function test_model_version_complete_creation() {
+    public function test_model_version_complete_creation(bool $anonymous) {
         // Generate test data
         $nstudents = 10;
         test_course_with_students::create($this->getDataGenerator(), $nstudents, 3);
 
         // Data is available for gathering
-        $this->version->gather_dataset();
-        $dataset = $this->version->get_single_evidence('dataset');
+        $this->version->gather_dataset($anonymous);
+        $evidencetype = $anonymous ? 'dataset_anonymized' : 'dataset';
+        $dataset = $this->version->get_single_evidence($evidencetype);
         $this->assertTrue(isset($dataset));
         $this->assertTrue(sizeof($dataset[test_model::ANALYSISINTERVAL]) == $nstudents + 1); // +1 for the header.
 
+        if ($anonymous) {
+            // Check that dataset does not contain the original userids but new userids
+            $originalids = test_course_with_students::get_ids('user');
+            $newids = dataset::get_sampleids_used_in_dataset($dataset);
+            $identicalids = array_intersect($originalids, $newids);
+            $this->assertEquals(0, sizeof($identicalids));
+            // todo check that datasets allocate the correct values to the correct users
+            $this->version->gather_dataset(!$anonymous);
+            $unanonymized_dataset = $this->version->get_single_evidence('dataset');
+
+        }
+
         // Now get split data
-        $this->version->split_training_test_data();
+        $this->version->split_training_test_data($anonymous);
         $testdataset = $this->version->get_single_evidence('test_dataset');
         $this->assertTrue(isset($testdataset));
         $trainingdataset = $this->version->get_single_evidence('training_dataset');
@@ -83,9 +114,22 @@ class model_version_complete_creation_test extends \advanced_testcase {
         $this->assertTrue(isset($predictionsdataset));
 
         // Get related data
-        $this->version->gather_related_data();
-        $relateddata = $this->version->get_array_of_evidences('related_data');
-        $this->assertEquals(5, sizeof($relateddata));
+        $this->version->gather_related_data($anonymous);
+        $evidencetype = $anonymous ? 'related_data_anonymized' : 'related_data';
+        $relateddatasets = $this->version->get_array_of_evidences($evidencetype);
+        $this->assertEquals(5, sizeof($relateddatasets));
+
+        if ($anonymous) {
+            // Check that the datasets do not contain the original userids but new userids
+            $originalids = test_course_with_students::get_ids('user');
+            foreach ($relateddatasets as $data) {
+                $newids = []; //todo: get new ids
+                // check that datasets do not contain the original userids but new userids (check analysisinterval)
+                $identicalids = array_intersect($originalids, $newids);
+                $this->assertEquals(0, sizeof($identicalids));
+                // check that datasets allocate the correct values to the correct users
+            }
+        }
 
         $error = test_version::haserror($this->versionid);
         $this->assertFalse($error); // An error has not been registered
@@ -101,12 +145,12 @@ class model_version_complete_creation_test extends \advanced_testcase {
         test_model::delete($this->modelid);
 
         // Data is available for gathering
-        $this->version->gather_dataset();
+        $this->version->gather_dataset(false);
         $dataset = $this->version->get_single_evidence('dataset');
         $this->assertTrue(isset($dataset));
 
         // Now get split data
-        $this->version->split_training_test_data();
+        $this->version->split_training_test_data(false);
         $testdataset = $this->version->get_single_evidence('test_dataset');
         $this->assertTrue(isset($testdataset));
         $trainingdataset = $this->version->get_single_evidence('training_dataset');

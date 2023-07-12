@@ -16,11 +16,10 @@
 
 namespace tool_laaudit;
 
+use Exception;
+
 defined('MOODLE_INTERNAL') || die();
 
-require_once(__DIR__ . '/fixtures/test_model.php');
-require_once(__DIR__ . '/fixtures/test_course_with_students.php');
-require_once(__DIR__ . '/fixtures/test_analyser.php');
 require_once(__DIR__ . '/evidence_testcase.php');
 
 /**
@@ -30,7 +29,7 @@ require_once(__DIR__ . '/evidence_testcase.php');
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class dataset_test extends evidence_testcase {
+class related_data_test extends evidence_testcase {
     protected function setUp(): void {
         parent::setUp();
 
@@ -38,57 +37,75 @@ class dataset_test extends evidence_testcase {
     }
 
     protected function get_evidence_instance() : evidence {
-        return dataset::create_scaffold_and_get_for_version($this->versionid);
+        return related_data::create_scaffold_and_get_for_version($this->versionid);
     }
     /**
-     * Data provider for {@see test_dataset_collect()}.
+     * Data provider for {@see test_related_data_collect()}.
      *
      * @return array List of source data information
      */
-    public function tool_laaudit_get_source_data_parameters_provider() : array {
+    public function tool_laaudit_all_parameters_provider() : array {
         return [
-                'Min user, min days' => [
+                'Min user, min days, table user' => [
                         'nstudents' => 1,
-                        'createddaysago' => 3
+                        'createddaysago' => 3,
+                        'tablename' => 'user',
                 ],
-                'Min user, some days' => [
+                'Min user, some days, table user' => [
                         'nstudents' => 1,
-                        'createddaysago' => 10
+                        'createddaysago' => 10,
+                        'tablename' => 'user',
                 ],
-                'Some users, min days' => [
+                'Some users, min days, table user' => [
                         'nstudents' => 10,
-                        'createddaysago' => 3
-                ]
+                        'createddaysago' => 3,
+                        'tablename' => 'user',
+                ],
+                'Min user, min days, table user_enrolments' => [
+                        'nstudents' => 1,
+                        'createddaysago' => 3,
+                        'tablename' => 'user_enrolments',
+                ],
+                'Some users, some days, table user_enrolments' => [
+                        'nstudents' => 10,
+                        'createddaysago' => 10,
+                        'tablename' => 'user_enrolments',
+                ],
+                'Some users, min days, table enrol' => [
+                        'nstudents' => 10,
+                        'createddaysago' => 3,
+                        'tablename' => 'enrol',
+                ],
+                'Some users, min days, table course' => [
+                        'nstudents' => 10,
+                        'createddaysago' => 3,
+                        'tablename' => 'course',
+                ],
+                'Some users, min days, table role' => [
+                        'nstudents' => 10,
+                        'createddaysago' => 3,
+                        'tablename' => 'role',
+                ],
         ];
     }
     /**
      * Check that collect gathers all necessary data
      *
-     * @covers ::tool_laaudit_dataset_collect
+     * @covers ::tool_laaudit_related_data_collect
      *
-     * @dataProvider tool_laaudit_get_source_data_parameters_provider
+     * @dataProvider tool_laaudit_all_parameters_provider
      * @param int $nstudents amount of students
      * @param int $createddaysago how many days ago a sample course should have been started
      */
-    public function test_evidence_collect(int $nstudents, int $createddaysago): void {
+    public function test_related_data_collect(int $nstudents, int $createddaysago, string $tablename): void {
         $this->create_test_data($nstudents, $createddaysago);
 
-        $options = $this->get_options();
+        $options = $this->get_options($tablename);
         $this->evidence->collect($options);
 
         $rawdata = $this->evidence->get_raw_data();
-        $this->assertTrue(isset($rawdata));
-        $this->assertEquals(1, sizeof($rawdata));
-
-        $res = $rawdata[test_model::ANALYSISINTERVAL];
-
-        $resheader = array_slice($res, 0, 1, true)[0];
-        $resdata = array_slice($res, 1, null, true);
-
-        $expectedheadersize = sizeof(test_model::get_indicator_instances()) + 1; // The header should contain indicator and target names.
-        $this->assertEquals($expectedheadersize, sizeof($resheader));
-
-        $this->assertEquals(sizeof($resdata), $nstudents * floor($createddaysago / 3));
+        // todo: add checks for rawdata
+        // rawdata contains all the expected ids
 
         // Test serialize()
         $this->evidence->serialize();
@@ -103,7 +120,7 @@ class dataset_test extends evidence_testcase {
     /**
      * Check that collect throws an error if trying to call it twice for the same evidence.
      *
-     * @covers ::tool_laaudit_dataset_collect
+     * @covers ::tool_laaudit_related_data_collect
      */
     public function test_evidence_collect_error_again(): void {
         $this->create_test_data();
@@ -111,21 +128,9 @@ class dataset_test extends evidence_testcase {
     }
 
     /**
-     * Check that collect throws an error if data is missing.
-     *
-     * @covers ::tool_laaudit_dataset_collect
-     */
-    public function test_evidence_collect_error_nodata(): void {
-        $options = $this->get_options();
-
-        $this->expectException(\Exception::class); // Expect exception if trying to collect but no data exists.
-        $this->evidence->collect($options);
-    }
-
-    /**
      * Check that collect works even if the original model has been deleted.
      *
-     * @covers ::tool_laaudit_dataset_collect
+     * @covers ::tool_laaudit_related_data_collect
      */
     public function test_dataset_collect_deletedmodel(): void {
         $nstudents = 3;
@@ -138,29 +143,23 @@ class dataset_test extends evidence_testcase {
         $this->evidence->collect($options);
 
         $rawdata = $this->evidence->get_raw_data();
-        $this->assertTrue(isset($rawdata));
-        $this->assertEquals(1, sizeof($rawdata));
-
-        $res = $rawdata[test_model::ANALYSISINTERVAL];
-        $this->assertTrue(sizeof($res) == $nstudents + 1);
-        $resdata = array_slice($res, 1, null, true);
-        $this->assertEquals(sizeof($resdata), $nstudents * floor($createddaysago / 3));
+        // todo: verify raw data
     }
 
     /**
      * Check that serialize throws an error if no data can be serialized.
      *
-     * @covers ::tool_laaudit_dataset_serialize
+     * @covers ::tool_laaudit_related_data_serialize
      */
     public function test_dataset_serialize_error_nodata(): void {
-        $this->expectException(\Exception::class); // Expect exception if no data collected yet.
+        $this->expectException(Exception::class); // Expect exception if no data collected yet.
         $this->evidence->serialize();
     }
 
     /**
      * Check that serialize throws an error if being called again.
      *
-     * @covers ::tool_laaudit_dataset_serialize
+     * @covers ::tool_laaudit_related_data_serialize
      */
     public function test_dataset_serialize_error_again(): void {
         $this->create_test_data();
@@ -169,23 +168,8 @@ class dataset_test extends evidence_testcase {
         $this->evidence->collect($options);
         $this->evidence->serialize();
 
-        $this->expectException(\Exception::class); // Expect exception if no data collected yet.
+        $this->expectException(Exception::class); // Expect exception if no data collected yet.
         $this->evidence->serialize();
-    }
-
-    /**
-     * Check that get_shuffled returns a shuffled array.
-     *
-     * @covers ::tool_laaudit_dataset_get_shuffled
-     */
-    public function test_dataset_get_shuffled() : void {
-        $data = test_dataset_evidence::create(10);
-
-        $res = dataset::get_shuffled($data);
-
-        $this->assertFalse(json_encode($data) == json_encode($res));
-        $this->assertEquals(sizeof($data), sizeof($res));
-        $this->assertTrue(str_contains(json_encode($res), json_encode(test_dataset_evidence::get_header())));
     }
 
     /**
@@ -202,11 +186,10 @@ class dataset_test extends evidence_testcase {
      * Get the options object needed for collecting this evidence.
      * @return array
      */
-    public function get_options(): array {
+    public function get_options(string $tablename = 'user'): array {
         return [
-                'contexts' => [],
-                'analyser' => test_analyser::create($this->modelid),
-                'modelid' => $this->modelid,
+                'tablename' => $tablename,
+                'ids' => test_course_with_students::get_ids($tablename)
         ];
     }
 }

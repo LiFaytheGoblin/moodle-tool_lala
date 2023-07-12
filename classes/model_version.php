@@ -79,6 +79,8 @@ class model_version {
     private array $contexts;
     /** @var predictor $predictor for this version */
     private predictor $predictor;
+    /** @var array|null $idmap used for anonymization */
+    private ?array $idmap;
 
     /**
      * Constructor. Deserialize DB object.
@@ -213,9 +215,9 @@ class model_version {
      *
      * @param string $evidencetype created in the next step.
      * @param array $options those options that are relevant in the called classes, see for instance dataset->collect().
-     * @return void
+     * @return evidence|null
      */
-    private function add(string $evidencetype, array $options): void {
+    private function add(string $evidencetype, array $options): ?evidence {
         $class = '\tool_laaudit\\'.$evidencetype;
 
         try {
@@ -223,12 +225,15 @@ class model_version {
 
             $evidence->finish();
 
+            // Add id and raw data to cached field variables
             if (!isset($this->evidence[$evidencetype])) $this->evidence[$evidencetype] = [];
-
             $evidenceid = $evidence->get_id();
             $this->evidence[$evidencetype][$evidenceid] = $evidence->get_raw_data();
+
+            return $evidence;
         } catch (moodle_exception | Exception $e) {
             $this->register_error($e);
+            return null;
         }
     }
 
@@ -242,9 +247,8 @@ class model_version {
 
         $evidencetype = $anonymous ? 'dataset_anonymized' : 'dataset';
 
-        $this->add($evidencetype, $options);
-
-        // Todo: Change this, so that $this->idmap is also set!
+        $evidence = $this->add($evidencetype, $options);
+        if (isset($evidence) and $anonymous) $this->idmap = $evidence->get_idmap();
     }
 
     /**
@@ -259,7 +263,7 @@ class model_version {
         $options = [];
         $data = $this->get_single_evidence($source);
 
-        if ($anonymous === true) {
+        if ($anonymous) {
             $evidencetype = 'related_data_anonymized';
             if (!isset($this->idmap)) throw LogicException('No idmap available.');
             $options['idmap'] = $this->idmap;
@@ -278,8 +282,6 @@ class model_version {
             $this->add($evidencetype, $options);
         }
     }
-
-
 
     private function get_related_tables(string $tablenametohandle, array $relevantids, array $relatedtables): array {
         $res = $relatedtables;
@@ -395,6 +397,7 @@ class model_version {
      * @return array|Phpml\Classification\Linear\LogisticRegression|null the evidence raw data
      */
     public function get_single_evidence(string $evidencetype): mixed {
+        if (!isset($this->evidence[$evidencetype])) return null;
         return array_values($this->evidence[$evidencetype])[0];
     }
 

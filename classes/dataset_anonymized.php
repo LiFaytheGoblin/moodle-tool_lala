@@ -31,6 +31,9 @@ use core_analytics\analysis;
  * Class for the complete dataset evidence item.
  */
 class dataset_anonymized extends dataset {
+    /** @var array|null $idmap used for anonymization */
+    private ?array $idmap;
+
     /**
      * Retrieve all available analysable samples, calculate features and label.
      * Store resulting data (sampleid, features, label) in the data field.
@@ -40,10 +43,10 @@ class dataset_anonymized extends dataset {
      */
     public function collect(array $options): void {
         parent::collect($options);
-        $idmap = self::create_new_idmap_from_ids_in_data($this->data);
-        $n = sizeof($idmap);
+        $this->idmap = self::create_new_idmap_from_ids_in_data($this->data);
+        $n = sizeof($this->idmap);
         if ($n < 3) throw new \Exception('Too few samples available. Found only '.$n.' sample(s) to gather. To preserve anonymity, at least 3 samples are needed.');
-        $this->data = $this->pseudonomize($this->data, $idmap);
+        $this->data = $this->pseudonomize($this->data, $this->idmap);
     }
 
     /**
@@ -81,7 +84,7 @@ class dataset_anonymized extends dataset {
     }
 
     /**
-     * Get id map.
+     * Create id map.
      *
      * @param array data
      * @return array idmap [oldid => newid]
@@ -89,10 +92,20 @@ class dataset_anonymized extends dataset {
     public static function create_new_idmap_from_ids_in_data(array $data): array {
         $oldids = dataset::get_sampleids_used_in_dataset($data);
 
-        $newids = range(1, sizeof($oldids));
+        $offset = 2; // Moodle has two standard users, 1 and 2.
+        $newids = range(1 + $offset, sizeof($oldids) + $offset);
 
         $idmap = array_combine($oldids, $newids);
 
         return $idmap;
+    }
+
+    /**
+     * Get id map.
+     *
+     * @return array idmap [oldid => newid]
+     */
+    public function get_idmap() : array {
+        return $this->idmap;
     }
 }

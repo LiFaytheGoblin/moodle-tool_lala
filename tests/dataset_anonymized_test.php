@@ -131,4 +131,13 @@ class dataset_anonymized_test extends dataset_test {
         $this->expectException(\Exception::class); // Expect exception if trying to collect but too little data exists.
         $this->evidence->collect($options);
     }
+
+    /**
+     * Check that the idmap is created correctly
+     *
+     * @covers ::tool_laaudit_dataset_create_new_idmap_from_ids_in_data
+     */
+    public function test_evidence_create_new_idmap_from_ids_in_data() {
+        // todo
+    }
 }

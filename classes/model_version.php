@@ -390,6 +390,10 @@ class model_version {
         return $this->id;
     }
 
+    public function get_idmap() {
+        return $this->idmap;
+    }
+
     /**
      * Get the first evidence item of a type.
      *
@@ -410,4 +414,6 @@ class model_version {
     public function get_array_of_evidences(string $evidencetype): mixed {
         return array_values($this->evidence[$evidencetype]);
     }
+
+
 }

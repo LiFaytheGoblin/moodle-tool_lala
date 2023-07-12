@@ -76,7 +76,7 @@ class dataset_anonymized extends dataset {
 
                 $replacements[$newkey.$analysisintervalpart] = $result;
             }
-            ksort($replacements); // Re-sort so that order of keys does not give away identity.
+            shuffle($replacements); // Re-sort so that order of keys does not give away identity.
 
             $res[$resultskey] = array_merge($header, $replacements);
         }
@@ -94,6 +94,8 @@ class dataset_anonymized extends dataset {
 
         $offset = 2; // Moodle has two standard users, 1 and 2.
         $newids = range(1 + $offset, sizeof($oldids) + $offset);
+        shuffle($newids);
+        shuffle($oldids);
 
         $idmap = array_combine($oldids, $newids);
 

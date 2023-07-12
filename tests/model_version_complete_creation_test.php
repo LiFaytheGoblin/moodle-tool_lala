@@ -90,10 +90,38 @@ class model_version_complete_creation_test extends \advanced_testcase {
             $newids = dataset::get_sampleids_used_in_dataset($dataset);
             $identicalids = array_intersect($originalids, $newids);
             $this->assertEquals(0, sizeof($identicalids));
-            // todo check that datasets allocate the correct values to the correct users
-            $this->version->gather_dataset(!$anonymous);
-            $unanonymized_dataset = $this->version->get_single_evidence('dataset');
 
+            // Check that datasets allocate the correct values to the correct users
+            $this->version->gather_dataset(!$anonymous);
+            $originaldataset = $this->version->get_single_evidence('dataset');
+
+            $originalrows = $originaldataset[test_model::ANALYSISINTERVAL];
+            $newrows = $dataset[test_model::ANALYSISINTERVAL];
+            $idmap = $this->version->get_idmap();
+            $originalidsinorder = [];
+            $newidsinorder = [];
+            foreach ($originalrows as $originasamplelid => $originalvalues) {
+                if ($originasamplelid == '0') continue; // skip header
+                $sampleidparts = explode('-', $originasamplelid);
+                $originalid = $sampleidparts[0];
+                $analysisinterval = array_key_exists(1, $sampleidparts) ? '-'.$sampleidparts[1] : '';
+                $newid = $idmap[$originalid];
+                $newvalues = $newrows[$newid.$analysisinterval];
+                $this->assertEquals(json_encode($originalvalues), json_encode($newvalues));
+
+                if (!in_array($originalid, $originalidsinorder)) $originalidsinorder[] = $originalid;
+                if (!in_array($newid, $newidsinorder)) $newidsinorder[] = $newid;
+            }
+
+            // Check that the order of new ids does not give away the original id
+            $possibleidmap = array_combine($originalidsinorder, $newidsinorder);
+            asort($possibleidmap);
+            asort($idmap);
+
+            print(json_encode($idmap));
+            print(json_encode($possibleidmap));
+
+            $this->assertFalse(json_encode($idmap) === json_encode($possibleidmap));
         }
 
         // Now get split data

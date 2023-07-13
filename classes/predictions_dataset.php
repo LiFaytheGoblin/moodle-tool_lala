@@ -59,7 +59,7 @@ class predictions_dataset extends dataset {
         $predictedlabels = $options['model']->predict($testxys['x']);
 
         // Build dataset back together and get the structure Moodle usually works with.
-        $analysisintervalkey = array_keys((array) ($options['data']))[0];
+        $analysisintervalkey = dataset_helper::get_analysisintervalkey($options['data']);
         $header = ['target', 'prediction'];
         $sampleids = array_keys($datawithoutheader);
         $this->data = dataset_helper::build($analysisintervalkey, $header, $sampleids, $testxys['y'], $predictedlabels);;

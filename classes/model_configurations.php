@@ -104,12 +104,11 @@ class model_configurations {
     /**
      * Collect all model configuration objects.
      *
-     * @param stdClass
+     * @param stdClass $settingdbentry
      * @return stdClass[] of model config objects
      */
     private static function get_settings_values(stdClass $settingdbentry) {
         $vals = array_values((array) $settingdbentry);
         return array_slice($vals, 1, null);
-
     }
 }

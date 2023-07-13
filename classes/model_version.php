@@ -363,7 +363,7 @@ class model_version {
         return $this->id;
     }
 
-    public function get_idmap() {
+    public function get_idmap(): idmap {
         return $this->idmap;
     }
 

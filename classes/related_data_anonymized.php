@@ -25,6 +25,7 @@
 namespace tool_laaudit;
 
 use InvalidArgumentException;
+use LogicException;
 
 /**
  * Class for the complete anonymized dataset evidence item.
@@ -44,7 +45,7 @@ class related_data_anonymized extends related_data {
         }
         $idmapentitytype = ($options['idmap'])->get_entitytype();
         if ($idmapentitytype != $options['tablename']) {
-            throw new InvalidArgumentException('Passed idmap does not belong to '.$options['tablename'].' but to '.$idmapentitytype);
+            throw new LogicException('Passed idmap does not belong to '.$options['tablename'].' but to '.$idmapentitytype);
         }
         parent::collect($options);
         $this->pseudonomize($options['idmap']);

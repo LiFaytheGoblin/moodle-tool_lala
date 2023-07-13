@@ -49,7 +49,6 @@ class training_dataset extends dataset {
         if (sizeof($options['data']) == 0) {
             throw new InvalidArgumentException('Dataset can not be empty. No training data can be extracted from it.');
         }
-
         if (isset($this->data) && sizeof($this->data) > 0) {
             throw new LogicException('Data has already been collected and can not be changed.');
         }

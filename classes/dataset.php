@@ -27,7 +27,6 @@ namespace tool_laaudit;
 use core_analytics\local\analysis\result_array;
 use core_analytics\analysis;
 use core_php_time_limit;
-use DomainException;
 use InvalidArgumentException;
 use LengthException;
 use LogicException;

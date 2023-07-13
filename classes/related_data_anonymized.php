@@ -42,6 +42,10 @@ class related_data_anonymized extends related_data {
         if (!isset($options['idmap'])) {
             throw new InvalidArgumentException('Options is missing the look up table of original user ids and pseudonyms.');
         }
+        $idmapentitytype = ($options['idmap'])->get_entitytype();
+        if ($idmapentitytype != $options['tablename']) {
+            throw new InvalidArgumentException('Passed idmap does not belong to '.$options['tablename'].' but to '.$idmapentitytype);
+        }
         parent::collect($options);
         $this->pseudonomize($options['idmap']);
     }
@@ -50,13 +54,13 @@ class related_data_anonymized extends related_data {
      * Pseudonomize the related dataset by replacing original keys with new keys.
      * Make sure that the used data is shuffled, so that the order of keys does not give away the identity.
      *
-     * @param array $idmap [oldkey => newkey]
+     * @param idmap $idmap
      */
-    private function pseudonomize(array $idmap): void {
+    private function pseudonomize(idmap $idmap): void {
         $res = [];
         foreach ($this->data as $key => $record) {
             $newrec = $record;
-            $newrec->id = $idmap[$record->id];
+            $newrec->id = $idmap->get_pseudonym($record->id);
             $res[$key] = $newrec;
         }
         $this->data = $res;

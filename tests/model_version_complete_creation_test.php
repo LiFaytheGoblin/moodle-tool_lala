@@ -86,11 +86,9 @@ class model_version_complete_creation_test extends \advanced_testcase {
 
         if ($anonymous) {
             // Check that dataset does not contain the original userids but new userids
-            $originalids = test_course_with_students::get_ids('user');
-            print('###');
-            print(json_encode($originalids));
-            $newids = dataset_helper::get_sampleids_used_in_dataset($dataset);
-            print(json_encode($newids));
+            $originalids = test_course_with_students::get_ids('user_enrolments');
+            $newids = dataset_helper::get_ids_used_in_dataset($dataset);
+            //print(json_encode($newids));
             $identicalids = array_intersect($originalids, $newids);
             $this->assertEquals(0, sizeof($identicalids));
 
@@ -105,26 +103,23 @@ class model_version_complete_creation_test extends \advanced_testcase {
             $newidsinorder = [];
             foreach ($originalrows as $originasamplelid => $originalvalues) {
                 if ($originasamplelid == '0') continue; // skip header
-                $sampleidparts = explode('-', $originasamplelid);
-                $originalid = $sampleidparts[0];
-                $analysisinterval = array_key_exists(1, $sampleidparts) ? '-'.$sampleidparts[1] : '';
-                $newid = $idmap[$originalid];
-                $newvalues = $newrows[$newid.$analysisinterval];
+
+                $newsampleid = $idmap->get_pseudonym_sampleid($originasamplelid);
+                $newvalues = $newrows[$newsampleid];
                 $this->assertEquals(json_encode($originalvalues), json_encode($newvalues));
 
+                $originalid = dataset_helper::get_id_part($originasamplelid);
+                $newid = $idmap->get_pseudonym($originalid);
+
                 if (!in_array($originalid, $originalidsinorder)) $originalidsinorder[] = $originalid;
-                if (!in_array($newid, $newidsinorder)) $newidsinorder[] = $newid;
+                if (!in_array($newid, $newidsinorder)) $newidsinorder[] = $newsampleid;
             }
 
             // Check that the order of new ids does not give away the original id
-            $possibleidmap = array_combine($originalidsinorder, $newidsinorder);
-            asort($possibleidmap);
-            asort($idmap);
+            $possibleidmap = new idmap($originalidsinorder, $newidsinorder, 'user_enrolments');
 
-            print(json_encode($idmap));
-            print(json_encode($possibleidmap));
-
-            $this->assertFalse(json_encode($idmap) === json_encode($possibleidmap));
+            $this->assertFalse($idmap->contains($possibleidmap));
+            $this->assertFalse($possibleidmap->contains($idmap));
         }
 
         // Now get split data

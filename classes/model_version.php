@@ -79,8 +79,8 @@ class model_version {
     private array $contexts;
     /** @var predictor $predictor for this version */
     private predictor $predictor;
-    /** @var array|null $idmap used for anonymization */
-    private ?array $idmap;
+    /** @var idmap $idmap used for anonymization */
+    private idmap $idmap;
 
     /**
      * Constructor. Deserialize DB object.
@@ -268,10 +268,10 @@ class model_version {
             $evidencetype = 'related_data_anonymized';
             if (!isset($this->idmap)) throw LogicException('No idmap available.');
             $options['idmap'] = $this->idmap;
-            $originids = array_values($this->idmap);
+            $originids = $this->idmap->get_originalids();
         } else {
             $evidencetype = 'related_data';
-            $originids = dataset_helper::get_sampleids_used_in_dataset($data);
+            $originids = dataset_helper::get_ids_used_in_dataset($data);
         }
 
         $origintablename = $this->analyser->get_samples_origin();

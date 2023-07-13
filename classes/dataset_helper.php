@@ -28,9 +28,6 @@ use core_analytics\local\analysis\result_array;
 use core_analytics\analysis;
 use core_php_time_limit;
 use DomainException;
-use InvalidArgumentException;
-use LengthException;
-use LogicException;
 
 /**
  * Class for the complete dataset evidence item.
@@ -125,16 +122,30 @@ class dataset_helper {
         return array_keys($dataset)[0];
     }
 
-    public static function get_sampleids_used_in_dataset(array $dataset) : array {
+    public static function get_ids_used_in_dataset(array $dataset) : array {
         $ids = [];
         $analysisintervalkey = self::get_analysisintervalkey($dataset);
         $sampleids = array_keys($dataset[$analysisintervalkey]);
         unset($sampleids['0']); // remove the header
         foreach ($sampleids as $sampleid) {
-            $id = explode('-', $sampleid)[0];
+            $id = self::get_id_part($sampleid);
             $ids[$id] = $id; // Preserve the order, avoid duplicates
         }
 
         return array_keys($ids);
+    }
+
+    /**
+     * @param int|string $sampleid
+     * @return string
+     */
+    public static function get_id_part(int|string $sampleid): string {
+        return explode('-', $sampleid)[0];
+    }
+
+    public static function get_analysisinterval_part(int|string $sampleid): ?string {
+        $sampleidparts = explode('-', $sampleid);
+        if (array_key_exists(1, $sampleidparts)) return $sampleidparts[1];
+        else return null;
     }
 }

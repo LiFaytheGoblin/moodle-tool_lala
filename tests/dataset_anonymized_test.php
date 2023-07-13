@@ -64,16 +64,9 @@ class dataset_anonymized_test extends dataset_test {
      * @covers ::tool_laaudit_dataset_pseudonomize
      */
     public function test_evidence_pseudonomize() {
-        $idmap = [
-                '0' => '0',
-                5 => 'a',
-                3 => 'b',
-                1 => 'c',
-                4 => 'd',
-                2 => 'e'
-        ];
-        $idmapotherway = array_combine(array_values($idmap), array_keys($idmap));
-        $data = test_dataset_evidence::create(5);
+        $nsamples = 5;
+        $data = test_dataset_evidence::create($nsamples);
+        $idmap = idmap::create_from_dataset($data, 'test');
 
         $pseudonomized_data = $this->evidence->pseudonomize($data, $idmap);
         $this->assertTrue(isset($pseudonomized_data));
@@ -81,19 +74,20 @@ class dataset_anonymized_test extends dataset_test {
 
         // All needed new ids made it to the pseudonomized dataset & structure is ok
         $res = $pseudonomized_data[test_model::ANALYSISINTERVAL];
-        $this->assertTrue(sizeof($res) == sizeof($idmap));
+        unset($res['0']); // Remove header
+        $this->assertTrue(count($res) == $idmap->count());
         $actualnewids = array_keys($res);
-        $expectednewids = array_values($idmap);
+        $expectednewids = $idmap->get_pseudonyms();
         $missingnewids = array_diff($actualnewids, $expectednewids);
         $this->assertTrue(sizeof($missingnewids) == 0);
 
         // the value for each new id is the value we have in dataset for the fitting old id
         $missingvalues = [];
-        foreach ($res as $key => $actualvalues) {
-            $oldid = $idmapotherway[$key];
-            $expectedvalues = $data[test_model::ANALYSISINTERVAL][$oldid];
-            $missingvaluesforthiskey = array_diff($expectedvalues, $actualvalues);
-            if (sizeof($missingvaluesforthiskey) > 0 ) $missingvalues[$key] = $missingvaluesforthiskey;
+        foreach ($res as $pseudonym => $actualvalues) {
+            $originalid = $idmap->get_originalid($pseudonym);
+            $expectedvalues = $data[test_model::ANALYSISINTERVAL][$originalid];
+            $missingvaluesforthispseudonym = array_diff($expectedvalues, $actualvalues);
+            if (sizeof($missingvaluesforthispseudonym) > 0) $missingvalues[$pseudonym] = $missingvaluesforthispseudonym;
         }
         $this->assertTrue(sizeof($missingvalues) == 0);
     }

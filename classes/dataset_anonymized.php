@@ -24,15 +24,14 @@
 
 namespace tool_laaudit;
 
-use core_analytics\local\analysis\result_array;
-use core_analytics\analysis;
+use Exception;
 
 /**
  * Class for the complete dataset evidence item.
  */
 class dataset_anonymized extends dataset {
-    /** @var array|null $idmap used for anonymization */
-    private ?array $idmap;
+    /** @var idmap $idmap used for anonymization */
+    private idmap $idmap;
 
     /**
      * Retrieve all available analysable samples, calculate features and label.
@@ -40,12 +39,17 @@ class dataset_anonymized extends dataset {
      *
      * @param array $options = [$modelid, $analyser, $contexts]
      * @return void
+     * @throws Exception
      */
     public function collect(array $options): void {
         parent::collect($options);
-        $this->idmap = self::create_new_idmap_from_ids_in_data($this->data);
-        $n = sizeof($this->idmap);
-        if ($n < 3) throw new \Exception('Too few samples available. Found only '.$n.' sample(s) to gather. To preserve anonymity, at least 3 samples are needed.');
+
+        $entitytype = $options['analyser']->get_samples_origin();
+        $this->idmap = idmap::create_from_dataset($this->data, $entitytype);
+
+        $n = $this->idmap->count();
+        if ($n < 3) throw new Exception('Too few samples available. Found only '.$n.' sample(s) to gather. To preserve anonymity, at least 3 samples are needed.');
+
         $this->data = $this->pseudonomize($this->data, $this->idmap);
     }
 
@@ -54,59 +58,28 @@ class dataset_anonymized extends dataset {
      * Make sure that the used data is shuffled, so that the order of keys does not give away the identity.
      *
      * @param array $data the data to anonymize ['analysisintervaltype' => ['0' => headerrow, 'someformerid' => datarow, ...]
-     * @param array $idmap [oldkey => newkey]
+     * @param idmap $idmap
      * @return array pseudonomized data ['analysisintervaltype' => ['0' => headerrow, 'somenewid' => datarow, ...]
      */
-    public function pseudonomize(array $data, array $idmap): array {
-        $res = [];
-        foreach ($data as $resultskey => $results) {
-            $replacements = [];
-            $header = [];
-            foreach ($results as $oldkey => $result) {
-                if ($oldkey == '0') { // Skip header row.
-                    $header = ['0' =>$results['0']];
-                    continue;
-                }
-                $oldkeyparts = explode('-', $oldkey);
-                $oldid = $oldkeyparts[0];
-                $analysisintervalpart = array_key_exists(1, $oldkeyparts) ? '-'.$oldkeyparts[1] : '';
-
-                $newkey = $idmap[$oldid];
-                if (!isset($newkey)) throw new \Exception('Idmap is incomplete. No pseudonym found for id '.$oldkey);
-
-                $replacements[$newkey.$analysisintervalpart] = $result;
-            }
-            shuffle($replacements); // Re-sort so that order of keys does not give away identity.
-
-            $res[$resultskey] = array_merge($header, $replacements);
+    public function pseudonomize(array $data, idmap $idmap): array {
+        $rows = dataset_helper::get_rows($data);
+        $newrows = [];
+        foreach ($rows as $originalsampleid => $values) {
+            $pseudonym = $idmap->get_pseudonym_sampleid($originalsampleid);
+            $newrows[$pseudonym] = $values;
         }
-        return $res;
-    }
 
-    /**
-     * Create id map.
-     *
-     * @param array data
-     * @return array idmap [oldid => newid]
-     */
-    public static function create_new_idmap_from_ids_in_data(array $data): array {
-        $oldids = dataset_helper::get_sampleids_used_in_dataset($data);
+        $newrowsshuffled = dataset_helper::shuffle_array_preserving_keys($newrows); // Re-sort so that order of keys does not give away identity.
 
-        $offset = 2; // Moodle has two standard users, 1 and 2.
-        $newids = range(1 + $offset, sizeof($oldids) + $offset);
-
-        $idmap = array_combine($oldids, $newids);
-        // print(json_encode($idmap));
-
-        return $idmap;
+        return dataset_helper::replace_rows_in_dataset($data, $newrowsshuffled);
     }
 
     /**
      * Get id map.
      *
-     * @return array idmap [oldid => newid]
+     * @return idmap idmap
      */
-    public function get_idmap() : array {
+    public function get_idmap() : idmap {
         return $this->idmap;
     }
 }

@@ -87,7 +87,10 @@ class model_version_complete_creation_test extends \advanced_testcase {
         if ($anonymous) {
             // Check that dataset does not contain the original userids but new userids
             $originalids = test_course_with_students::get_ids('user');
-            $newids = dataset::get_sampleids_used_in_dataset($dataset);
+            print('###');
+            print(json_encode($originalids));
+            $newids = dataset_helper::get_sampleids_used_in_dataset($dataset);
+            print(json_encode($newids));
             $identicalids = array_intersect($originalids, $newids);
             $this->assertEquals(0, sizeof($identicalids));
 

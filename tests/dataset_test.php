@@ -176,12 +176,12 @@ class dataset_test extends evidence_testcase {
     /**
      * Check that get_shuffled returns a shuffled array.
      *
-     * @covers ::tool_laaudit_dataset_get_shuffled
+     * @covers ::tool_laaudit_dataset_helper_get_shuffled
      */
-    public function test_dataset_get_shuffled() : void {
+    public function test_dataset_helper_get_shuffled() : void {
         $data = test_dataset_evidence::create(10);
 
-        $res = dataset::get_shuffled($data);
+        $res = dataset_helper::get_shuffled($data);
 
         $this->assertFalse(json_encode($data) == json_encode($res));
         $this->assertEquals(sizeof($data), sizeof($res));

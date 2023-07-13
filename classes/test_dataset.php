@@ -49,27 +49,21 @@ class test_dataset extends dataset {
         if (sizeof($options['data']) == 0) {
             throw new InvalidArgumentException('Dataset can not be empty. No training data can be extracted from it.');
         }
-
         if (isset($this->data) && sizeof($this->data) > 0) {
             throw new LogicException('Data has already been collected and can not be changed.');
         }
 
-        $key = array_keys((array) ($options['data']))[0];
-        $testdatawithheader = [];
-        foreach ($options['data'] as $arr) { // Each analysisinterval has an object.
-            $totaldatapoints = count($arr) - 1;
-            $testdatapoints = round($options['testsize'] * $totaldatapoints);
-            if($testdatapoints < 1) {
-                throw new LengthException('Not enough data available for creating a training and testing split. Need at least 1 datapoint for testing, and 2 for training.');
-            }
+        $datawithoutheader = dataset_helper::get_rows($options['data']);
 
-            $upperlimit = $testdatapoints + 1; // Add +1 for the heading, upper limit is exclusive.
+        $ntotaldatapoints = count($datawithoutheader);
+        $ntestdatapoints = round($options['testsize'] * $ntotaldatapoints);
 
-            $testdatawithheader[$key] = array_slice($arr, 0, $upperlimit, true);
-
-            break;
+        if($ntestdatapoints < 1) {
+            throw new LengthException('Not enough data available for creating a training and testing split. Need at least 1 datapoint for testing, and 2 for training.');
         }
 
-        $this->data = $testdatawithheader;
+        $newrows = array_slice($datawithoutheader, 0, $ntestdatapoints, true);
+
+        $this->data = dataset_helper::replace_rows_in_dataset($options['data'], $newrows);
     }
 }

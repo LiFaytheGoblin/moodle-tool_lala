@@ -57,32 +57,20 @@ class model extends evidence {
         }
 
         // Get only samples and targets.
-        $datawithoutheader = [];
-        foreach ($options['data'] as $arr) {
-            $datawithoutheader = array_slice($arr, 1, null, true);
-            break;
-        }
+        $datawithoutheader = dataset_helper::get_rows($options['data']);
         if (sizeof($datawithoutheader) < 2) {
             throw new LengthException('Not enough training data. Need to provide at least 2 datapoints.');
         }
 
-        $trainx = [];
-        $trainy = [];
-        $ncolumns = count(end($datawithoutheader));
-        foreach ($datawithoutheader as $row) {
-            $xs = array_slice($row, 0, $ncolumns - 1);
-            if (sizeof($xs) < 1) throw new LengthException('Need to provide at least one column of indicator values in the training data.');
-            $y = end($row);
-
-            $trainx[] = $xs;
-            $trainy[] = $y;
-        }
+        // Separate rows into x and y values.
+        $trainxys = dataset_helper::get_separate_x_y_from_rows($datawithoutheader);
+        if (sizeof($trainxys['x'][0]) < 1) throw new LengthException('Need to provide at least one column of indicator values in the training data.');
 
         // Currently always uses a logistic regression classifier.
         // (https://github.com/moodle/moodle/blob/MOODLE_402_STABLE/lib/mlbackend/php/classes/processor.php#L548).
         $iterations = $options['predictor']::TRAIN_ITERATIONS;
         $this->data = new LogisticRegression($iterations, true, LogisticRegression::CONJUGATE_GRAD_TRAINING, 'log');
-        $this->data->train($trainx, $trainy);
+        $this->data->train($trainxys['x'], $trainxys['y']);
     }
 
     /**

@@ -254,6 +254,7 @@ class model_version {
     /**
      * Call next step: Gather the data that can be used for training and testing this model version.
      *
+     * @param bool $anonymous whether to anonymize the related data
      * @return void
      */
     public function gather_related_data(bool $anonymous = true): void {
@@ -270,45 +271,17 @@ class model_version {
             $originids = array_values($this->idmap);
         } else {
             $evidencetype = 'related_data';
-            $originids = dataset::get_sampleids_used_in_dataset($data);
+            $originids = dataset_helper::get_sampleids_used_in_dataset($data);
         }
 
         $origintablename = $this->analyser->get_samples_origin();
-        $relatedtables = $this->get_related_tables($origintablename, $originids, [$origintablename => $originids]);
+        $relatedtables = database_helper::get_related_tables($origintablename, $originids, [$origintablename => $originids]);
 
         foreach ($relatedtables as $relatedtablename => $relevantids) {
             $options['tablename'] = $relatedtablename;
             $options['ids'] = $relevantids;
             $this->add($evidencetype, $options);
         }
-    }
-
-    private function get_related_tables(string $tablenametohandle, array $relevantids, array $relatedtables): array {
-        $res = $relatedtables;
-
-        global $DB;
-        $availabletables = $DB->get_tables();
-
-        // get related tablenames from columns -> all columns that have a name that ends on "id" and has at leastlen = 4
-        $columnnames = related_data::get_possible_column_names($tablenametohandle);
-        foreach ($columnnames as $columnname) {
-            if (count_chars($columnname) < 3) continue;
-            $idpos = stripos($columnname, 'id');
-            if ($idpos === false) continue;
-            $tablename = substr($columnname, 0, $idpos);
-
-            if (in_array($tablename, $availabletables)) { // If table exists...
-                $relatedidrecords = $DB->get_records_list($tablenametohandle, 'id', $relevantids, null, 'id,' . $columnname);
-                $relatedids = [];
-                foreach ($relatedidrecords as $relatedidrecord) { // Unpack the retrieved records
-                    $relatedids[] = $relatedidrecord->$columnname;
-                }
-                $res[$tablename] = $relatedids;
-                $res = $this->get_related_tables($tablename, $relatedids, $res);
-            }
-        }
-
-        return $res;
     }
 
     /**
@@ -322,7 +295,7 @@ class model_version {
         if (!isset($this->evidence[$sourcedataset])) throw new LogicException('No data available to split into training and testing data. Have you gathered data?');
         $data = $this->get_single_evidence($sourcedataset);
 
-        $datashuffled = dataset::get_shuffled($data);
+        $datashuffled = dataset_helper::get_shuffled($data);
 
         $options = ['data' => $datashuffled, 'testsize' => $this->relativetestsetsize];
 

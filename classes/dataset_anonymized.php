@@ -90,14 +90,13 @@ class dataset_anonymized extends dataset {
      * @return array idmap [oldid => newid]
      */
     public static function create_new_idmap_from_ids_in_data(array $data): array {
-        $oldids = dataset::get_sampleids_used_in_dataset($data);
+        $oldids = dataset_helper::get_sampleids_used_in_dataset($data);
 
         $offset = 2; // Moodle has two standard users, 1 and 2.
         $newids = range(1 + $offset, sizeof($oldids) + $offset);
-        shuffle($newids);
-        shuffle($oldids);
 
         $idmap = array_combine($oldids, $newids);
+        // print(json_encode($idmap));
 
         return $idmap;
     }

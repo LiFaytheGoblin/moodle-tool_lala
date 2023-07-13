@@ -55,22 +55,12 @@ class related_data extends dataset {
         $this->tablename = $options['tablename'];
 
         global $DB;
-        $possiblecolumns = self::get_possible_column_names($this->tablename);
+        $possiblecolumns = database_helper::get_possible_column_names($this->tablename);
         $keptcolumns = array_diff($possiblecolumns, self::IGNORED_COLUMNS);
         $fieldsstring = implode(',', $keptcolumns);
         $records = $DB->get_records_list($this->tablename, 'id', $options['ids'], null, $fieldsstring);
 
         $this->data = $records;
-    }
-
-    public static function get_possible_column_names($tablename) : array {
-        global $DB;
-        $possiblecolumns = $DB->get_columns($tablename);
-        $fieldnames = [];
-        foreach ($possiblecolumns as $columninfo) {
-            $fieldnames[] = $columninfo->name;
-        }
-        return $fieldnames;
     }
 
     /**

@@ -50,41 +50,49 @@ class related_data_test extends evidence_testcase {
                         'nstudents' => 1,
                         'createddaysago' => 3,
                         'tablename' => 'user',
+                        'nrowsexpected' => 3 // Moodle has two default users.
                 ],
                 'Min user, some days, table user' => [
                         'nstudents' => 1,
                         'createddaysago' => 10,
                         'tablename' => 'user',
+                        'nrowsexpected' => 3
                 ],
                 'Some users, min days, table user' => [
                         'nstudents' => 10,
                         'createddaysago' => 3,
                         'tablename' => 'user',
+                        'nrowsexpected' => 12
                 ],
                 'Min user, min days, table user_enrolments' => [
                         'nstudents' => 1,
                         'createddaysago' => 3,
                         'tablename' => 'user_enrolments',
+                        'nrowsexpected' => 1
                 ],
                 'Some users, some days, table user_enrolments' => [
                         'nstudents' => 10,
                         'createddaysago' => 10,
                         'tablename' => 'user_enrolments',
+                        'nrowsexpected' => 10
                 ],
                 'Some users, min days, table enrol' => [
                         'nstudents' => 10,
                         'createddaysago' => 3,
                         'tablename' => 'enrol',
+                        'nrowsexpected' => 3
                 ],
                 'Some users, min days, table course' => [
                         'nstudents' => 10,
                         'createddaysago' => 3,
                         'tablename' => 'course',
+                        'nrowsexpected' => 2 // There's also a site entry in the course table
                 ],
                 'Some users, min days, table role' => [
                         'nstudents' => 10,
                         'createddaysago' => 3,
                         'tablename' => 'role',
+                        'nrowsexpected' => 9
                 ],
         ];
     }
@@ -97,22 +105,42 @@ class related_data_test extends evidence_testcase {
      * @param int $nstudents amount of students
      * @param int $createddaysago how many days ago a sample course should have been started
      */
-    public function test_related_data_collect(int $nstudents, int $createddaysago, string $tablename): void {
+    public function test_related_data_collect(int $nstudents, int $createddaysago, string $tablename, int $nrowsexpected): void {
         $this->create_test_data($nstudents, $createddaysago);
 
         $options = $this->get_options($tablename);
         $this->evidence->collect($options);
 
         $rawdata = $this->evidence->get_raw_data();
-        // todo: add checks for rawdata
-        // rawdata contains all the expected ids
+
+        // Check that header has correct size.
+        $expectedids = test_course_with_students::get_ids($tablename);
+
+        $anyid = $expectedids[0];
+        $resheader = array_keys((array) $rawdata[$anyid]);
+        $expectedheadersize = count(database_helper::get_possible_column_names($tablename));
+        $this->assertTrue($expectedheadersize >= count($resheader));
+
+        // Check that header does not contain forbidden columns.
+        $notinheader = array_diff(related_data::IGNORED_COLUMNS, $resheader);
+        $this->assertEquals(related_data::IGNORED_COLUMNS, $notinheader);
+
+        // Check that all datapoints are there.
+        $this->assertEquals($nrowsexpected, count($rawdata));
+
+        // Check that all ids are there.
+        $ids = array_keys($rawdata);
+        $missingids = array_diff($expectedids, $ids);
+        $this->assertEquals(0, count($missingids));
+
+        $unnecessaryids = array_diff($ids, $expectedids);
+        $this->assertEquals(0, count($unnecessaryids));
 
         // Test serialize()
         $this->evidence->serialize();
 
         $serializedstring = $this->evidence->get_serialized_data();
 
-        $expectedheadersize = sizeof(test_model::get_indicator_instances()) + 1;
         $this->assertTrue(strlen($serializedstring) >= $expectedheadersize); // The string should contain at least a header.
         $this->assertTrue(str_contains($serializedstring, ',')); // the string should have commas.
     }
@@ -143,7 +171,15 @@ class related_data_test extends evidence_testcase {
         $this->evidence->collect($options);
 
         $rawdata = $this->evidence->get_raw_data();
-        // todo: verify raw data
+
+        // Quickly verify rawdata.
+        $expectedids = test_course_with_students::get_ids('user');
+        $ids = array_keys($rawdata);
+        $missingids = array_diff($expectedids, $ids);
+        $this->assertEquals(0, count($missingids));
+
+        $unnecessaryids = array_diff($ids, $expectedids);
+        $this->assertEquals(0, count($unnecessaryids));
     }
 
     /**

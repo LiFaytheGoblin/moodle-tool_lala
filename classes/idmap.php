@@ -49,12 +49,20 @@ class idmap {
 
         shuffle($orignalids);
 
-        $offset = 2; // Moodle has two standard users, 1 and 2.
-        $pseudonyms = range(1 + $offset, sizeof($orignalids) + $offset);
+        $pseudonyms = self::create_pseudonyms($orignalids);
 
         shuffle($pseudonyms);
 
         return new static($orignalids, $pseudonyms, $entitytype);
+    }
+
+    /**
+     * @param int $offset  // Moodle has two standard users, 1 and 2.
+     * @param array $orignalids
+     * @return array
+     */
+    public static function create_pseudonyms(array $orignalids, int $offset = 2): array {
+        return range(1 + $offset, count($orignalids) + $offset);
     }
 
     public function count(): int {

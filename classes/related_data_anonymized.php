@@ -31,7 +31,9 @@ use LogicException;
  * Class for the complete anonymized dataset evidence item.
  */
 class related_data_anonymized extends related_data {
-    const IGNORED_COLUMNS = ['timecreated', 'timemodified', 'modifierid'];
+    const IGNORED_COLUMNS = ['timecreated', 'timemodified', 'modifierid', 'password', 'username', 'firstname', 'lastname',
+    'firstnamephonetic', 'email', 'phone1', 'phone2', 'address', 'lastip', 'secret', 'description', 'middlename', 'imagealt',
+    'alternatename', 'moodlenetprofile', 'picture'];
 
     /**
      * Retrieve all relevant data related to the analysable samples.
@@ -48,22 +50,23 @@ class related_data_anonymized extends related_data {
             throw new LogicException('Passed idmap does not belong to '.$options['tablename'].' but to '.$idmapentitytype);
         }
         parent::collect($options);
-        $this->pseudonomize($options['idmap']);
+        $this->data = $this->pseudonomize($this->data, $options['idmap']);
     }
 
     /**
      * Pseudonomize the related dataset by replacing original keys with new keys.
      * Make sure that the used data is shuffled, so that the order of keys does not give away the identity.
      *
+     * @param array $data
      * @param idmap $idmap
      */
-    private function pseudonomize(idmap $idmap): void {
+    public function pseudonomize(array $data, idmap $idmap): array {
         $res = [];
-        foreach ($this->data as $key => $record) {
+        foreach ($data as $record) {
             $newrec = $record;
             $newrec->id = $idmap->get_pseudonym($record->id);
-            $res[$key] = $newrec;
+            $res[$newrec->id] = $newrec;
         }
-        $this->data = $res;
+        return $res;
     }
 }

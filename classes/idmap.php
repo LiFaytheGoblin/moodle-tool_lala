@@ -47,6 +47,7 @@ class idmap {
     public static function create_from_dataset($dataset, $entitytype) {
         $orignalids = dataset_helper::get_ids_used_in_dataset($dataset);
 
+
         shuffle($orignalids);
 
         $pseudonyms = self::create_pseudonyms($orignalids);
@@ -97,7 +98,7 @@ class idmap {
     }
 
     public function get_originalid($pseudonym) : mixed {
-        $index = array_search ($pseudonym, $this->pseudonyms);
+        $index = array_search($pseudonym, $this->pseudonyms);
         return $this->originalids[$index];
     }
 
@@ -115,5 +116,9 @@ class idmap {
 
     public function get_entitytype() : string {
         return $this->entitytype;
+    }
+
+    public function __toString() : string {
+        return json_encode(array_combine($this->originalids, $this->pseudonyms));
     }
 }

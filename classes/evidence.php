@@ -152,9 +152,9 @@ abstract class evidence {
 
     /**
      * Returns the id of the evidence item. Used by the model version.
-     * @return int id
+     * @return mixed id
      */
-    public function get_id(): int {
+    public function get_id(): mixed {
         return $this->id;
     }
 

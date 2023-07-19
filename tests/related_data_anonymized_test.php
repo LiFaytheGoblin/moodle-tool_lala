@@ -140,11 +140,28 @@ class related_data_anonymized_test extends related_data_test {
         $this->assertEquals(3, count($pseudonomized_data));
 
         // All needed new ids made it to the pseudonomized dataset & structure is ok
-        $missingpseudonyms = array_diff($idmap->get_pseudonyms(), array_keys($pseudonomized_data));
+        $missingpseudonyms = array_diff($idmap->get_pseudonyms(), related_data::get_ids_used($pseudonomized_data));
         $this->assertEquals(0, count($missingpseudonyms));
 
         // the value for each new id is the value we have in dataset for the fitting old id
+        $missingvalues = [];
+        foreach ($pseudonomized_data as $actualvalues) {
+            $pseudonym = $actualvalues->id;
+            $originalid = $idmap->get_originalid($pseudonym);
+            $expectedvalues = $this->get_by_id($data, $originalid);
+            $missingvaluesforthispseudonym = array_diff($expectedvalues, (array) $actualvalues);
+            if (sizeof($missingvaluesforthispseudonym) > 0) $missingvalues[$pseudonym] = $missingvaluesforthispseudonym;
+        }
+        $this->assertTrue(sizeof($missingvalues) == 0);
+    }
 
+    function get_by_id(array $data, mixed $id) : array {
+        foreach ($data as $entry) {
+            if ($entry->id === $id) {
+                return $entry;
+            }
+        }
+        return [];
     }
 
     /**
@@ -179,6 +196,21 @@ class related_data_anonymized_test extends related_data_test {
 
         $this->expectException(\Exception::class); // Expect exception if trying to collect but too little data exists.
         $this->evidence->collect($options);
+    }
+
+    /**
+     * Data provider for {@see test_dataset_collect_deletedmodel()}.
+     *
+     * @return array List of source data information
+     */
+    public function tool_laaudit_deleted_model_parameters_provider() : array {
+        return [
+                'Regular test case' => [
+                        'nstudents' => 3,
+                        'createddaysago' => 3,
+                        'expectedids' => range(1, 5)
+                ],
+        ];
     }
 
     /**

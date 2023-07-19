@@ -88,7 +88,6 @@ class model_version_complete_creation_test extends \advanced_testcase {
             // Check that dataset does not contain the original userids but new userids
             $originalids = test_course_with_students::get_ids('user_enrolments');
             $newids = dataset_helper::get_ids_used_in_dataset($dataset);
-            //print(json_encode($newids));
             $identicalids = array_intersect($originalids, $newids);
             $this->assertEquals(0, sizeof($identicalids));
 
@@ -143,17 +142,63 @@ class model_version_complete_creation_test extends \advanced_testcase {
         $this->version->gather_related_data($anonymous);
         $evidencetype = $anonymous ? 'related_data_anonymized' : 'related_data';
         $relateddatasets = $this->version->get_array_of_evidences($evidencetype);
-        $this->assertEquals(5, sizeof($relateddatasets));
+        $this->assertEquals(5, count($relateddatasets));
 
         if ($anonymous) {
             // Check that the datasets do not contain the original userids but new userids
-            $originalids = test_course_with_students::get_ids('user');
-            foreach ($relateddatasets as $data) {
-                $newids = []; //todo: get new ids
-                // check that datasets do not contain the original userids but new userids (check analysisinterval)
+            $originaluserids = test_course_with_students::get_ids('user');
+            $originalcourseids = test_course_with_students::get_ids('course');
+            $originalenrolids = test_course_with_students::get_ids('enrol');
+            $originalroleids = test_course_with_students::get_ids('role');
+            foreach ($relateddatasets as $evidenceid => $dataset) {
+                $tablename = related_data::get_tablename($evidenceid);
+                $originalids = test_course_with_students::get_ids($tablename);
+
+                $newids = [];
+                $newreferenceduserids = [];
+                $newreferencedenrolids = [];
+                $newreferencedroleids = [];
+                $newreferencedcourseids = [];
+
+                foreach ($dataset as $entry) {
+                    $newids[] = $entry->id;
+                    if (isset($entry->userid)) {
+                        $newreferenceduserids[] = $entry->userid;
+                    }
+                    if (isset($entry->enrolid)) {
+                        $newreferencedenrolids[] = $entry->enrolid;
+                    }
+                    if (isset($entry->courseid)) {
+                        $newreferencedcourseids[] = $entry->courseid;
+                    }
+                    if (isset($entry->roleid)) {
+                        $newreferencedroleids[] = $entry->roleid;
+                    }
+                }
+
+                // check that datasets do not contain the original ids but new ids (check analysisinterval)
                 $identicalids = array_intersect($originalids, $newids);
                 $this->assertEquals(0, sizeof($identicalids));
-                // check that datasets allocate the correct values to the correct users
+
+                // check that datasets do not reference the original ids
+                if (count($newreferenceduserids) > 0) {
+                    $identicaluserids = array_intersect($originaluserids, $newreferenceduserids);
+                    $this->assertEquals(0, sizeof($identicaluserids));
+                }
+                if (count($newreferencedenrolids) > 0) {
+                    $identicalenrolids = array_intersect($originalenrolids, $newreferencedenrolids);
+                    $this->assertEquals(0, sizeof($identicalenrolids));
+                }
+                if (count($newreferencedcourseids) > 0) {
+                    $identicalcourseids = array_intersect($originalcourseids, $newreferencedcourseids);
+                    $this->assertEquals(0, sizeof($identicalcourseids));
+                }
+                if (count($newreferencedroleids) > 0) {
+                    $identicalroleids = array_intersect($originalroleids, $newreferencedroleids);
+                    $this->assertEquals(0, sizeof($identicalroleids));
+                }
+
+                // todo: check that datasets allocate the correct values to the correct users
             }
         }
 

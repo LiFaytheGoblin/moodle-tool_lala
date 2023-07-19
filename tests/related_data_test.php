@@ -128,8 +128,7 @@ class related_data_test extends evidence_testcase {
         $this->assertEquals($nrowsexpected, count($rawdata));
 
         // Check that all ids are there.
-
-        $ids = array_keys($rawdata);
+        $ids = related_data::get_ids_used($rawdata);
         if (!isset($expectedids)) $expectedids = test_course_with_students::get_ids($tablename);
 
         $missingids = array_diff($expectedids, $ids);
@@ -169,13 +168,30 @@ class related_data_test extends evidence_testcase {
     }
 
     /**
+     * Data provider for {@see test_dataset_collect_deletedmodel()}.
+     *
+     * @return array List of source data information
+     */
+    public function tool_laaudit_deleted_model_parameters_provider() : array {
+        return [
+                'Regular test case' => [
+                        'nstudents' => 3,
+                        'createddaysago' => 3,
+                ],
+        ];
+    }
+
+    /**
      * Check that collect works even if the original model has been deleted.
      *
      * @covers ::tool_laaudit_related_data_collect
+     *
+     * @dataProvider tool_laaudit_deleted_model_parameters_provider
+     * @param int $nstudents amount of students
+     * @param int $createddaysago how many days ago a sample course should have been started
+     * @param int[]|string[]|null $expectedids ids to be expected in the collected data
      */
-    public function test_dataset_collect_deletedmodel(): void {
-        $nstudents = 3;
-        $createddaysago = 3;
+    public function test_dataset_collect_deletedmodel(int $nstudents, int $createddaysago, ?array $expectedids = null): void {
         $this->create_test_data($nstudents, $createddaysago);
         test_model::delete($this->modelid);
 
@@ -186,8 +202,8 @@ class related_data_test extends evidence_testcase {
         $rawdata = $this->evidence->get_raw_data();
 
         // Quickly verify rawdata.
-        $expectedids = test_course_with_students::get_ids('user');
-        $ids = array_keys($rawdata);
+        if (!isset ($expectedids)) $expectedids = test_course_with_students::get_ids('user');
+        $ids = related_data::get_ids_used($rawdata);
         $missingids = array_diff($expectedids, $ids);
         $this->assertEquals(0, count($missingids));
 

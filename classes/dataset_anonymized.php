@@ -25,6 +25,7 @@
 namespace tool_laaudit;
 
 use Exception;
+require_once(__DIR__ . '/idmap.php');
 
 /**
  * Class for the complete dataset evidence item.

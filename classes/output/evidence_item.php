@@ -63,9 +63,8 @@ class evidence_item implements templatable, renderable {
         $data['timecollectionfinished'] = userdate((int) $this->item->timecollectionfinished);
         $data['serializedfilelocation'] = $this->item->serializedfilelocation;
 
-        $pattern = "/(?<=\d-)([a-zA-Z_]+)(?=\.)/";
-        $hastablename = preg_match($pattern, $this->item->serializedfilelocation, $regexresults);
-        if ($hastablename) $data['tablename'] = $regexresults[0];
+        $tablename = related_data::get_tablename_from_serializedfilelocation($this->item->serializedfilelocation);
+        if ($tablename !== false) $data['tablename'] = $tablename;
 
         return $data;
     }

@@ -228,10 +228,13 @@ class model_version {
             // Add id and raw data to cached field variables
             if (!isset($this->evidence[$evidencetype])) $this->evidence[$evidencetype] = [];
             $evidenceid = $evidence->get_id();
+
             $this->evidence[$evidencetype][$evidenceid] = $evidence->get_raw_data();
+            print("added evidence ".$evidencetype." with id ".$evidenceid);
 
             return $evidence;
         } catch (moodle_exception | Exception $e) {
+            print("ERROR". $e->getMessage());
             $this->register_error($e);
             return null;
         }
@@ -248,7 +251,9 @@ class model_version {
         $evidencetype = $anonymous ? 'dataset_anonymized' : 'dataset';
 
         $evidence = $this->add($evidencetype, $options);
-        if (isset($evidence) and $anonymous) $this->idmap = $evidence->get_idmap();
+        if (isset($evidence) and $anonymous) {
+            $this->idmap = $evidence->get_idmap();
+        }
     }
 
     /**
@@ -387,6 +392,4 @@ class model_version {
     public function get_array_of_evidences(string $evidencetype): mixed {
         return array_values($this->evidence[$evidencetype]);
     }
-
-
 }

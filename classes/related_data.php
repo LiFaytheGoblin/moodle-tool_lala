@@ -33,7 +33,7 @@ use LogicException;
 class related_data extends dataset {
     /** @var string|null $tablename to which the related data belongs */
     private ?string $tablename;
-    const IGNORED_COLUMNS = ['timecreated', 'timemodified', 'modifierid'];
+    const IGNORED_COLUMNS = [];
 
     /**
      * Retrieve all relevant data related to the analysable samples.
@@ -88,6 +88,27 @@ class related_data extends dataset {
 
         $heading = $columns;
         $this->filestring = $heading.$str;
+    }
+
+    public static function get_ids_used($related_data): array {
+        $res = [];
+        foreach ($related_data as $entry) {
+            $res[] = $entry->id;
+        }
+        return $res;
+    }
+
+    public static function get_tablename($evidenceid): mixed {
+        global $DB;
+        $record = $DB->get_record('evidence', ['id' => $evidenceid], 'id, serializedfilelocation');
+        return self::get_tablename_from_serializedfilelocation($record->serializedfilelocation);
+    }
+
+    public static function get_tablename_from_serializedfilelocation(string $serializedfilelocation): mixed {
+        $pattern = "/(?<=\d-)([a-zA-Z_]+)(?=\.)/";
+        $hastablename = preg_match($pattern, $serializedfilelocation, $regexresults);
+        if ($hastablename) return $regexresults[0];
+        return false;
     }
 
     /**

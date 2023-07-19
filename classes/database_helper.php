@@ -34,7 +34,7 @@ class database_helper {
      * @param string $tablenametohandle the table to which the searched tables should belong (e.g. tablenametohandle "user_enrolments")
      * @param int[]|string[] $relevantids ids for the tablenametohandle table, found in the prior tablenametohandle table
      * @param int[]|string[] $relatedtables collection of already found relatedtables names
-     * @return void
+     * @return array [$tablename => relevantids]
      */
     public static function get_related_tables(string $tablenametohandle, array $relevantids, array $relatedtables): array {
         $res = $relatedtables;

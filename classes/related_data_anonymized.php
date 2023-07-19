@@ -33,7 +33,7 @@ use LogicException;
 class related_data_anonymized extends related_data {
     const IGNORED_COLUMNS = ['timecreated', 'timemodified', 'modifierid', 'password', 'username', 'firstname', 'lastname',
     'firstnamephonetic', 'email', 'phone1', 'phone2', 'address', 'lastip', 'secret', 'description', 'middlename', 'imagealt',
-    'alternatename', 'moodlenetprofile', 'picture'];
+    'alternatename', 'moodlenetprofile', 'picture', 'ip', 'other'];
 
     /**
      * Retrieve all relevant data related to the analysable samples.
@@ -65,7 +65,7 @@ class related_data_anonymized extends related_data {
         foreach ($data as $record) {
             $newrec = $record;
             $newrec->id = $idmap->get_pseudonym($record->id);
-            $res[$newrec->id] = $newrec;
+            $res[] = $newrec;
         }
         return $res;
     }

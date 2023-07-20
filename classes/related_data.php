@@ -32,7 +32,7 @@ use LogicException;
  */
 class related_data extends dataset {
     /** @var string|null $tablename to which the related data belongs */
-    private ?string $tablename;
+    protected ?string $tablename;
     const IGNORED_COLUMNS = [];
 
     /**
@@ -70,11 +70,6 @@ class related_data extends dataset {
      * @return void
      */
     public function serialize(): void {
-        if (!isset($this->data)) throw new LogicException('No evidence has been collected yet that could be serialized. Make sure to collect the evidence first.');
-        if (isset($this->filestring)) {
-            throw new LogicException('Data has already been serialized.');
-        }
-
         $str = '';
         $columns = null;
 
@@ -98,10 +93,14 @@ class related_data extends dataset {
         return $res;
     }
 
-    public static function get_tablename($evidenceid): mixed {
+    public static function get_tablename_from_evidenceid($evidenceid): mixed {
         global $DB;
-        $record = $DB->get_record('evidence', ['id' => $evidenceid], 'id, serializedfilelocation');
+        $record = $DB->get_record('tool_laaudit_evidence', ['id' => $evidenceid], '*', MUST_EXIST);
         return self::get_tablename_from_serializedfilelocation($record->serializedfilelocation);
+    }
+
+    public function get_tablename(): string {
+        return $this->tablename;
     }
 
     public static function get_tablename_from_serializedfilelocation(string $serializedfilelocation): mixed {

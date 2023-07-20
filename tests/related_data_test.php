@@ -52,56 +52,48 @@ class related_data_test extends evidence_testcase {
                         'tablename' => 'user',
                         'nrowsexpected' => 3, // Moodle has two default users.
                 ],
-            /*
                 'Min user, some days, table user' => [
                         'nstudents' => 1,
                         'createddaysago' => 10,
                         'tablename' => 'user',
                         'nrowsexpected' => 3,
-                        'expectedids' => $expecteduserids
                 ],
                 'Some users, min days, table user' => [
                         'nstudents' => 10,
                         'createddaysago' => 3,
                         'tablename' => 'user',
                         'nrowsexpected' => 12,
-                        'expectedids' => $expecteduserids
                 ],
                 'Min user, min days, table user_enrolments' => [
                         'nstudents' => 1,
                         'createddaysago' => 3,
                         'tablename' => 'user_enrolments',
                         'nrowsexpected' => 1,
-                        'expectedids' => $expecteduserenrolmentsids
                 ],
                 'Some users, some days, table user_enrolments' => [
                         'nstudents' => 10,
                         'createddaysago' => 10,
                         'tablename' => 'user_enrolments',
                         'nrowsexpected' => 10,
-                        'expectedids' => $expecteduserenrolmentsids
                 ],
                 'Some users, min days, table enrol' => [
                         'nstudents' => 10,
                         'createddaysago' => 3,
                         'tablename' => 'enrol',
                         'nrowsexpected' => 3,
-                        'expectedids' => $expectedenrolids
                 ],
                 'Some users, min days, table course' => [
                         'nstudents' => 10,
                         'createddaysago' => 3,
                         'tablename' => 'course',
                         'nrowsexpected' => 2, // There's also a site entry in the course table
-                        'expectedids' => $expectedcourseids
                 ],
                 'Some users, min days, table role' => [
                         'nstudents' => 10,
                         'createddaysago' => 3,
                         'tablename' => 'role',
                         'nrowsexpected' => 9,
-                        'expectedids' => $expectedroleids
-                ],*/
+                ],
         ];
     }
     /**
@@ -114,9 +106,8 @@ class related_data_test extends evidence_testcase {
      * @param int $createddaysago how many days ago a sample course should have been started
      * @param string $tablename name of the table to collect data from
      * @param int $nrowsexpected amount of rows to be returned
-     * @param int[]|string[]|null $expectedids ids to be expected in the collected data
      */
-    public function test_related_data_collect(int $nstudents, int $createddaysago, string $tablename, int $nrowsexpected, ?array $expectedids = null): void {
+    public function test_related_data_collect(int $nstudents, int $createddaysago, string $tablename, int $nrowsexpected): void {
         $this->create_test_data($nstudents, $createddaysago);
 
         $options = $this->get_options($tablename);
@@ -129,8 +120,7 @@ class related_data_test extends evidence_testcase {
 
         // Check that all ids are there.
         $ids = related_data::get_ids_used($rawdata);
-        if (!isset($expectedids)) $expectedids = test_course_with_students::get_ids($tablename);
-
+        $expectedids = test_course_with_students::get_ids($tablename);
         $missingids = array_diff($expectedids, $ids);
         $this->assertEquals(0, count($missingids));
 
@@ -202,39 +192,13 @@ class related_data_test extends evidence_testcase {
         $rawdata = $this->evidence->get_raw_data();
 
         // Quickly verify rawdata.
-        if (!isset ($expectedids)) $expectedids = test_course_with_students::get_ids('user');
+        $expectedids = test_course_with_students::get_ids('user');
         $ids = related_data::get_ids_used($rawdata);
         $missingids = array_diff($expectedids, $ids);
         $this->assertEquals(0, count($missingids));
 
         $unnecessaryids = array_diff($ids, $expectedids);
         $this->assertEquals(0, count($unnecessaryids));
-    }
-
-    /**
-     * Check that serialize throws an error if no data can be serialized.
-     *
-     * @covers ::tool_laaudit_related_data_serialize
-     */
-    public function test_dataset_serialize_error_nodata(): void {
-        $this->expectException(Exception::class); // Expect exception if no data collected yet.
-        $this->evidence->serialize();
-    }
-
-    /**
-     * Check that serialize throws an error if being called again.
-     *
-     * @covers ::tool_laaudit_related_data_serialize
-     */
-    public function test_dataset_serialize_error_again(): void {
-        $this->create_test_data();
-        $options = $this->get_options();
-
-        $this->evidence->collect($options);
-        $this->evidence->serialize();
-
-        $this->expectException(Exception::class); // Expect exception if no data collected yet.
-        $this->evidence->serialize();
     }
 
     /**

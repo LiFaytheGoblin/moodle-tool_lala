@@ -25,6 +25,7 @@
 namespace tool_laaudit;
 
 use Exception;
+use LogicException;
 use stdClass;
 use context_system;
 use moodle_url;
@@ -96,28 +97,6 @@ abstract class evidence {
     }
 
     /**
-     * Returns a stdClass with the finished evidence data.
-     *
-     * @param int $versionid of the version
-     * @param array $options depending on the implementation
-     * @return evidence of the created evidence
-     */
-    public static function create_for_version_with_options(int $versionid, array $options): evidence {
-        $evidence = static::create_scaffold_and_get_for_version($versionid);
-
-        try {
-            $evidence->collect($options);
-            $evidence->serialize();
-            $evidence->store();
-        } catch (Exception $e) {
-            $evidence->abort();
-            throw $e;
-        }
-
-        return $evidence;
-    }
-
-    /**
      * Collects the raw data.
      *
      * @param array $options depending on the implementation
@@ -138,9 +117,12 @@ abstract class evidence {
      * @return void
      */
     public function store(): void {
+        if (!isset($this->data)) throw new LogicException('No evidence has been collected yet that could be serialized. Make sure to collect the evidence first.');
+
         if (!isset($this->filestring)) {
-            throw new Exception('No data has been serialized for this evidence yet.');
+            $this->serialize();
         }
+
         $fileinfo = $this->get_file_info();
 
         $fs = get_file_storage();
@@ -148,6 +130,8 @@ abstract class evidence {
         $fs->create_file_from_string($fileinfo, $this->filestring);
 
         $this->set_serializedfilelocation();
+
+        $this->finish();
     }
 
     /**

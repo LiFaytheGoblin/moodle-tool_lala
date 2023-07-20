@@ -79,8 +79,8 @@ class model_version {
     private array $contexts;
     /** @var predictor $predictor for this version */
     private predictor $predictor;
-    /** @var idmap $idmap used for anonymization */
-    private idmap $idmap;
+    /** @var idmap[] $idmaps used for anonymization */
+    private array $idmaps;
 
     /**
      * Constructor. Deserialize DB object.
@@ -215,28 +215,32 @@ class model_version {
      *
      * @param string $evidencetype created in the next step.
      * @param array $options those options that are relevant in the called classes, see for instance dataset->collect().
-     * @return evidence|null
+     * @return evidence
      */
-    private function add(string $evidencetype, array $options): ?evidence {
+    private function add(string $evidencetype, array $options): evidence {
         $class = '\tool_laaudit\\'.$evidencetype;
 
         try {
-            $evidence = $class::create_for_version_with_options($this->id, $options);//call_user_func_array($class.'::create_for_version_with_options', [$this->id, $options]);
+            $evidence = $class::create_scaffold_and_get_for_version($this->id);
 
-            $evidence->finish();
+            try {
+                $evidence->collect($options);
+            } catch (Exception $e) {
+                $evidence->abort();
+                throw $e;
+            }
 
             // Add id and raw data to cached field variables
             if (!isset($this->evidence[$evidencetype])) $this->evidence[$evidencetype] = [];
             $evidenceid = $evidence->get_id();
 
             $this->evidence[$evidencetype][$evidenceid] = $evidence->get_raw_data();
-            print("added evidence ".$evidencetype." with id ".$evidenceid);
 
             return $evidence;
         } catch (moodle_exception | Exception $e) {
             print("ERROR". $e->getMessage());
-            $this->register_error($e);
-            return null;
+            $this->register_error($e); // Todo: Do this for any exceptions in the model version - find better place than here.
+            throw $e;
         }
     }
 
@@ -251,9 +255,14 @@ class model_version {
         $evidencetype = $anonymous ? 'dataset_anonymized' : 'dataset';
 
         $evidence = $this->add($evidencetype, $options);
+
         if (isset($evidence) and $anonymous) {
-            $this->idmap = $evidence->get_idmap();
+            $this->idmaps = [];
+            $origintablename = $this->analyser->get_samples_origin();
+            $this->idmaps[$origintablename] = $evidence->get_idmap();
         }
+
+        $evidence->store();
     }
 
     /**
@@ -266,26 +275,60 @@ class model_version {
         $source = $anonymous ? 'dataset_anonymized' : 'dataset';
         if (!isset($this->evidence[$source])) throw new LogicException('No data available for which to get related data. Have you gathered data?');
 
-        $options = [];
-        $data = $this->get_single_evidence($source);
+        $origintablename = $this->analyser->get_samples_origin(); // The main tables to which related data should be gathered.
 
         if ($anonymous) {
-            $evidencetype = 'related_data_anonymized';
-            if (!isset($this->idmap)) throw LogicException('No idmap available.');
-            $options['idmap'] = $this->idmap;
-            $originids = $this->idmap->get_originalids();
+            $this->gather_related_data_anonymized($origintablename);
         } else {
-            $evidencetype = 'related_data';
-            $originids = dataset_helper::get_ids_used_in_dataset($data);
+            $this->gather_related_data_unanonymized($origintablename);
         }
 
-        $origintablename = $this->analyser->get_samples_origin();
+
+    }
+
+    public function gather_related_data_unanonymized($origintablename) : void {
+        $data = $this->get_single_evidence('dataset');
+        $originids = dataset_helper::get_ids_used_in_dataset($data);
+
         $relatedtables = database_helper::get_related_tables($origintablename, $originids, [$origintablename => $originids]);
 
+        $options = [];
         foreach ($relatedtables as $relatedtablename => $relevantids) {
             $options['tablename'] = $relatedtablename;
             $options['ids'] = $relevantids;
-            $this->add($evidencetype, $options);
+            $evidence = $this->add('related_data', $options);
+            $evidence->store();
+        }
+    }
+
+    public function gather_related_data_anonymized($origintablename) : void {
+        if (!isset($this->idmaps)) throw LogicException('No idmaps available.');
+        if (!isset($this->idmaps[$origintablename])) throw LogicException('No idmap available for origin table '.$origintablename);
+
+        $originids = $this->idmaps[$origintablename]->get_originalids();
+        $relatedtables = database_helper::get_related_tables($origintablename, $originids, [$origintablename => $originids]);
+        $options = [];
+        $evidences = [];
+
+        foreach ($relatedtables as $relatedtablename => $relevantids) {
+            // Add un-anonymized evidence first.
+            $options['tablename'] = $relatedtablename;
+            $options['ids'] = $relevantids;
+
+            $evidence = $this->add('related_data_anonymized', $options);
+
+            // Create idmaps.
+            $notanonymizeddata = $evidence->get_raw_data();
+            $this->idmaps[$relatedtablename] = idmap::create_from_related_data($notanonymizeddata, $relatedtablename);
+
+            $evidences[] = $evidence; // Store the evidence for anonymizing it later.
+        }
+
+        // Anonymize the related data. We need ALL idmaps for that.
+        foreach ($evidences as $evidence) {
+            $pseudonomizeddata = $evidence->pseudonomize($evidence->get_raw_data(), $this->idmaps, $evidence->get_tablename());
+            $this->evidence['related_data_anonymized'][$evidence->get_id()] = $pseudonomizeddata;
+            $evidence->store(); // Only now can we store the data.
         }
     }
 
@@ -304,8 +347,11 @@ class model_version {
 
         $options = ['data' => $datashuffled, 'testsize' => $this->relativetestsetsize];
 
-        $this->add('training_dataset', $options);
-        $this->add('test_dataset', $options);
+        $training_evidence = $this->add('training_dataset', $options);
+        $training_evidence->store();
+
+        $test_evidence = $this->add('test_dataset', $options);
+        $test_evidence->store();
     }
 
     /**
@@ -317,7 +363,8 @@ class model_version {
         if (!isset($this->evidence['training_dataset'])) throw new LogicException('No training data is available for training. Have you gathered data and split it into training and testing data?');
         $options = ['data' => $this->get_single_evidence('training_dataset'), 'predictor' => $this->predictor];
 
-        $this->add('model', $options);
+        $evidence = $this->add('model', $options);
+        $evidence->store();
     }
 
     /**
@@ -331,7 +378,8 @@ class model_version {
 
         $options = ['model' => $this->get_single_evidence('model'), 'data' => $this->get_single_evidence('test_dataset')];
 
-        $this->add('predictions_dataset', $options);
+        $evidence = $this->add('predictions_dataset', $options);
+        $evidence->store();
     }
 
     /**
@@ -364,12 +412,22 @@ class model_version {
         $DB->set_field('tool_laaudit_model_versions', 'error', $e->getMessage(), ['id' => $this->id]);
     }
 
+    /**
+     * Getter for version id.
+     *
+     * @return int id
+     */
     public function get_id(): int {
         return $this->id;
     }
 
-    public function get_idmap(): idmap {
-        return $this->idmap;
+    /**
+     * Getter for idmaps.
+     *
+     * @return idmap[] idmaps
+     */
+    public function get_idmaps(): array {
+        return $this->idmaps;
     }
 
     /**
@@ -390,6 +448,6 @@ class model_version {
      * @return array[]|Phpml\Classification\Linear\LogisticRegression[]|null the evidence raw data
      */
     public function get_array_of_evidences(string $evidencetype): mixed {
-        return array_values($this->evidence[$evidencetype]);
+        return $this->evidence[$evidencetype];
     }
 }

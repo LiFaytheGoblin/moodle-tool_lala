@@ -148,32 +148,6 @@ class dataset_test extends evidence_testcase {
     }
 
     /**
-     * Check that serialize throws an error if no data can be serialized.
-     *
-     * @covers ::tool_laaudit_dataset_serialize
-     */
-    public function test_dataset_serialize_error_nodata(): void {
-        $this->expectException(\Exception::class); // Expect exception if no data collected yet.
-        $this->evidence->serialize();
-    }
-
-    /**
-     * Check that serialize throws an error if being called again.
-     *
-     * @covers ::tool_laaudit_dataset_serialize
-     */
-    public function test_dataset_serialize_error_again(): void {
-        $this->create_test_data();
-        $options = $this->get_options();
-
-        $this->evidence->collect($options);
-        $this->evidence->serialize();
-
-        $this->expectException(\Exception::class); // Expect exception if no data collected yet.
-        $this->evidence->serialize();
-    }
-
-    /**
      * Check that get_shuffled returns a shuffled array.
      *
      * @covers ::tool_laaudit_dataset_helper_get_shuffled

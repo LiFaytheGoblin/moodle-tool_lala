@@ -97,7 +97,8 @@ class model_version_complete_creation_test extends \advanced_testcase {
 
             $originalrows = $originaldataset[test_model::ANALYSISINTERVAL];
             $newrows = $dataset[test_model::ANALYSISINTERVAL];
-            $idmap = $this->version->get_idmap();
+            $idmaps = $this->version->get_idmaps();
+            $idmap = $idmaps['user_enrolments'];
             $originalidsinorder = [];
             $newidsinorder = [];
             foreach ($originalrows as $originasamplelid => $originalvalues) {
@@ -151,7 +152,7 @@ class model_version_complete_creation_test extends \advanced_testcase {
             $originalenrolids = test_course_with_students::get_ids('enrol');
             $originalroleids = test_course_with_students::get_ids('role');
             foreach ($relateddatasets as $evidenceid => $dataset) {
-                $tablename = related_data::get_tablename($evidenceid);
+                $tablename = related_data::get_tablename_from_evidenceid($evidenceid);
                 $originalids = test_course_with_students::get_ids($tablename);
 
                 $newids = [];

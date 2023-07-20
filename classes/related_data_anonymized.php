@@ -24,7 +24,6 @@
 
 namespace tool_laaudit;
 
-use InvalidArgumentException;
 use LogicException;
 
 /**
@@ -33,40 +32,49 @@ use LogicException;
 class related_data_anonymized extends related_data {
     const IGNORED_COLUMNS = ['timecreated', 'timemodified', 'modifierid', 'password', 'username', 'firstname', 'lastname',
     'firstnamephonetic', 'email', 'phone1', 'phone2', 'address', 'lastip', 'secret', 'description', 'middlename', 'imagealt',
-    'alternatename', 'moodlenetprofile', 'picture', 'ip', 'other'];
-
-    /**
-     * Retrieve all relevant data related to the analysable samples.
-     *
-     * @param array $options = [string $tablename, array $ids]
-     * @return void
-     */
-    public function collect(array $options): void {
-        if (!isset($options['idmap'])) {
-            throw new InvalidArgumentException('Options is missing the look up table of original user ids and pseudonyms.');
-        }
-        $idmapentitytype = ($options['idmap'])->get_entitytype();
-        if ($idmapentitytype != $options['tablename']) {
-            throw new LogicException('Passed idmap does not belong to '.$options['tablename'].' but to '.$idmapentitytype);
-        }
-        parent::collect($options);
-        $this->data = $this->pseudonomize($this->data, $options['idmap']);
-    }
+    'alternatename', 'moodlenetprofile', 'picture', 'ip', 'other', 'realuserid'];
 
     /**
      * Pseudonomize the related dataset by replacing original keys with new keys.
      * Make sure that the used data is shuffled, so that the order of keys does not give away the identity.
      *
-     * @param array $data
-     * @param idmap $idmap
+     * @param array $data original data
+     * @param idmap[] $idmaps
+     * @return array pseudonomized data
      */
-    public function pseudonomize(array $data, idmap $idmap): array {
+    public function pseudonomize(array $data, array $idmaps, string $type): array {
+        if (!isset($data)) throw new LogicException('No evidence has been collected that can be pseudonomized. Make sure to collect first.');
+        if (!key_exists($type, $idmaps)) throw new LogicException('No idmap for type '.$type.' exists. ');
+
+        global $DB;
+        $availabletables = $DB->get_tables();
+
         $res = [];
-        foreach ($data as $record) {
-            $newrec = $record;
-            $newrec->id = $idmap->get_pseudonym($record->id);
-            $res[] = $newrec;
+        foreach ($data as $row) {
+            $newrow = $row;
+
+            // Pseudonomize the main id.
+            $newrow->id = $idmaps[$type]->get_pseudonym($row->id);
+
+            // Pseudonomize the referenced ids.
+            foreach ($row as $columnname => $columncontent) {
+                // Check if the column contains an id that needs to be pseudonomized.
+                if (count_chars($columnname) < 3) continue; // This is not the id you are looking for, so ignore it.
+
+                $idpos = stripos($columnname, 'id');
+                if ($idpos === false) continue; // This column is not about an id, so ignore it.
+
+                $relatedtype = substr($columnname, 0, $idpos); // Todo: Handle cases like relateduserid
+                if (!in_array($relatedtype, $availabletables)) continue; // This is an id to which no table can be found, so ignore it.
+
+                // Pseudonomize the id.
+                if (!key_exists($relatedtype, $idmaps)) throw new LogicException('No idmap for type '.$type.' exists. ');
+                $newrow->column = $idmaps[$type]->get_pseudonym($columncontent);
+            }
+
+            $res[] = $newrow;
         }
-        return $res;
+       $this->data = $res;
+       return $res;
     }
 }

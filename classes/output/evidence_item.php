@@ -28,6 +28,7 @@ use renderer_base;
 use templatable;
 use renderable;
 use stdClass;
+use tool_laaudit\related_data;
 
 /**
  * Class for the output for a single model version.

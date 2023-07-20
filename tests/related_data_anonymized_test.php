@@ -39,68 +39,54 @@ class related_data_anonymized_test extends related_data_test {
      * @return array List of source data information
      */
     public function tool_laaudit_all_parameters_provider() : array {
-        $expecteduserids = test_course_with_students::get_ids('user');
-        $expecteduserenrolmentsids = test_course_with_students::get_ids('user_enrolments');
-        $expectedenrolids = test_course_with_students::get_ids('enrol');
-        $expectedcourseids = test_course_with_students::get_ids('course');
-        $expectedroleids = test_course_with_students::get_ids('role');
-
         return [
                 'Min user, min days, table user' => [
                         'nstudents' => 3,
                         'createddaysago' => 3,
                         'tablename' => 'user',
                         'nrowsexpected' => 5, // Moodle has two default users.
-                        'expectedids' => range(1, 5)
                 ],
                 'Min user, some days, table user' => [
                         'nstudents' => 3,
                         'createddaysago' => 10,
                         'tablename' => 'user',
                         'nrowsexpected' => 5,
-                        'expectedids' => range(1, 5)
                 ],
                 'Some users, min days, table user' => [
                         'nstudents' => 10,
                         'createddaysago' => 3,
                         'tablename' => 'user',
                         'nrowsexpected' => 12,
-                        'expectedids' => range(1, 12)
                 ],
                 'Min user, min days, table user_enrolments' => [
                         'nstudents' => 3,
                         'createddaysago' => 3,
                         'tablename' => 'user_enrolments',
                         'nrowsexpected' => 3,
-                        'expectedids' => range(1, 3)
                 ],
                 'Some users, some days, table user_enrolments' => [
                         'nstudents' => 10,
                         'createddaysago' => 10,
                         'tablename' => 'user_enrolments',
                         'nrowsexpected' => 10,
-                        'expectedids' => range(1, 10)
                 ],
                 'Some users, min days, table enrol' => [
                         'nstudents' => 10,
                         'createddaysago' => 3,
                         'tablename' => 'enrol',
                         'nrowsexpected' => 3,
-                        'expectedids' => range(1, 3)
                 ],
                 'Some users, min days, table course' => [
                         'nstudents' => 10,
                         'createddaysago' => 3,
                         'tablename' => 'course',
                         'nrowsexpected' => 2, // There's also a site entry in the course table
-                        'expectedids' => range(1, 2)
                 ],
                 'Some users, min days, table role' => [
                         'nstudents' => 10,
                         'createddaysago' => 3,
                         'tablename' => 'role',
-                        'nrowsexpected' => 9,
-                        'expectedids' => range(1, 9)
+                        'nrowsexpected' => 9
                 ],
         ];
     }
@@ -111,8 +97,7 @@ class related_data_anonymized_test extends related_data_test {
      * @covers ::tool_laaudit_dataset_pseudonomize
      */
     public function test_evidence_pseudonomize() {
-        $nsamples = 5;
-
+        $type = 'test';
         $data = [
               0 => (object) [
                  'id' => 1,
@@ -132,9 +117,9 @@ class related_data_anonymized_test extends related_data_test {
         ];
 
         $pseudonyms = [4, 5, 6];
-        $idmap = new idmap(array_keys($data), $pseudonyms, 'test');
+        $idmap = new idmap(array_keys($data), $pseudonyms, $type);
 
-        $pseudonomized_data = $this->evidence->pseudonomize($data, $idmap);
+        $pseudonomized_data = $this->evidence->pseudonomize($data, [$type => $idmap], $type);
         $this->assertTrue(isset($pseudonomized_data));
         // has correct size
         $this->assertEquals(3, count($pseudonomized_data));
@@ -196,21 +181,6 @@ class related_data_anonymized_test extends related_data_test {
 
         $this->expectException(\Exception::class); // Expect exception if trying to collect but too little data exists.
         $this->evidence->collect($options);
-    }
-
-    /**
-     * Data provider for {@see test_dataset_collect_deletedmodel()}.
-     *
-     * @return array List of source data information
-     */
-    public function tool_laaudit_deleted_model_parameters_provider() : array {
-        return [
-                'Regular test case' => [
-                        'nstudents' => 3,
-                        'createddaysago' => 3,
-                        'expectedids' => range(1, 5)
-                ],
-        ];
     }
 
     /**

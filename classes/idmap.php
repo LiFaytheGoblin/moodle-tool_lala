@@ -45,16 +45,19 @@ class idmap {
     }
 
     public static function create_from_dataset($dataset, $entitytype) {
-        $orignalids = dataset_helper::get_ids_used_in_dataset($dataset);
+        $originalids = dataset_helper::get_ids_used_in_dataset($dataset);
 
+        $pseudonyms = self::create_pseudonyms($originalids);
 
-        shuffle($orignalids);
+        return new static($originalids, $pseudonyms, $entitytype);
+    }
 
-        $pseudonyms = self::create_pseudonyms($orignalids);
+    public static function create_from_related_data($related_data, $entitytype) {
+        $originalids = related_data::get_ids_used($related_data);
 
-        shuffle($pseudonyms);
+        $pseudonyms = self::create_pseudonyms($originalids);
 
-        return new static($orignalids, $pseudonyms, $entitytype);
+        return new static($originalids, $pseudonyms, $entitytype);
     }
 
     /**
@@ -63,7 +66,10 @@ class idmap {
      * @return array
      */
     public static function create_pseudonyms(array $orignalids, int $offset = 2): array {
-        return range(1 + $offset, count($orignalids) + $offset);
+        shuffle($orignalids);
+        $pseudonyms = range(1 + $offset, count($orignalids) + $offset);
+        shuffle($pseudonyms);
+        return $pseudonyms;
     }
 
     public function count(): int {

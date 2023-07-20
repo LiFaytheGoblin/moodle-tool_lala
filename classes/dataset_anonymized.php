@@ -51,7 +51,7 @@ class dataset_anonymized extends dataset {
         $n = $this->idmap->count();
         if ($n < 3) throw new Exception('Too few samples available. Found only '.$n.' sample(s) to gather. To preserve anonymity, at least 3 samples are needed.');
 
-        $this->data = $this->pseudonomize($this->data, $this->idmap);
+        $this->pseudonomize($this->data, $this->idmap);
     }
 
     /**
@@ -72,7 +72,9 @@ class dataset_anonymized extends dataset {
 
         $newrowsshuffled = dataset_helper::shuffle_array_preserving_keys($newrows); // Re-sort so that order of keys does not give away identity.
 
-        return dataset_helper::replace_rows_in_dataset($data, $newrowsshuffled);
+        $pseudonymizeddata = dataset_helper::replace_rows_in_dataset($data, $newrowsshuffled);
+        $this->data = $pseudonymizeddata;
+        return $pseudonymizeddata;
     }
 
     /**

@@ -80,10 +80,6 @@ class model extends evidence {
      * @return void
      */
     public function serialize(): void {
-        if (!isset($this->data)) throw new LogicException('No evidence has been collected yet that could be serialized. Make sure to train a model first.');
-        if (isset($this->filestring)) {
-            throw new LogicException('Model has already been serialized.');
-        }
         $str = serialize($this->data);
         $this->filestring = $str;
     }

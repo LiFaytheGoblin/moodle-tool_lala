@@ -152,32 +152,6 @@ class model_test extends evidence_testcase {
     }
 
     /**
-     * Check that serialize throws an error if called again.
-     *
-     * @covers ::tool_laaudit_model_serialize
-     */
-    public function test_model_serialize_error_again() {
-        $options = $this->get_options();
-        $this->evidence->collect($options);
-
-        $this->evidence->serialize();
-
-        // Expect error if trying to serialize again.
-        $this->expectException(\Exception::class); // Expect exception if no data collected yet.
-        $this->evidence->serialize();
-    }
-
-    /**
-     * Check that serialize throws an error if no data is available to be serialized.
-     *
-     * @covers ::tool_laaudit_model_serialize
-     */
-    public function test_model_serialize_error_nodata() : void {
-        $this->expectException(\Exception::class); // Expect exception if no data collected yet.
-        $this->evidence->serialize();
-    }
-
-    /**
      * Get the options object needed for collecting this evidence.
      *
      * @return array

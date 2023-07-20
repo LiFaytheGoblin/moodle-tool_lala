@@ -82,8 +82,6 @@ class evidence_test extends evidence_testcase {
         $evidence = new test_evidence($evidenceid);
 
         $evidence->collect($this->get_options());
-        $evidence->serialize();
-
         $evidence->store();
 
         // Read the file content.
@@ -144,9 +142,8 @@ class evidence_test extends evidence_testcase {
         $resultid = $DB->get_fieldset_select('tool_laaudit_evidence', 'id', 'id='.$evidenceid)[0];
         $this->assertEquals($evidenceid, $resultid);
 
-        $evidence->serialize();
+        $evidence->collect([]);
         $evidence->store();
-
         $evidence->abort();
 
         $resultids = $DB->get_fieldset_select('tool_laaudit_evidence', 'id', 'id='.$evidenceid);

@@ -89,11 +89,6 @@ class dataset extends evidence {
      * @return void
      */
     public function serialize(): void {
-        if (!isset($this->data)) throw new LogicException('No evidence has been collected yet that could be serialized. Make sure to collect the evidence first.');
-        if (isset($this->filestring)) {
-            throw new LogicException('Data has already been serialized.');
-        }
-
         $str = '';
         $columns = null;
 
@@ -109,7 +104,8 @@ class dataset extends evidence {
             }
         }
 
-        $heading = "sampleid,".$columns."\n";
+        $comma = (isset($columns)) ? ',' : null;
+        $heading = "sampleid".$comma.$columns."\n";
         $this->filestring = $heading.$str;
     }
 

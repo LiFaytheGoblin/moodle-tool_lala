@@ -39,6 +39,7 @@ class idmap {
 
     public function __construct(array $originalids, array $pseudonyms, string $entitytype) {
         if (count($originalids) !== count($pseudonyms)) throw new Exception('Must provide as many pseudonyms as originalids.');
+        if (count($originalids) === 0) throw new Exception('Can not create empty idmap. No ids provided.');
         $this->originalids = $originalids;
         $this->pseudonyms = $pseudonyms;
         $this->entitytype = $entitytype;
@@ -65,11 +66,16 @@ class idmap {
      * @param array $orignalids
      * @return array
      */
-    public static function create_pseudonyms(array $orignalids, int $offset = 2): array {
+    public static function create_pseudonyms(array $orignalids): array {
         shuffle($orignalids);
-        $pseudonyms = range(1 + $offset, count($orignalids) + $offset);
-        shuffle($pseudonyms);
-        return $pseudonyms;
+        $possiblefactors = range(3, 10);
+        shuffle($possiblefactors);
+        $actualfactor = end($possiblefactors);
+        $possiblepseudonyms = range(1, count($orignalids) * $actualfactor);
+        shuffle($possiblepseudonyms);
+        $actualpseudonyms = array_slice($possiblepseudonyms, 0, count($orignalids));
+        shuffle($actualpseudonyms);
+        return $actualpseudonyms;
     }
 
     public function count(): int {

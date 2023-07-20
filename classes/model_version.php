@@ -282,8 +282,6 @@ class model_version {
         } else {
             $this->gather_related_data_unanonymized($origintablename);
         }
-
-
     }
 
     public function gather_related_data_unanonymized($origintablename) : void {

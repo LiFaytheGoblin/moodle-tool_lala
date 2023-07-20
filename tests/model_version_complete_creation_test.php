@@ -146,15 +146,17 @@ class model_version_complete_creation_test extends \advanced_testcase {
         $this->assertEquals(5, count($relateddatasets));
 
         if ($anonymous) {
-            // Check that the datasets do not contain the original userids but new userids
-            $originaluserids = test_course_with_students::get_ids('user');
-            $originalcourseids = test_course_with_students::get_ids('course');
-            $originalenrolids = test_course_with_students::get_ids('enrol');
-            $originalroleids = test_course_with_students::get_ids('role');
-            foreach ($relateddatasets as $evidenceid => $dataset) {
-                $tablename = related_data::get_tablename_from_evidenceid($evidenceid);
-                $originalids = test_course_with_students::get_ids($tablename);
+            // Get all original ids.
+            $originalids = [
+                    'user_enrolments' => test_course_with_students::get_ids('user_enrolments'),
+                    'user' => test_course_with_students::get_ids_for_referenced_by('user', 'user_enrolments'),
+                    'course' => test_course_with_students::get_ids_for_referenced_by('course', 'enrol'),
+                    'enrol' => test_course_with_students::get_ids_for_referenced_by('enrol', 'user_enrolments'),
+                    'role' => test_course_with_students::get_ids_for_referenced_by('role', 'enrol'),
+            ];
 
+            foreach ($relateddatasets as $evidenceid => $dataset) {
+                // Gather pseudonyms / actually used ids.
                 $newids = [];
                 $newreferenceduserids = [];
                 $newreferencedenrolids = [];
@@ -177,29 +179,29 @@ class model_version_complete_creation_test extends \advanced_testcase {
                     }
                 }
 
-                // check that datasets do not contain the original ids but new ids (check analysisinterval)
-                $identicalids = array_intersect($originalids, $newids);
+                // Check that the original primary id is not used.
+                $tablename = related_data::get_tablename_from_evidenceid($evidenceid);
+
+                $identicalids = array_intersect($originalids[$tablename], $newids);
                 $this->assertEquals(0, sizeof($identicalids));
 
-                // check that datasets do not reference the original ids
+                // Check that datasets do not reference the original ids.
                 if (count($newreferenceduserids) > 0) {
-                    $identicaluserids = array_intersect($originaluserids, $newreferenceduserids);
+                    $identicaluserids = array_intersect($originalids['user'], $newreferenceduserids);
                     $this->assertEquals(0, sizeof($identicaluserids));
                 }
                 if (count($newreferencedenrolids) > 0) {
-                    $identicalenrolids = array_intersect($originalenrolids, $newreferencedenrolids);
+                    $identicalenrolids = array_intersect($originalids['enrol'], $newreferencedenrolids);
                     $this->assertEquals(0, sizeof($identicalenrolids));
                 }
                 if (count($newreferencedcourseids) > 0) {
-                    $identicalcourseids = array_intersect($originalcourseids, $newreferencedcourseids);
+                    $identicalcourseids = array_intersect($originalids['course'], $newreferencedcourseids);
                     $this->assertEquals(0, sizeof($identicalcourseids));
                 }
                 if (count($newreferencedroleids) > 0) {
-                    $identicalroleids = array_intersect($originalroleids, $newreferencedroleids);
+                    $identicalroleids = array_intersect($originalids['role'], $newreferencedroleids);
                     $this->assertEquals(0, sizeof($identicalroleids));
                 }
-
-                // todo: check that datasets allocate the correct values to the correct users
             }
         }
 

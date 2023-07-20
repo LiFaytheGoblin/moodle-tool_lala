@@ -64,12 +64,20 @@ class related_data_anonymized extends related_data {
                 $idpos = stripos($columnname, 'id');
                 if ($idpos === false) continue; // This column is not about an id, so ignore it.
 
-                $relatedtype = substr($columnname, 0, $idpos); // Todo: Handle cases like relateduserid
-                if (!in_array($relatedtype, $availabletables)) continue; // This is an id to which no table can be found, so ignore it.
+                $relatedtype = substr($columnname, 0, $idpos);
+                if (!in_array($relatedtype, $availabletables)) {
+                    // todo: check if PART of the relatedtype hints at a valid table, eg. relateduser
+                    // just check for each of the keys in idmaps - cant deal with the others anyway.
+                    // construct a regex with all the idmapkeys, make it so that something may come before.
+                    // if it matches, use the idmapkeu as relatedtype.
 
-                // Pseudonomize the id.
+                    if (!in_array($relatedtype, $availabletables)) continue; // This is an id to which no table can be found, so ignore it.
+                }
+
+                // Pseudonomize the referenced id.
                 if (!key_exists($relatedtype, $idmaps)) throw new LogicException('No idmap for type '.$type.' exists. ');
-                $newrow->column = $idmaps[$type]->get_pseudonym($columncontent);
+
+                $newrow->$columnname = $idmaps[$relatedtype]->get_pseudonym($columncontent);
             }
 
             $res[] = $newrow;

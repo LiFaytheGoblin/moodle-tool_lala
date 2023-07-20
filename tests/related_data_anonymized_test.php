@@ -128,7 +128,7 @@ class related_data_anonymized_test extends related_data_test {
         $missingpseudonyms = array_diff($idmap->get_pseudonyms(), related_data::get_ids_used($pseudonomized_data));
         $this->assertEquals(0, count($missingpseudonyms));
 
-        // the value for each new id is the value we have in dataset for the fitting old id
+        // The value for each new id is the value we have in dataset for the fitting old id
         $missingvalues = [];
         foreach ($pseudonomized_data as $actualvalues) {
             $pseudonym = $actualvalues->id;

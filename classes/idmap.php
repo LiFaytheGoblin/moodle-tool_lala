@@ -69,9 +69,10 @@ class idmap {
     public static function create_pseudonyms(array $orignalids): array {
         shuffle($orignalids);
         $possiblefactors = range(3, 10);
+        $offset = 100;
         shuffle($possiblefactors);
         $actualfactor = end($possiblefactors);
-        $possiblepseudonyms = range(1, count($orignalids) * $actualfactor);
+        $possiblepseudonyms = range($offset, $offset * $actualfactor * count($orignalids));
         shuffle($possiblepseudonyms);
         $actualpseudonyms = array_slice($possiblepseudonyms, 0, count($orignalids));
         shuffle($actualpseudonyms);

@@ -46,43 +46,41 @@ class related_data_anonymized extends related_data {
         if (!isset($data)) throw new LogicException('No evidence has been collected that can be pseudonomized. Make sure to collect first.');
         if (!key_exists($type, $idmaps)) throw new LogicException('No idmap for type '.$type.' exists. ');
 
-        global $DB;
-        $availabletables = $DB->get_tables();
-
         $res = [];
         foreach ($data as $row) {
-            $newrow = $row;
-
-            // Pseudonomize the main id.
-            $newrow->id = $idmaps[$type]->get_pseudonym($row->id);
+            $newrow = clone $row;
 
             // Pseudonomize the referenced ids.
             foreach ($row as $columnname => $columncontent) {
-                // Check if the column contains an id that needs to be pseudonomized.
-                if (count_chars($columnname) < 3) continue; // This is not the id you are looking for, so ignore it.
+                if ($columnname == 'id') { // Pseudonomize the main id.
+                    $newrow->id = $idmaps[$type]->get_pseudonym($row->id);
+                    continue;
+                }
 
+                // Check if the column contains an id type that needs to be pseudonomized.
                 $idpos = stripos($columnname, 'id');
                 if ($idpos === false) continue; // This column is not about an id, so ignore it.
 
                 $relatedtype = substr($columnname, 0, $idpos);
-                if (!in_array($relatedtype, $availabletables)) {
-                    // todo: check if PART of the relatedtype hints at a valid table, eg. relateduser
-                    // just check for each of the keys in idmaps - cant deal with the others anyway.
-                    // construct a regex with all the idmapkeys, make it so that something may come before.
-                    // if it matches, use the idmapkeu as relatedtype.
+                if (!key_exists($relatedtype, $idmaps)) { // If relatedtype is not a valid table name in idmap already...
+                    foreach ($idmaps as $idmaptablename => $idmap) { // Check if it hints at a table name, e.g. "relateduser" -> "user".
+                        if (str_ends_with($relatedtype, $idmaptablename)) {
+                            $relatedtype = $idmaptablename;
+                            break;
+                        }
+                    }
 
-                    if (!in_array($relatedtype, $availabletables)) continue; // This is an id to which no table can be found, so ignore it.
+                    if (!key_exists($relatedtype, $idmaps)) continue; // This is a type to which still no table can be found, so ignore it.
                 }
 
                 // Pseudonomize the referenced id.
-                if (!key_exists($relatedtype, $idmaps)) throw new LogicException('No idmap for type '.$type.' exists. ');
-
                 $newrow->$columnname = $idmaps[$relatedtype]->get_pseudonym($columncontent);
             }
 
             $res[] = $newrow;
         }
-       $this->data = $res;
-       return $res;
+        shuffle($res); // So that we can't match identities based on the order.
+        $this->data = $res;
+        return $res;
     }
 }

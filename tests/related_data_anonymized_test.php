@@ -97,56 +97,62 @@ class related_data_anonymized_test extends related_data_test {
      * @covers ::tool_laaudit_dataset_pseudonomize
      */
     public function test_evidence_pseudonomize() {
-        $type = 'test';
+        $typemain = 'test';
+        $typesecondary = 'other';
+        $secondaryfieldname = $typesecondary.'id';
         $data = [
               0 => (object) [
-                 'id' => 1,
-                  'otherid' => 'a',
-                  'someprop' => 'test1'
+                    'id' => 1,
+                    $secondaryfieldname => 4,
+                    'someprop' => 'test1'
               ],
               1 => (object) [
                    'id' => 2,
-                   'otherid' => 'b',
+                   $secondaryfieldname => 5,
                    'someprop' => 'test2'
               ],
               2 => (object) [
                    'id' => 3,
-                   'otherid' => 'c',
+                   $secondaryfieldname => 6,
                    'someprop' => 'test3'
               ]
         ];
 
-        $pseudonyms = [4, 5, 6];
-        $idmap = new idmap(array_keys($data), $pseudonyms, $type);
+        $pseudonymsmain = [7, 8 , 9];
+        $idmapmain = new idmap(array_column($data, 'id'), $pseudonymsmain, $typemain);
 
-        $pseudonomized_data = $this->evidence->pseudonomize($data, [$type => $idmap], $type);
+        $pseudonymssecondary = [10, 11, 12];
+        $secondaryids = array_column($data, $secondaryfieldname);
+        $idmapsecondary = new idmap($secondaryids, $pseudonymssecondary, $typesecondary);
+
+        $pseudonomized_data = $this->evidence->pseudonomize($data, [$typemain => $idmapmain, $typesecondary => $idmapsecondary], $typemain);
         $this->assertTrue(isset($pseudonomized_data));
         // has correct size
         $this->assertEquals(3, count($pseudonomized_data));
 
         // All needed new ids made it to the pseudonomized dataset & structure is ok
-        $missingpseudonyms = array_diff($idmap->get_pseudonyms(), related_data::get_ids_used($pseudonomized_data));
+        $missingpseudonyms = array_diff($idmapmain->get_pseudonyms(), related_data::get_ids_used($pseudonomized_data));
         $this->assertEquals(0, count($missingpseudonyms));
 
-        // The value for each new id is the value we have in dataset for the fitting old id
+        $missingsecondarypseudonyms = array_diff($idmapsecondary->get_pseudonyms(), array_column($pseudonomized_data, $secondaryfieldname));
+        $this->assertEquals(0, count($missingsecondarypseudonyms));
+
+        // The value for each new id is the value we have in dataset for the fitting old id, but the secondary id changed
         $missingvalues = [];
+        $originalids = array_column($data, 'id');
         foreach ($pseudonomized_data as $actualvalues) {
-            $pseudonym = $actualvalues->id;
-            $originalid = $idmap->get_originalid($pseudonym);
-            $expectedvalues = $this->get_by_id($data, $originalid);
-            $missingvaluesforthispseudonym = array_diff($expectedvalues, (array) $actualvalues);
-            if (sizeof($missingvaluesforthispseudonym) > 0) $missingvalues[$pseudonym] = $missingvaluesforthispseudonym;
+            $pseudonymmain = $actualvalues->id;
+            $originalid = $idmapmain->get_originalid($pseudonymmain);
+            $originalindex = array_search($originalid, $originalids);
+            $expectedtestvalue = $data[$originalindex]->someprop;
+            $actualtestvalue = $actualvalues->someprop;
+            $this->assertEquals($expectedtestvalue, $actualtestvalue);
+
+            $originalsecondaryid = $data[$originalindex]->$secondaryfieldname;
+            $newsecondaryid = $actualvalues->$secondaryfieldname;
+            $this->assertNotEquals($originalsecondaryid, $newsecondaryid);
         }
         $this->assertTrue(sizeof($missingvalues) == 0);
-    }
-
-    function get_by_id(array $data, mixed $id) : array {
-        foreach ($data as $entry) {
-            if ($entry->id === $id) {
-                return $entry;
-            }
-        }
-        return [];
     }
 
     /**

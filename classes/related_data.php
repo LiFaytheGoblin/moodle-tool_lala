@@ -86,11 +86,7 @@ class related_data extends dataset {
     }
 
     public static function get_ids_used($related_data): array {
-        $res = [];
-        foreach ($related_data as $entry) {
-            $res[] = $entry->id;
-        }
-        return $res;
+        return array_column($related_data, 'id');
     }
 
     public static function get_tablename_from_evidenceid($evidenceid): mixed {

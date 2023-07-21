@@ -100,21 +100,25 @@ class related_data_anonymized_test extends related_data_test {
         $typemain = 'test';
         $typesecondary = 'other';
         $secondaryfieldname = $typesecondary.'id';
+        $ternaryfieldname = 'alsomentioned'.$secondaryfieldname.'id';
         $data = [
               0 => (object) [
                     'id' => 1,
                     $secondaryfieldname => 4,
-                    'someprop' => 'test1'
+                    'someprop' => 'test1',
+                    $ternaryfieldname => 5
               ],
               1 => (object) [
                    'id' => 2,
                    $secondaryfieldname => 5,
-                   'someprop' => 'test2'
+                   'someprop' => 'test2',
+                   $ternaryfieldname => 5
               ],
               2 => (object) [
                    'id' => 3,
                    $secondaryfieldname => 6,
-                   'someprop' => 'test3'
+                   'someprop' => 'test3',
+                   $ternaryfieldname => 4
               ]
         ];
 
@@ -134,8 +138,12 @@ class related_data_anonymized_test extends related_data_test {
         $missingpseudonyms = array_diff($idmapmain->get_pseudonyms(), related_data::get_ids_used($pseudonomized_data));
         $this->assertEquals(0, count($missingpseudonyms));
 
-        $missingsecondarypseudonyms = array_diff($idmapsecondary->get_pseudonyms(), array_column($pseudonomized_data, $secondaryfieldname));
+        $secondarypseudonyms = $idmapsecondary->get_pseudonyms();
+        $missingsecondarypseudonyms = array_diff($secondarypseudonyms, array_column($pseudonomized_data, $secondaryfieldname));
         $this->assertEquals(0, count($missingsecondarypseudonyms));
+
+        $missingternarypseudonyms = array_diff(array_column($pseudonomized_data, $ternaryfieldname), $secondarypseudonyms);
+        $this->assertEquals(0, count($missingternarypseudonyms));
 
         // The value for each new id is the value we have in dataset for the fitting old id, but the secondary id changed
         $missingvalues = [];
@@ -151,6 +159,10 @@ class related_data_anonymized_test extends related_data_test {
             $originalsecondaryid = $data[$originalindex]->$secondaryfieldname;
             $newsecondaryid = $actualvalues->$secondaryfieldname;
             $this->assertNotEquals($originalsecondaryid, $newsecondaryid);
+
+            $originalternaryid = $data[$originalindex]->$ternaryfieldname;
+            $newternaryid = $actualvalues->$ternaryfieldname;
+            $this->assertNotEquals($originalternaryid, $newternaryid);
         }
         $this->assertTrue(sizeof($missingvalues) == 0);
     }

@@ -56,7 +56,7 @@ class related_data extends dataset {
 
         global $DB;
         $possiblecolumns = database_helper::get_possible_column_names($this->tablename);
-        $keptcolumns = array_diff($possiblecolumns, self::IGNORED_COLUMNS);
+        $keptcolumns = array_diff($possiblecolumns, $this::IGNORED_COLUMNS);
         $fieldsstring = implode(',', $keptcolumns);
         $records = $DB->get_records_list($this->tablename, 'id', $options['ids'], null, $fieldsstring);
 

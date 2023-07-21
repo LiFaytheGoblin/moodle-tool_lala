@@ -31,8 +31,8 @@ use LogicException;
  */
 class related_data_anonymized extends related_data {
     const IGNORED_COLUMNS = ['timecreated', 'timemodified', 'modifierid', 'password', 'username', 'firstname', 'lastname',
-    'firstnamephonetic', 'email', 'phone1', 'phone2', 'address', 'lastip', 'secret', 'description', 'middlename', 'imagealt',
-    'alternatename', 'moodlenetprofile', 'picture', 'ip', 'other', 'realuserid'];
+    'firstnamephonetic', 'lastnamephonetic', 'email', 'phone1', 'phone2', 'address', 'lastip', 'secret', 'description', 'middlename', 'imagealt',
+    'alternatename', 'moodlenetprofile', 'picture', 'ip', 'other'];
 
     /**
      * Pseudonomize the related dataset by replacing original keys with new keys.

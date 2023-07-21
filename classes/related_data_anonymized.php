@@ -31,8 +31,35 @@ use LogicException;
  */
 class related_data_anonymized extends related_data {
     const IGNORED_COLUMNS = ['timecreated', 'timemodified', 'modifierid', 'password', 'username', 'firstname', 'lastname',
-    'firstnamephonetic', 'lastnamephonetic', 'email', 'phone1', 'phone2', 'address', 'lastip', 'secret', 'description', 'middlename', 'imagealt',
-    'alternatename', 'moodlenetprofile', 'picture', 'ip', 'other'];
+    'firstnamephonetic', 'lastnamephonetic', 'alternatename', 'email', 'phone1', 'phone2', 'address', 'lastip', 'secret',
+    'middlename', 'imagealt', 'moodlenetprofile', 'picture', 'ip'];
+
+    public function collect(array $options): void {
+        $this->validate($options);
+
+        $this->tablename = $options['tablename'];
+
+        // Find out, which columns that can appear in this table, should be excluded.
+        global $DB;
+        $columns = $DB->get_columns($this->tablename);
+        $ignoredcolumns = $this::IGNORED_COLUMNS;
+        foreach ($columns as $columnname => $columnmetadata) {
+            if (in_array($columnname, $this::IGNORED_COLUMNS)) continue;
+            if (str_contains($columnname, 'id')) continue; // We keep ids for now, as they are pseudonomized later on.
+            // We do not want other columns with unique values, such as username.
+            // Columns that can contain text should also be treated as sensitive.
+            if ($columnmetadata->unique) $ignoredcolumns[] = $columnname;
+            else if ($columnmetadata->type == 'longtext') $ignoredcolumns[] = $columnname;
+        }
+
+        // Retrieve data from the database but only for those columns, that we do not ignore.
+        $possiblecolumns = array_keys($columns);
+        $keptcolumns = (count($ignoredcolumns) > 0) ? array_diff($possiblecolumns, $ignoredcolumns) : $possiblecolumns;
+        $fieldsstring = implode(',', $keptcolumns);
+        $records = $DB->get_records_list($this->tablename, 'id', $options['ids'], null, $fieldsstring);
+
+        $this->data = $records;
+    }
 
     /**
      * Pseudonomize the related dataset by replacing original keys with new keys.

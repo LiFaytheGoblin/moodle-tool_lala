@@ -42,15 +42,7 @@ class related_data extends dataset {
      * @return void
      */
     public function collect(array $options): void {
-        if (!isset($options['tablename'])) {
-            throw new InvalidArgumentException('Options is missing the name of the related table.');
-        }
-        if (!isset($options['ids'])) {
-            throw new InvalidArgumentException('Options is missing the ids the data should be related to.');
-        }
-        if (isset($this->data) && sizeof($this->data) > 0) {
-            throw new LogicException('Data has already been collected and can not be changed.');
-        }
+        $this->validate($options);
 
         $this->tablename = $options['tablename'];
 
@@ -61,6 +53,18 @@ class related_data extends dataset {
         $records = $DB->get_records_list($this->tablename, 'id', $options['ids'], null, $fieldsstring);
 
         $this->data = $records;
+    }
+
+    public function validate($options) : void {
+        if (!isset($options['tablename'])) {
+            throw new InvalidArgumentException('Options is missing the name of the related table.');
+        }
+        if (!isset($options['ids'])) {
+            throw new InvalidArgumentException('Options is missing the ids the data should be related to.');
+        }
+        if (isset($this->data) && sizeof($this->data) > 0) {
+            throw new LogicException('Data has already been collected and can not be changed.');
+        }
     }
 
     /**

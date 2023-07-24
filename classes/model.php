@@ -49,7 +49,7 @@ class model extends evidence {
         if (!isset($options['data'])) {
             throw new InvalidArgumentException('Options array is missing training data.');
         }
-        if (sizeof($options['data']) == 0) {
+        if (count($options['data']) == 0) {
             throw new DomainException('Training dataset can not be empty.');
         }
         if (isset($this->data)) {
@@ -58,13 +58,15 @@ class model extends evidence {
 
         // Get only samples and targets.
         $datawithoutheader = dataset_helper::get_rows($options['data']);
-        if (sizeof($datawithoutheader) < 2) {
+        if (count($datawithoutheader) < 2) {
             throw new LengthException('Not enough training data. Need to provide at least 2 datapoints.');
         }
 
         // Separate rows into x and y values.
         $trainxys = dataset_helper::get_separate_x_y_from_rows($datawithoutheader);
-        if (sizeof($trainxys['x'][0]) < 1) throw new LengthException('Need to provide at least one column of indicator values in the training data.');
+        if (count($trainxys['x'][0]) < 1) {
+            throw new LengthException('Need to provide at least one column of indicator values in the training data.');
+        }
 
         // Currently always uses a logistic regression classifier.
         // (https://github.com/moodle/moodle/blob/MOODLE_402_STABLE/lib/mlbackend/php/classes/processor.php#L548).

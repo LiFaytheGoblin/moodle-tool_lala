@@ -59,7 +59,6 @@ function tool_laaudit_pluginfile(
     require_login();
     require_capability('tool/laaudit:downloadevidence', $context);
 
-
     // The args is an array containing [itemid, path].
     // Fetch the itemid from the path.
     $itemid = array_shift($args);
@@ -91,7 +90,7 @@ function tool_laaudit_pluginfile(
  */
 function tool_laaudit_extend_navigation_frontpage(navigation_node $frontpage) {
     $context = context_system::instance();
-    if(!is_siteadmin() and has_capability('tool/laaudit:viewpagecontent', $context)) {
+    if (!is_siteadmin() && has_capability('tool/laaudit:viewpagecontent', $context)) {
         $frontpage->add(
                 get_string('pluginname', 'tool_laaudit'),
                 new moodle_url('/admin/tool/laaudit/index.php')

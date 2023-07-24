@@ -45,12 +45,19 @@ class related_data_anonymized extends related_data {
         $columns = $DB->get_columns($this->tablename);
         $ignoredcolumns = $this::IGNORED_COLUMNS;
         foreach ($columns as $columnname => $columnmetadata) {
-            if (in_array($columnname, $this::IGNORED_COLUMNS)) continue;
-            if (str_contains($columnname, 'id')) continue; // We keep ids for now, as they are pseudonomized later on.
+            if (in_array($columnname, $this::IGNORED_COLUMNS)) {
+                continue;
+            }
+            if (str_contains($columnname, 'id')) {
+                continue;
+            } // We keep ids for now, as they are pseudonomized later on.
             // We do not want other columns with unique values, such as username.
             // Columns that can contain text should also be treated as sensitive.
-            if ($columnmetadata->unique) $ignoredcolumns[] = $columnname;
-            else if ($columnmetadata->type == 'longtext') $ignoredcolumns[] = $columnname;
+            if ($columnmetadata->unique) {
+                $ignoredcolumns[] = $columnname;
+            } else if ($columnmetadata->type == 'longtext') {
+                $ignoredcolumns[] = $columnname;
+            }
         }
 
         // Retrieve data from the database but only for those columns, that we do not ignore.
@@ -67,20 +74,22 @@ class related_data_anonymized extends related_data {
             $n = count($ids);
             if ($n < 3) {
                 $this->abort();
-                throw new Exception('Too few samples available. Found only ' . $n . ' sample(s) to gather for table '.$this->tablename.'. 
-                To preserve anonymity with a model that processes user related data, at least 3 samples are needed.');
+                throw new Exception('Too few samples available. Found only ' . $n . ' sample(s) to gather for table ' .
+                        $this->tablename . '. To preserve anonymity with a model that processes user related data, at least 3
+                        samples are needed.');
             }
         }
 
         // Find all id columns that relate to a user table. For each such column, make sure there are at least 3 distinct ids.
         foreach ($keptcolumns as $columnname) {
-            if (str_contains('user', $columnname) and str_contains('id', $columnname)) {
+            if (str_contains('user', $columnname) && str_contains('id', $columnname)) {
                 $ids = array_unique(array_column($this->data, $columnname));
                 $n = count($ids);
                 if ($n < 3) {
                     $this->abort();
-                    throw new Exception('Too few samples available. Found only ' . $n . ' distinct id(s) for column '.$columnname.' in table '.$this->tablename.'. 
-                     To preserve anonymity with a model that processes user related data, at least 3 ids are needed.');
+                    throw new Exception('Too few samples available. Found only ' . $n . ' distinct id(s) for column ' .
+                            $columnname . ' in table ' . $this->tablename . '.  To preserve anonymity with a model that processes
+                            user related data, at least 3 ids are needed.');
                 }
             }
         }
@@ -95,8 +104,12 @@ class related_data_anonymized extends related_data {
      * @return array pseudonomized data
      */
     public function pseudonomize(array $data, array $idmaps, string $type): array {
-        if (!isset($data)) throw new LogicException('No evidence has been collected that can be pseudonomized. Make sure to collect first.');
-        if (!key_exists($type, $idmaps)) throw new LogicException('No idmap for type '.$type.' exists. ');
+        if (!isset($data)) {
+            throw new LogicException('No evidence has been collected that can be pseudonomized.Make sure to collect first.');
+        }
+        if (!key_exists($type, $idmaps)) {
+            throw new LogicException('No idmap for type '.$type.' exists. ');
+        }
 
         $res = [];
         foreach ($data as $row) {
@@ -111,18 +124,22 @@ class related_data_anonymized extends related_data {
 
                 // Check if the column contains an id type that needs to be pseudonomized.
                 $idpos = stripos($columnname, 'id');
-                if ($idpos === false) continue; // This column is not about an id, so ignore it.
+                if ($idpos === false) {
+                    continue; // This column is not about an id, so ignore it.
+                }
 
                 $relatedtype = substr($columnname, 0, $idpos);
                 if (!key_exists($relatedtype, $idmaps)) { // If relatedtype is not a valid table name in idmap already...
-                    foreach ($idmaps as $idmaptablename => $idmap) { // Check if it hints at a table name, e.g. "relateduser" -> "user".
+                    foreach ($idmaps as $idmaptablename => $idmap) { // Check if it hints at a table name, e.g. "relateduser".
                         if (str_ends_with($relatedtype, $idmaptablename)) {
                             $relatedtype = $idmaptablename;
                             break;
                         }
                     }
 
-                    if (!key_exists($relatedtype, $idmaps)) continue; // This is a type to which still no table can be found, so ignore it.
+                    if (!key_exists($relatedtype, $idmaps)) {
+                        continue; // This is a type to which still no table can be found, so ignore it.
+                    }
                 }
 
                 // Pseudonomize the referenced id.

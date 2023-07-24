@@ -42,14 +42,14 @@ class model_configuration_test extends \advanced_testcase {
         $modelid = test_model::create();
         $configid = test_config::create($modelid);
 
-        // Create a model configuration from a config with an existing model
+        // Create a model configuration from a config with an existing model.
         $config = new model_configuration($configid);
         $this->assertEquals($config->get_id(), $configid);
         $this->assertEquals($config->get_modelid(), $modelid);
         $this->assertEquals($config->get_name(), test_model::NAME);
         $this->assertEquals($config->get_target(), test_model::TARGET);
 
-        // Delete model and construct a model configuration from a config with a now deleted model
+        // Delete model and construct a model configuration from a config with a now deleted model.
         test_model::delete($modelid);
         $config2 = new model_configuration($configid);
         $this->assertEquals($config2->get_id(), $configid);
@@ -76,14 +76,15 @@ class model_configuration_test extends \advanced_testcase {
 
         $modelid = test_model::create();
 
-        // No config exists yet for the model, so create one
+        // No config exists yet for the model, so create one.
         $maxidbeforenewconfigcreation = test_config::get_highest_id();
         $returnedconfigid = model_configuration::create_and_get_for_model($modelid);
-        $this->assertGreaterThan($maxidbeforenewconfigcreation, $returnedconfigid); // A new config has been created and is referenced.
+        $this->assertGreaterThan($maxidbeforenewconfigcreation, $returnedconfigid); // New config has been created, is referenced.
     }
 
     /**
-     * Check that get_model_config_obj() throws an error if the provided model id does not exist neither in analytics_models nor in tool_laaudit_model_configs.
+     * Check that get_model_config_obj() throws an error if the provided model id does not exist neither in analytics_models nor
+     * in tool_laaudit_model_configs.
      *
      * @covers ::tool_laaudit_model_configuration_get_or_create_and_get_for_model
      */

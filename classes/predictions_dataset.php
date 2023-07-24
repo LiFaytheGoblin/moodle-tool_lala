@@ -45,7 +45,7 @@ class predictions_dataset extends dataset {
         if (!isset($options['data'])) {
             throw new InvalidArgumentException('Missing test dataset');
         }
-        if (isset($this->data) && sizeof($this->data) > 0) {
+        if (isset($this->data) && count($this->data) > 0) {
             throw new LogicException('Data has already been collected and can not be changed.');
         }
 

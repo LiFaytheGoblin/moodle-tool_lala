@@ -65,7 +65,7 @@ class predictions_dataset_test extends evidence_testcase {
      * @param $ndatapoints  amount of datapoints in training data
      */
     public function test_evidence_collect($ndatapoints) {
-        $options=[
+        $options = [
                 'model' => $this->classifier,
                 'data' => test_dataset_evidence::create($ndatapoints),
         ];
@@ -78,9 +78,9 @@ class predictions_dataset_test extends evidence_testcase {
         $resdata = array_slice($res, 1, null, true);
 
         $expectedheadersize = 2; // The header should have target (=truth) and prediction, the sampleid is the index.
-        $this->assertEquals($expectedheadersize, sizeof($resheader));
+        $this->assertEquals($expectedheadersize, count($resheader));
 
-        $this->assertEquals($ndatapoints, sizeof($resdata));
+        $this->assertEquals($ndatapoints, count($resdata));
     }
 
     /**
@@ -88,7 +88,7 @@ class predictions_dataset_test extends evidence_testcase {
      *
      * @return array
      */
-    function get_options(): array {
+    public function get_options(): array {
         return [
                 'model' => $this->classifier,
                 'data' => test_dataset_evidence::create(3),

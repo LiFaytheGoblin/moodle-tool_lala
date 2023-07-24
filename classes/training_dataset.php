@@ -46,10 +46,10 @@ class training_dataset extends dataset {
         if (!isset($options['testsize'])) {
             throw new InvalidArgumentException('Missing test size.');
         }
-        if (sizeof($options['data']) == 0) {
+        if (count($options['data']) == 0) {
             throw new InvalidArgumentException('Dataset can not be empty. No training data can be extracted from it.');
         }
-        if (isset($this->data) && sizeof($this->data) > 0) {
+        if (isset($this->data) && count($this->data) > 0) {
             throw new LogicException('Data has already been collected and can not be changed.');
         }
 
@@ -58,8 +58,9 @@ class training_dataset extends dataset {
         $ntotaldatapoints = count($datawithoutheader);
         $ntestdatapoints = round($options['testsize'] * $ntotaldatapoints);
 
-        if($ntestdatapoints < 1) {
-            throw new LengthException('Not enough data available for creating a training and testing split. Need at least 1 datapoint for testing, and 2 for training.');
+        if ($ntestdatapoints < 1) {
+            throw new LengthException('Not enough data available for creating a training and testing split. Need at least 1
+            datapoint for testing, and 2 for training.');
         }
 
         $newrows = array_slice($datawithoutheader, $ntestdatapoints, null, true);

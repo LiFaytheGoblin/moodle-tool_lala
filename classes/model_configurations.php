@@ -52,14 +52,16 @@ class model_configurations {
         // and no config for this combination of settings has been created yet,
         // create a new config for it.
         $modelidsfromanalyticsmodeltableinconfigtable = array_intersect($modelidsinanalyticsmodelstable, $modelidsinconfigtable);
-        if (sizeof($modelidsfromanalyticsmodeltableinconfigtable) > 0) {
+        if (count($modelidsfromanalyticsmodeltableinconfigtable) > 0) {
             foreach ($modelidsfromanalyticsmodeltableinconfigtable as $modelid) {
                 $configtimecreated = $DB->get_fieldset_select('tool_laaudit_model_configs', 'timecreated', 'modelid='.$modelid);
                 $modeltimemodified = $DB->get_fieldset_select('analytics_models', 'timemodified', 'id='.$modelid)[0];
 
                 if ($modeltimemodified > max($configtimecreated)) {
-                    $analyticsmodelsettings =  $DB->get_records('analytics_models', ['id'=>$modelid], null, 'id, predictionsprocessor, timesplitting, indicators');
-                    $configsettings =  $DB->get_records('tool_laaudit_model_configs', ['modelid'=>$modelid], null, 'id, predictionsprocessor, analysisinterval, indicators');
+                    $analyticsmodelsettings = $DB->get_records('analytics_models', ['id' => $modelid], null,
+                            'id, predictionsprocessor, timesplitting, indicators');
+                    $configsettings = $DB->get_records('tool_laaudit_model_configs', ['modelid' => $modelid], null,
+                            'id, predictionsprocessor, analysisinterval, indicators');
                     $analyticsmodelsetting = $analyticsmodelsettings[$modelid];
                     $analyticsmodelsettingvalues = self::get_settings_values($analyticsmodelsetting);
 
@@ -68,13 +70,13 @@ class model_configurations {
                         $configsettingvalues = self::get_settings_values($configsetting);
                         $diff = array_diff($analyticsmodelsettingvalues, $configsettingvalues);
 
-                        if (sizeof($diff) == 0) {
+                        if (count($diff) == 0) {
                             $modelalreadyhasexactsameconfig = true;
                             break;
                         }
                     }
 
-                    if(!$modelalreadyhasexactsameconfig) {
+                    if (!$modelalreadyhasexactsameconfig) {
                         $modelconfigids[] = model_configuration::create_and_get_for_model($modelid);
                     }
                 }
@@ -83,7 +85,7 @@ class model_configurations {
 
         $missingmodelids = array_diff($modelidsinanalyticsmodelstable, $modelidsinconfigtable);
         foreach ($missingmodelids as $missingmodelid) {
-            // Check if the model is a static model
+            // Check if the model is a static model.
             $targetname = $DB->get_fieldset_select('analytics_models', 'target', 'id='.$missingmodelid)[0];
             $target = manager::get_target($targetname);
             if (!$target->based_on_assumptions()) {
@@ -93,7 +95,7 @@ class model_configurations {
         }
 
         $modelconfigs = [];
-        foreach($modelconfigids as $configid) {
+        foreach ($modelconfigids as $configid) {
             $modelconfig = new model_configuration($configid);
             $modelconfigs[] = $modelconfig->get_model_config_obj();
         }

@@ -87,10 +87,10 @@ class test_dataset_test extends evidence_testcase {
         $resheader = array_slice($res, 0, 1, true)[0];
         $resdata = array_slice($res, 1, null, true);
 
-        $expectedheadersize = sizeof(test_model::get_indicator_instances()) + 1; // The header should contain indicator and target names.
-        $this->assertEquals($expectedheadersize, sizeof($resheader));
+        $expectedheadersize = count(test_model::get_indicator_instances()) + 1; // Header should contain indicator and target names.
+        $this->assertEquals($expectedheadersize, count($resheader));
 
-        $this->assertEquals($expectedressize, sizeof($resdata));
+        $this->assertEquals($expectedressize, count($resdata));
     }
 
     /**

@@ -91,10 +91,10 @@ class training_dataset_test extends evidence_testcase {
         $resheader = array_slice($res, 0, 1, true)[0];
         $resdata = array_slice($res, 1, null, true);
 
-        $expectedheadersize = sizeof(test_model::get_indicator_instances()) + 1; // The header should contain indicator and target names.
-        $this->assertEquals($expectedheadersize, sizeof($resheader));
+        $expectedheadersize = count(test_model::get_indicator_instances()) + 1; // Header should contain indicator and target names.
+        $this->assertEquals($expectedheadersize, count($resheader));
 
-        $this->assertEquals($expectedressize, sizeof($resdata));
+        $this->assertEquals($expectedressize, count($resdata));
     }
     /**
      * Data provider for {@see test_training_dataset_error_nodata()}.
@@ -127,7 +127,7 @@ class training_dataset_test extends evidence_testcase {
      * @param float $testsize portion of the dataset to be used as test data
      */
     public function test_training_dataset_error_nodata(array $data, float $testsize) : void {
-        $options=[
+        $options = [
                 'data' => $data,
                 'testsize' => $testsize,
         ];
@@ -140,7 +140,7 @@ class training_dataset_test extends evidence_testcase {
      *
      * @return array
      */
-    function get_options(): array {
+    public function get_options(): array {
         return [
                 'data' => test_dataset_evidence::create(3),
                 'testsize' => 0.2,

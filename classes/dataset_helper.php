@@ -40,15 +40,17 @@ class dataset_helper {
      * @return array shuffled data
      */
     public static function get_shuffled(array $dataset): array {
-        if (sizeof($dataset) == 0) throw new DomainException('Data array to be shuffled can not be empty.');
+        if (count($dataset) == 0) {
+            throw new DomainException('Data array to be shuffled can not be empty.');
+        }
 
         $analysisintervalkey = self::get_analysisintervalkey($dataset);
 
         $arr = $dataset[$analysisintervalkey];
 
-        if(sizeof($arr) == 1) {
-            throw new DomainException('Data array to be shuffled needs to be at least of size 2. 
-        The first item is kept as item one, being treated as the header.');
+        if (count($arr) == 1) {
+            throw new DomainException('Data array to be shuffled needs to be at least of size 2.
+            The first item is kept as item one, being treated as the header.');
         }
 
         $header = self::get_first_row($dataset);
@@ -64,7 +66,9 @@ class dataset_helper {
 
     public static function shuffle_array_preserving_keys($arr) : array {
         $keys = array_keys($arr);
-        if (sizeof($keys) < 2) return $arr;
+        if (count($keys) < 2) {
+            return $arr;
+        }
         shuffle($keys);
         $shuffleddata = [];
         foreach ($keys as $key) {
@@ -108,7 +112,7 @@ class dataset_helper {
     public static function replace_rows_in_dataset($dataset, array $newrows) : array {
         $res = [];
         $analysisintervalkey = self::get_analysisintervalkey($dataset);
-        $header = dataset_helper::get_first_row($dataset);
+        $header = self::get_first_row($dataset);
         $res[$analysisintervalkey] = $header + $newrows;
         return $res;
     }
@@ -126,10 +130,10 @@ class dataset_helper {
         $ids = [];
         $analysisintervalkey = self::get_analysisintervalkey($dataset);
         $sampleids = array_keys($dataset[$analysisintervalkey]);
-        unset($sampleids['0']); // remove the header
+        unset($sampleids['0']); // Remove the header.
         foreach ($sampleids as $sampleid) {
             $id = self::get_id_part($sampleid);
-            $ids[$id] = $id; // Preserve the order, avoid duplicates
+            $ids[$id] = $id; // Preserve the order, avoid duplicates.
         }
 
         return array_keys($ids);
@@ -145,7 +149,10 @@ class dataset_helper {
 
     public static function get_analysisinterval_part(int|string $sampleid): ?string {
         $sampleidparts = explode('-', $sampleid);
-        if (array_key_exists(1, $sampleidparts)) return $sampleidparts[1];
-        else return null;
+        if (array_key_exists(1, $sampleidparts)) {
+            return $sampleidparts[1];
+        } else {
+            return null;
+        }
     }
 }

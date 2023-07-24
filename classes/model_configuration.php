@@ -67,14 +67,16 @@ class model_configuration {
         $this->id = $modelconfig->id;
         $this->modelid = $modelconfig->modelid;
         $this->target = $modelconfig->target;
-        $this->name = $modelconfig->name ??  'model' . $this->modelid;
+        $this->name = $modelconfig->name ?? 'model' . $this->modelid;
         $this->predictionsprocessor = $modelconfig->predictionsprocessor;
         $this->analysisinterval = $modelconfig->analysisinterval;
         $this->defaultcontextids = $modelconfig->defaultcontextids;
         $this->indicators = $modelconfig->indicators;
 
         $targetinstance = manager::get_target($this->target);
-        if (!$targetinstance) throw new \Exception('Target could not be retrieved from target name '.$this->target);
+        if (!$targetinstance) {
+            throw new \Exception('Target could not be retrieved from target name '.$this->target);
+        }
         $this->modelanalysabletype = $targetinstance->get_analyser_class();
 
         $this->versions = $this->get_versions_from_db();
@@ -142,7 +144,7 @@ class model_configuration {
 
         $obj->indicators = $modelobj->indicators;
 
-        $obj->timecreated = time(); //later check: if model modified after this, create a new config for it.
+        $obj->timecreated = time();
 
         return $DB->insert_record('tool_laaudit_model_configs', $obj);
     }

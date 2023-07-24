@@ -54,7 +54,7 @@ class dataset extends evidence {
         if (!isset($options['modelid'])) {
             throw new InvalidArgumentException('Options is missing model id.');
         }
-        if (isset($this->data) && sizeof($this->data) > 0) {
+        if (isset($this->data) && count($this->data) > 0) {
             throw new LogicException('Data has already been collected and can not be changed.');
         }
 

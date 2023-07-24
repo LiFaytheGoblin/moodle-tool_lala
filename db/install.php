@@ -25,12 +25,12 @@
 defined('MOODLE_INTERNAL') || die();
 
 function xmldb_tool_laaudit_install() {
-    $SHORTNAME = 'laaudit_auditor';
+    $shortname = 'laaudit_auditor';
 
     try {
-        $auditorrole = create_role('Learning Analytics Auditor', $SHORTNAME, 'A Learning Analytics Auditor may only view, 
-        test and download data from the Learning Analytics models in the system, but by default has no permissions to interact with 
-        the system in other ways. This allows it to have Moodle users who are only auditors, but do not have admin or teacher 
+        $auditorrole = create_role('Learning Analytics Auditor', $shortname, 'A Learning Analytics Auditor may only view,
+        test and download data from the Learning Analytics models in the system, but by default has no permissions to interact with
+        the system in other ways. This allows it to have Moodle users who are only auditors, but do not have admin or teacher
         power.');
 
         set_role_contextlevels($auditorrole, [CONTEXT_SYSTEM]);
@@ -44,7 +44,7 @@ function xmldb_tool_laaudit_install() {
     $context = context_system::instance();
 
     global $DB;
-    $rolerecord = $DB->get_record('role', ['shortname' => $SHORTNAME], '*', MUST_EXIST);
+    $rolerecord = $DB->get_record('role', ['shortname' => $shortname], '*', MUST_EXIST);
 
     assign_capability('tool/laaudit:viewpagecontent', CAP_ALLOW, $rolerecord->id, $context->id, true);
     assign_capability('tool/laaudit:downloadevidence', CAP_ALLOW, $rolerecord->id, $context->id, true);

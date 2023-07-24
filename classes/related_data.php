@@ -62,7 +62,7 @@ class related_data extends dataset {
         if (!isset($options['ids'])) {
             throw new InvalidArgumentException('Options is missing the ids the data should be related to.');
         }
-        if (isset($this->data) && sizeof($this->data) > 0) {
+        if (isset($this->data) && count($this->data) > 0) {
             throw new LogicException('Data has already been collected and can not be changed.');
         }
     }
@@ -89,8 +89,8 @@ class related_data extends dataset {
         $this->filestring = $heading.$str;
     }
 
-    public static function get_ids_used($related_data): array {
-        return array_column($related_data, 'id');
+    public static function get_ids_used($relateddata): array {
+        return array_column($relateddata, 'id');
     }
 
     public static function get_tablename_from_evidenceid($evidenceid): mixed {
@@ -106,7 +106,9 @@ class related_data extends dataset {
     public static function get_tablename_from_serializedfilelocation(string $serializedfilelocation): mixed {
         $pattern = "/(?<=\d-)([a-zA-Z_]+)(?=\.)/";
         $hastablename = preg_match($pattern, $serializedfilelocation, $regexresults);
-        if ($hastablename) return $regexresults[0];
+        if ($hastablename) {
+            return $regexresults[0];
+        }
         return false;
     }
 
@@ -116,8 +118,8 @@ class related_data extends dataset {
      */
     public function get_file_info(): array {
         $info = parent::get_file_info();
-        $info['filename'] = 'modelversion' . $this->versionid . '-evidence' . $this->name . $this->id . '-' . $this->tablename . '.' .
-        $this->get_file_type();
+        $info['filename'] = 'modelversion' . $this->versionid . '-evidence' . $this->name . $this->id . '-' . $this->tablename .
+                '.' . $this->get_file_type();
         return $info;
     }
 }

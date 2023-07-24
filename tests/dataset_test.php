@@ -78,26 +78,26 @@ class dataset_test extends evidence_testcase {
 
         $rawdata = $this->evidence->get_raw_data();
         $this->assertTrue(isset($rawdata));
-        $this->assertEquals(1, sizeof($rawdata));
+        $this->assertEquals(1, count($rawdata));
 
         $res = $rawdata[test_model::ANALYSISINTERVAL];
 
         $resheader = array_slice($res, 0, 1, true)[0];
         $resdata = array_slice($res, 1, null, true);
 
-        $expectedheadersize = sizeof(test_model::get_indicator_instances()) + 1; // The header should contain indicator and target names.
-        $this->assertEquals($expectedheadersize, sizeof($resheader));
+        $expectedheadersize = count(test_model::get_indicator_instances()) + 1; // Header should contain indicator and target names.
+        $this->assertEquals($expectedheadersize, count($resheader));
 
-        $this->assertEquals(sizeof($resdata), $nstudents * floor($createddaysago / 3));
+        $this->assertEquals(count($resdata), $nstudents * floor($createddaysago / 3));
 
-        // Test serialize()
+        // Test serialize().
         $this->evidence->serialize();
 
         $serializedstring = $this->evidence->get_serialized_data();
 
-        $expectedheadersize = sizeof(test_model::get_indicator_instances()) + 1;
+        $expectedheadersize = count(test_model::get_indicator_instances()) + 1;
         $this->assertTrue(strlen($serializedstring) >= $expectedheadersize); // The string should contain at least a header.
-        $this->assertTrue(str_contains($serializedstring, ',')); // the string should have commas.
+        $this->assertTrue(str_contains($serializedstring, ',')); // The string should have commas.
     }
 
     /**
@@ -139,12 +139,12 @@ class dataset_test extends evidence_testcase {
 
         $rawdata = $this->evidence->get_raw_data();
         $this->assertTrue(isset($rawdata));
-        $this->assertEquals(1, sizeof($rawdata));
+        $this->assertEquals(1, count($rawdata));
 
         $res = $rawdata[test_model::ANALYSISINTERVAL];
-        $this->assertTrue(sizeof($res) == $nstudents + 1);
+        $this->assertTrue(count($res) == $nstudents + 1);
         $resdata = array_slice($res, 1, null, true);
-        $this->assertEquals(sizeof($resdata), $nstudents * floor($createddaysago / 3));
+        $this->assertEquals(count($resdata), $nstudents * floor($createddaysago / 3));
     }
 
     /**
@@ -158,7 +158,7 @@ class dataset_test extends evidence_testcase {
         $res = dataset_helper::get_shuffled($data);
 
         $this->assertFalse(json_encode($data) == json_encode($res));
-        $this->assertEquals(sizeof($data), sizeof($res));
+        $this->assertEquals(count($data), count($res));
         $this->assertTrue(str_contains(json_encode($res), json_encode(test_dataset_evidence::get_header())));
     }
 

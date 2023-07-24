@@ -68,28 +68,30 @@ class dataset_anonymized_test extends dataset_test {
         $data = test_dataset_evidence::create($nsamples);
         $idmap = idmap::create_from_dataset($data, 'test');
 
-        $pseudonomized_data = $this->evidence->pseudonomize($data, $idmap);
-        $this->assertTrue(isset($pseudonomized_data));
-        $this->assertTrue(sizeof($pseudonomized_data) == 1);
+        $pseudonomizeddata = $this->evidence->pseudonomize($data, $idmap);
+        $this->assertTrue(isset($pseudonomizeddata));
+        $this->assertTrue(count($pseudonomizeddata) == 1);
 
-        // All needed new ids made it to the pseudonomized dataset & structure is ok
-        $res = $pseudonomized_data[test_model::ANALYSISINTERVAL];
-        unset($res['0']); // Remove header
+        // All needed new ids made it to the pseudonomized dataset & structure is ok.
+        $res = $pseudonomizeddata[test_model::ANALYSISINTERVAL];
+        unset($res['0']); // Remove header.
         $this->assertTrue(count($res) == $idmap->count());
         $actualnewids = array_keys($res);
         $expectednewids = $idmap->get_pseudonyms();
         $missingnewids = array_diff($actualnewids, $expectednewids);
-        $this->assertTrue(sizeof($missingnewids) == 0);
+        $this->assertTrue(count($missingnewids) == 0);
 
-        // the value for each new id is the value we have in dataset for the fitting old id
+        // The value for each new id is the value we have in dataset for the fitting old id.
         $missingvalues = [];
         foreach ($res as $pseudonym => $actualvalues) {
             $originalid = $idmap->get_originalid($pseudonym);
             $expectedvalues = $data[test_model::ANALYSISINTERVAL][$originalid];
             $missingvaluesforthispseudonym = array_diff($expectedvalues, $actualvalues);
-            if (sizeof($missingvaluesforthispseudonym) > 0) $missingvalues[$pseudonym] = $missingvaluesforthispseudonym;
+            if (count($missingvaluesforthispseudonym) > 0) {
+                $missingvalues[$pseudonym] = $missingvaluesforthispseudonym;
+            }
         }
-        $this->assertTrue(sizeof($missingvalues) == 0);
+        $this->assertTrue(count($missingvalues) == 0);
     }
 
     /**

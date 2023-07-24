@@ -44,11 +44,11 @@ class model_version_test extends \advanced_testcase {
         $configid = test_config::create($modelid);
         $versionid = test_version::create($configid);
 
-        // Create a model configuration from a config with an existing model
+        // Create a model configuration from a config with an existing model.
         $version = new model_version($versionid);
         $this->assertEquals($version->get_id(), $versionid);
 
-        // Delete model and create a model configuration from a config with a now deleted model
+        // Delete model and create a model configuration from a config with a now deleted model.
         test_model::delete($modelid);
 
         $version2 = new model_version($versionid);
@@ -74,15 +74,15 @@ class model_version_test extends \advanced_testcase {
         $this->resetAfterTest(true);
         $modelid = test_model::create();
 
-        // create a config
+        // Create a config.
         $configid = test_config::create($modelid);
 
-        // for valid config & model
+        // For valid config & model...
         $maxidbeforenewversioncreation = test_version::get_highest_id();
         $versionid = model_version::create_scaffold_and_get_for_config($configid);
         $this->assertGreaterThan($maxidbeforenewversioncreation, $versionid);
 
-        // for valid config & deleted model
+        // For valid config & deleted model...
         test_model::delete($modelid);
         $versionid2 = model_version::create_scaffold_and_get_for_config($configid);
         $this->assertGreaterThan($maxidbeforenewversioncreation, $versionid2);

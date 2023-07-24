@@ -56,12 +56,19 @@ class model_configurations implements templatable, renderable {
             $modelconfig = new model_configuration($modelconfig);
             $items[] = $modelconfig->export_for_template($output);
         }
-        usort($items, "self::sort_configs");
+        usort($items, "self::sort_nested_array_by_key_name");
 
         return ['modelconfigs' => $items];
     }
 
-    static function sort_configs($a, $b) : bool {
+    /**
+     * Sort by name.
+     *
+     * @param array $a
+     * @param array $b
+     * @return bool if a comes before b
+     */
+    private static function sort_nested_array_by_key_name($a, $b) : bool {
         return $a['name'] > $b['name'];
     }
 }

@@ -62,10 +62,10 @@ abstract class evidence_testcase extends \advanced_testcase {
         $this->expectException(\Exception::class); // Expect exception if trying to collect again.
         $this->evidence->collect($options);
     }
-     /**
+    /**
      * Get the options object needed for collecting this evidence.
      *
      * @return array
      */
-    abstract function get_options(): array;
+    abstract public function get_options(): array;
 }

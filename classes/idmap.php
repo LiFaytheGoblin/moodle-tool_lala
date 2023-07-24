@@ -38,8 +38,12 @@ class idmap {
     private string $entitytype;
 
     public function __construct(array $originalids, array $pseudonyms, string $entitytype) {
-        if (count($originalids) !== count($pseudonyms)) throw new Exception('Must provide as many pseudonyms as originalids.');
-        if (count($originalids) === 0) throw new Exception('Can not create empty idmap. No ids provided.');
+        if (count($originalids) !== count($pseudonyms)) {
+            throw new Exception('Must provide as many pseudonyms as originalids.');
+        }
+        if (count($originalids) === 0) {
+            throw new Exception('Can not create empty idmap. No ids provided.');
+        }
         $this->originalids = $originalids;
         $this->pseudonyms = $pseudonyms;
         $this->entitytype = $entitytype;
@@ -53,8 +57,8 @@ class idmap {
         return new static($originalids, $pseudonyms, $entitytype);
     }
 
-    public static function create_from_related_data($related_data, $entitytype) {
-        $originalids = related_data::get_ids_used($related_data);
+    public static function create_from_related_data($relateddata, $entitytype) {
+        $originalids = related_data::get_ids_used($relateddata);
 
         $pseudonyms = self::create_pseudonyms($originalids);
 
@@ -89,7 +93,9 @@ class idmap {
 
     public function get_pseudonym_sampleid(mixed $originalsampleid) : mixed {
         $originalid = dataset_helper::get_id_part($originalsampleid);
-        if (!$this->has_original_id($originalid)) throw new Exception('Idmap is incomplete. No pseudonym found for id.');
+        if (!$this->has_original_id($originalid)) {
+            throw new Exception('Idmap is incomplete. No pseudonym found for id.');
+        }
 
         $pseudonym = $this->get_pseudonym($originalid);
         $analysisintervalpart = dataset_helper::get_analysisinterval_part($originalsampleid);
@@ -121,8 +127,12 @@ class idmap {
 
     public function contains(idmap $other) : bool {
         foreach ($this->originalids as $myoriginalid) {
-            if (!$other->has_original_id($myoriginalid)) return false;
-            if ($this->get_pseudonym($myoriginalid) != $other->get_pseudonym($myoriginalid)) return false;
+            if (!$other->has_original_id($myoriginalid)) {
+                return false;
+            }
+            if ($this->get_pseudonym($myoriginalid) != $other->get_pseudonym($myoriginalid)) {
+                return false;
+            }
         }
         return true;
     }

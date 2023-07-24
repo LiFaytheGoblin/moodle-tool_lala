@@ -80,7 +80,7 @@ class related_data_anonymized_test extends related_data_test {
                         'nstudents' => 10,
                         'createddaysago' => 3,
                         'tablename' => 'course',
-                        'nrowsexpected' => 2, // There's also a site entry in the course table
+                        'nrowsexpected' => 2, // There's also a site entry in the course table.
                 ],
                 'Some users, min days, table role' => [
                         'nstudents' => 10,
@@ -129,26 +129,26 @@ class related_data_anonymized_test extends related_data_test {
         $secondaryids = array_column($data, $secondaryfieldname);
         $idmapsecondary = new idmap($secondaryids, $pseudonymssecondary, $typesecondary);
 
-        $pseudonomized_data = $this->evidence->pseudonomize($data, [$typemain => $idmapmain, $typesecondary => $idmapsecondary], $typemain);
-        $this->assertTrue(isset($pseudonomized_data));
-        // has correct size
-        $this->assertEquals(3, count($pseudonomized_data));
+        $pseudonomizeddata = $this->evidence->pseudonomize($data, [$typemain => $idmapmain, $typesecondary => $idmapsecondary],
+                $typemain);
+        $this->assertTrue(isset($pseudonomizeddata));
+        $this->assertEquals(3, count($pseudonomizeddata));
 
-        // All needed new ids made it to the pseudonomized dataset & structure is ok
-        $missingpseudonyms = array_diff($idmapmain->get_pseudonyms(), related_data::get_ids_used($pseudonomized_data));
+        // All needed new ids made it to the pseudonomized dataset & structure is ok.
+        $missingpseudonyms = array_diff($idmapmain->get_pseudonyms(), related_data::get_ids_used($pseudonomizeddata));
         $this->assertEquals(0, count($missingpseudonyms));
 
         $secondarypseudonyms = $idmapsecondary->get_pseudonyms();
-        $missingsecondarypseudonyms = array_diff($secondarypseudonyms, array_column($pseudonomized_data, $secondaryfieldname));
+        $missingsecondarypseudonyms = array_diff($secondarypseudonyms, array_column($pseudonomizeddata, $secondaryfieldname));
         $this->assertEquals(0, count($missingsecondarypseudonyms));
 
-        $missingternarypseudonyms = array_diff(array_column($pseudonomized_data, $ternaryfieldname), $secondarypseudonyms);
+        $missingternarypseudonyms = array_diff(array_column($pseudonomizeddata, $ternaryfieldname), $secondarypseudonyms);
         $this->assertEquals(0, count($missingternarypseudonyms));
 
-        // The value for each new id is the value we have in dataset for the fitting old id, but the secondary id changed
+        // The value for each new id is the value we have in dataset for the fitting old id, but the secondary id changed.
         $missingvalues = [];
         $originalids = array_column($data, 'id');
-        foreach ($pseudonomized_data as $actualvalues) {
+        foreach ($pseudonomizeddata as $actualvalues) {
             $pseudonymmain = $actualvalues->id;
             $originalid = $idmapmain->get_originalid($pseudonymmain);
             $originalindex = array_search($originalid, $originalids);
@@ -164,7 +164,7 @@ class related_data_anonymized_test extends related_data_test {
             $newternaryid = $actualvalues->$ternaryfieldname;
             $this->assertNotEquals($originalternaryid, $newternaryid);
         }
-        $this->assertTrue(sizeof($missingvalues) == 0);
+        $this->assertTrue(count($missingvalues) == 0);
     }
 
     /**

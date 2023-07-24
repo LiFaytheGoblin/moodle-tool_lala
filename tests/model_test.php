@@ -70,15 +70,15 @@ class model_test extends evidence_testcase {
     public function test_evidence_collect($ndatapoints) {
         $dataset = test_dataset_evidence::create($ndatapoints);
 
-        $options=[
+        $options = [
                 'data' => $dataset,
                 'predictor' => $this->predictor,
         ];
         $this->evidence->collect($options);
 
-        $trained_model = $this->evidence->get_raw_data();
+        $trainedmodel = $this->evidence->get_raw_data();
         // Check that the $data property is set to a LogisticRegression model.
-        $this->assertEquals('Phpml\Classification\Linear\LogisticRegression', get_class($trained_model));
+        $this->assertEquals('Phpml\Classification\Linear\LogisticRegression', get_class($trainedmodel));
 
         // Test serialize().
         $this->evidence->serialize();
@@ -96,7 +96,7 @@ class model_test extends evidence_testcase {
         $size = 3;
         $testxforimported = test_dataset_evidence::create_x($size);
         $predictedlabelsforimported = $imported->predict($testxforimported);
-        $this->assertEquals($size, sizeof($predictedlabelsforimported));
+        $this->assertEquals($size, count($predictedlabelsforimported));
     }
 
     /**
@@ -126,7 +126,7 @@ class model_test extends evidence_testcase {
      * @param int $dataset training dataset
      */
     public function test_model_collect_error_nodata($dataset) {
-        $options=[
+        $options = [
                 'data' => $dataset,
                 'predictor' => $this->predictor,
         ];
@@ -142,13 +142,13 @@ class model_test extends evidence_testcase {
     public function test_model_collect_deletedmodel() {
         test_model::delete($this->modelid);
 
-        $options= $this->get_options();
+        $options = $this->get_options();
 
         $this->evidence->collect($options);
 
-        $trained_model = $this->evidence->get_raw_data();
+        $trainedmodel = $this->evidence->get_raw_data();
         // Check that the $data property is set to a LogisticRegression model.
-        $this->assertEquals('Phpml\Classification\Linear\LogisticRegression', get_class($trained_model));
+        $this->assertEquals('Phpml\Classification\Linear\LogisticRegression', get_class($trainedmodel));
     }
 
     /**
@@ -156,7 +156,7 @@ class model_test extends evidence_testcase {
      *
      * @return array
      */
-    function get_options(): array {
+    public function get_options(): array {
         return [
                 'data' => test_dataset_evidence::create(),
                 'predictor' => $this->predictor,

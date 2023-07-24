@@ -263,5 +263,9 @@ abstract class evidence {
                     $fileinfo['filepath'], $fileinfo['filename']);
             $file->delete();
         }
+
+        unset($this->data);
+        unset($this->filestring);
+        unset($this->serializedfilelocation);
     }
 }

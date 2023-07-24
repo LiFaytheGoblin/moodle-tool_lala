@@ -48,8 +48,14 @@ class dataset_anonymized extends dataset {
         $entitytype = $options['analyser']->get_samples_origin();
         $this->idmap = idmap::create_from_dataset($this->data, $entitytype);
 
-        $n = $this->idmap->count();
-        if ($n < 3) throw new Exception('Too few samples available. Found only '.$n.' sample(s) to gather. To preserve anonymity, at least 3 samples are needed.');
+        if ($options['analyser']->processes_user_data()) {
+            $n = $this->idmap->count();
+            if ($n < 3) {
+                $this->abort();
+                throw new Exception('Too few samples available. Found only ' . $n . ' sample(s) to gather. 
+                To preserve anonymity with a model that processes user related data, at least 3 samples are needed.');
+            }
+        }
 
         $this->pseudonomize($this->data, $this->idmap);
     }

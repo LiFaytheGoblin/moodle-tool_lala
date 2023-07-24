@@ -24,6 +24,7 @@
 
 namespace tool_laaudit;
 
+use Exception;
 use LogicException;
 
 /**
@@ -59,6 +60,30 @@ class related_data_anonymized extends related_data {
         $records = $DB->get_records_list($this->tablename, 'id', $options['ids'], null, $fieldsstring);
 
         $this->data = $records;
+
+        // If the tablename contains 'user' (tables 'user', 'user_enrolments'), only return if sufficient data is available.
+        if (str_contains($this->tablename, 'user')) {
+            $ids = array_column($this->data, 'id');
+            $n = count($ids);
+            if ($n < 3) {
+                $this->abort();
+                throw new Exception('Too few samples available. Found only ' . $n . ' sample(s) to gather for table '.$this->tablename.'. 
+                To preserve anonymity with a model that processes user related data, at least 3 samples are needed.');
+            }
+        }
+
+        // Find all id columns that relate to a user table. For each such column, make sure there are at least 3 distinct ids.
+        foreach ($keptcolumns as $columnname) {
+            if (str_contains('user', $columnname) and str_contains('id', $columnname)) {
+                $ids = array_unique(array_column($this->data, $columnname));
+                $n = count($ids);
+                if ($n < 3) {
+                    $this->abort();
+                    throw new Exception('Too few samples available. Found only ' . $n . ' distinct id(s) for column '.$columnname.' in table '.$this->tablename.'. 
+                     To preserve anonymity with a model that processes user related data, at least 3 ids are needed.');
+                }
+            }
+        }
     }
 
     /**

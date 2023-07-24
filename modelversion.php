@@ -51,11 +51,11 @@ if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // If route contains auto param, do it automatically.
     try {
-        $version->gather_dataset();
-        $version->split_training_test_data();
+        $version->gather_dataset(true);
+        $version->split_training_test_data(true);
         $version->train();
         $version->predict();
-        $version->gather_related_data();
+        $version->gather_related_data(true);
     } finally {
         $version->finish();
     }

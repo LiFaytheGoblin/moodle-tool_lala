@@ -15,8 +15,6 @@
     @template tool_laaudit/evidence_set
     Template for evidence_set.
     Context variables required for this template:
-    - id
-    - name
     - timecreationstarted
     - traintestsplit
     - contextids
@@ -26,8 +24,6 @@
     - errormessage
     Example context (json):
     {
-            "id": 1,
-            "name": "default",
             "timecreationstarted": "1679987403",
             "traintestsplit": "Train: 80%, Test: 20%",
             "contextids": [1, 2, 3],
@@ -37,13 +33,6 @@
             "errormessage": "some error description",
       }
 }}
-<h4>
-    <span title="{{#str}}version, tool_laaudit{{/str}}" id="version{{id}}">{{name}}</span>
-    <span class="badge rounded-pill bg-light ml-2 position-absolute start-0" title="{{#str}}versionid, tool_laaudit{{/str}}">
-           <i class="icon fa fa-key" aria-hidden="true"></i>{{id}}
-    </span>
-</h4>
-
 <div class="bg-light p-3 rounded small mb-1 mx-0">
     <ul class="p-0 list-unstyled list-group list-group-horizontal">
         <li class="col-sm-5" title="{{#str}}started, tool_laaudit{{/str}}">

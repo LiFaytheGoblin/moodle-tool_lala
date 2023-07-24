@@ -53,6 +53,9 @@ class model_version implements templatable, renderable {
     public function export_for_template(renderer_base $output) : array {
         $data = [];
 
+        $data['id'] = $this->version->id;
+        $data['name'] = $this->version->name;
+
         // Add info about the model version.
         $descriptionrenderer = new model_version_description($this->version);
         $data['description'] = [$descriptionrenderer->export_for_template($output)];

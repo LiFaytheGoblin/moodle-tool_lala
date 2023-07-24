@@ -15,10 +15,14 @@
     @template tool_laaudit/evidence_set
     Template for evidence_set.
     Context variables required for this template:
+    - id
+    - name
     - description: [{}]
     - evidence: [{}]
     Example context (json):
     {
+        "id": 1,
+        "name": "default",
         "description": [{
             "id": 1,
             "name": "default",
@@ -39,13 +43,24 @@
         }]
       }
 }}
-{{#description}}
-    {{> tool_laaudit/model_version_description}}
-{{/description}}
-<div class="container mx-0 mb-3">
-    <ul class="row row-cols-3 list-unstyled">
-        {{#evidence}}
-            {{> tool_laaudit/evidence_item}}
-        {{/evidence}}
-    </ul>
-</div>
+<section aria-label="version{{id}}">
+    <h4>
+        <span title="{{#str}}version, tool_laaudit{{/str}}" id="version{{id}}">{{name}}</span>
+        <span class="badge rounded-pill bg-light ml-2 position-absolute start-0" title="{{#str}}versionid, tool_laaudit{{/str}}">
+           <i class="icon fa fa-key" aria-hidden="true"></i>{{id}}
+        </span>
+    </h4>
+
+    {{#description}}
+        {{> tool_laaudit/model_version_description}}
+    {{/description}}
+
+    <div class="container mx-0 mb-3">
+        <ul class="row row-cols-3 list-unstyled">
+            {{#evidence}}
+                {{> tool_laaudit/evidence_item}}
+            {{/evidence}}
+        </ul>
+    </div>
+
+</section>

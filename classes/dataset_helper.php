@@ -126,6 +126,13 @@ class dataset_helper {
         return array_keys($dataset)[0];
     }
 
+    /**
+     * Get the ids that have been used in a dataset (not the sampleids, and excluding the id used for the header),
+     * in correct order.
+     *
+     * @param array $dataset
+     * @return array [id => id]
+     */
     public static function get_ids_used_in_dataset(array $dataset) : array {
         $ids = [];
         $analysisintervalkey = self::get_analysisintervalkey($dataset);
@@ -140,6 +147,8 @@ class dataset_helper {
     }
 
     /**
+     * Get the id part of a sample id in the form <id>-<intervalpart>.
+     *
      * @param int|string $sampleid
      * @return string
      */
@@ -147,6 +156,12 @@ class dataset_helper {
         return explode('-', $sampleid)[0];
     }
 
+    /**
+     * Get the analysis interval part of a sample id in the form <id>-<intervalpart>, if an intervalpart exists.
+     *
+     * @param int|string $sampleid
+     * @return string|null
+     */
     public static function get_analysisinterval_part(int|string $sampleid): ?string {
         $sampleidparts = explode('-', $sampleid);
         if (array_key_exists(1, $sampleidparts)) {

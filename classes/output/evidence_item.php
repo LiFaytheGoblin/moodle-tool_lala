@@ -28,6 +28,7 @@ use renderer_base;
 use templatable;
 use renderable;
 use stdClass;
+use tool_laaudit\related_data;
 
 /**
  * Class for the output for a single model version.
@@ -62,6 +63,9 @@ class evidence_item implements templatable, renderable {
         $data['timecollectionstarted'] = userdate((int) $this->item->timecollectionstarted);
         $data['timecollectionfinished'] = userdate((int) $this->item->timecollectionfinished);
         $data['serializedfilelocation'] = $this->item->serializedfilelocation;
+
+        $tablename = related_data::get_tablename_from_serializedfilelocation($this->item->serializedfilelocation);
+        if ($tablename !== false) $data['tablename'] = $tablename;
 
         return $data;
     }

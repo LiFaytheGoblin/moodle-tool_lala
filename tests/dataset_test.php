@@ -34,7 +34,11 @@ class dataset_test extends evidence_testcase {
     protected function setUp(): void {
         parent::setUp();
 
-        $this->evidence = dataset::create_scaffold_and_get_for_version($this->versionid);
+        $this->evidence = $this->get_evidence_instance();
+    }
+
+    protected function get_evidence_instance() : evidence {
+        return dataset::create_scaffold_and_get_for_version($this->versionid);
     }
     /**
      * Data provider for {@see test_dataset_collect()}.
@@ -73,8 +77,11 @@ class dataset_test extends evidence_testcase {
         $this->evidence->collect($options);
 
         $rawdata = $this->evidence->get_raw_data();
+        $this->assertTrue(isset($rawdata));
+        $this->assertEquals(1, sizeof($rawdata));
 
         $res = $rawdata[test_model::ANALYSISINTERVAL];
+
         $resheader = array_slice($res, 0, 1, true)[0];
         $resdata = array_slice($res, 1, null, true);
 
@@ -96,7 +103,7 @@ class dataset_test extends evidence_testcase {
     /**
      * Check that collect throws an error if trying to call it twice for the same evidence.
      *
-     * @covers ::tool_laaudit_training_dataset_collect
+     * @covers ::tool_laaudit_dataset_collect
      */
     public function test_evidence_collect_error_again(): void {
         $this->create_test_data();
@@ -121,7 +128,7 @@ class dataset_test extends evidence_testcase {
      * @covers ::tool_laaudit_dataset_collect
      */
     public function test_dataset_collect_deletedmodel(): void {
-        $nstudents = 1;
+        $nstudents = 3;
         $createddaysago = 3;
         $this->create_test_data($nstudents, $createddaysago);
         test_model::delete($this->modelid);
@@ -131,46 +138,24 @@ class dataset_test extends evidence_testcase {
         $this->evidence->collect($options);
 
         $rawdata = $this->evidence->get_raw_data();
+        $this->assertTrue(isset($rawdata));
+        $this->assertEquals(1, sizeof($rawdata));
+
         $res = $rawdata[test_model::ANALYSISINTERVAL];
+        $this->assertTrue(sizeof($res) == $nstudents + 1);
         $resdata = array_slice($res, 1, null, true);
         $this->assertEquals(sizeof($resdata), $nstudents * floor($createddaysago / 3));
     }
 
     /**
-     * Check that serialize throws an error if no data can be serialized.
-     *
-     * @covers ::tool_laaudit_dataset_serialize
-     */
-    public function test_dataset_serialize_error_nodata(): void {
-        $this->expectException(\Exception::class); // Expect exception if no data collected yet.
-        $this->evidence->serialize();
-    }
-
-    /**
-     * Check that serialize throws an error if being called again.
-     *
-     * @covers ::tool_laaudit_dataset_serialize
-     */
-    public function test_dataset_serialize_error_again(): void {
-        $this->create_test_data();
-        $options = $this->get_options();
-
-        $this->evidence->collect($options);
-        $this->evidence->serialize();
-
-        $this->expectException(\Exception::class); // Expect exception if no data collected yet.
-        $this->evidence->serialize();
-    }
-
-    /**
      * Check that get_shuffled returns a shuffled array.
      *
-     * @covers ::tool_laaudit_dataset_get_shuffled
+     * @covers ::tool_laaudit_dataset_helper_get_shuffled
      */
-    public function test_dataset_get_shuffled() : void {
+    public function test_dataset_helper_get_shuffled() : void {
         $data = test_dataset_evidence::create(10);
 
-        $res = dataset::get_shuffled($data);
+        $res = dataset_helper::get_shuffled($data);
 
         $this->assertFalse(json_encode($data) == json_encode($res));
         $this->assertEquals(sizeof($data), sizeof($res));
@@ -183,7 +168,7 @@ class dataset_test extends evidence_testcase {
      * @param int $nstudents amount of students
      * @param int $createddaysago how many days ago a sample course should have been started
      */
-    protected function create_test_data(int $nstudents = 1, int $createddaysago = 3): void {
+    protected function create_test_data(int $nstudents = 3, int $createddaysago = 3): void {
         test_course_with_students::create($this->getDataGenerator(), $nstudents, $createddaysago);
     }
 

@@ -53,13 +53,16 @@ class model_version implements templatable, renderable {
     public function export_for_template(renderer_base $output) : array {
         $data = [];
 
+        $data['id'] = $this->version->id;
+        $data['name'] = $this->version->name;
+
         // Add info about the model version.
         $descriptionrenderer = new model_version_description($this->version);
         $data['description'] = [$descriptionrenderer->export_for_template($output)];
 
         $evidenceitems = [];
-        foreach ($this->version->evidence as $evidenceitem) {
-            $evidencerenderer = new evidence_item($evidenceitem);
+        foreach ($this->version->evidenceobjects as $evidenceobject) {
+            $evidencerenderer = new evidence_item($evidenceobject);
             $evidenceitems[] = $evidencerenderer->export_for_template($output);
         }
         $data['evidence'] = $evidenceitems;

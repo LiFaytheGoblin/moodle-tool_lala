@@ -55,4 +55,15 @@ class test_course_with_students {
             $generator->enrol_user($user->id, $course->id, null, 'manual', $timestart + 1, $timeend);
         }
     }
+
+    public static function get_ids($tablename) {
+        global $DB;
+        return $DB->get_fieldset_select($tablename, 'id', '1=1');
+    }
+
+    public static function get_ids_for_referenced_by($referee, $referer) {
+        global $DB;
+        $fieldset = $DB->get_fieldset_select($referer, $referee.'id', '1=1');
+        return array_unique($fieldset);
+    }
 }

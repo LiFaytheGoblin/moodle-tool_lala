@@ -45,43 +45,23 @@ class predictions_dataset extends dataset {
         if (!isset($options['data'])) {
             throw new InvalidArgumentException('Missing test dataset');
         }
-
         if (isset($this->data) && sizeof($this->data) > 0) {
             throw new LogicException('Data has already been collected and can not be changed.');
         }
 
         // Get the test data without analysisinterval container and header.
-        $testdata = [];
-        $analysisintervalkey = array_keys((array) ($options['data']))[0];
-        foreach ($options['data'] as $arr) {
-            $testdata = array_slice($arr, 1, null, true);
-            break;
-        }
+        $datawithoutheader = dataset_helper::get_rows($options['data']);
 
         // Extract the sample ids, x and y values from the test set.
-        $sampleids = array_keys($testdata);
-        $testx = [];
-        $testy = [];
-        foreach ($testdata as $row) {
-            $len = count($row);
-            $testx[] = array_slice($row, 0, $len - 1, true);
-            $testy[] = $row[$len - 1];
-        }
+        $testxys = dataset_helper::get_separate_x_y_from_rows($datawithoutheader);
 
         // Get predictions.
-        $predictedlabels = $options['model']->predict($testx);
+        $predictedlabels = $options['model']->predict($testxys['x']);
 
         // Build dataset back together and get the structure Moodle usually works with.
+        $analysisintervalkey = dataset_helper::get_analysisintervalkey($options['data']);
         $header = ['target', 'prediction'];
-        $mergeddata = [];
-        $mergeddata['0'] = $header;
-        foreach ($sampleids as $key => $sampleid) {
-            $mergeddata[$sampleid] = [$testy[$key], $predictedlabels[$key]];
-        }
-
-        $res = [];
-        $res[$analysisintervalkey] = $mergeddata;
-
-        $this->data = $res;
+        $sampleids = array_keys($datawithoutheader);
+        $this->data = dataset_helper::build($analysisintervalkey, $header, $sampleids, $testxys['y'], $predictedlabels);;
     }
 }

@@ -26,7 +26,7 @@ namespace tool_laaudit;
 
 use core_analytics\local\analysis\result_array;
 use core_analytics\analysis;
-use DomainException;
+use core_php_time_limit;
 use InvalidArgumentException;
 use LengthException;
 use LogicException;
@@ -35,6 +35,8 @@ use LogicException;
  * Class for the complete dataset evidence item.
  */
 class dataset extends evidence {
+
+
     /**
      * Retrieve all available analysable samples, calculate features and label.
      * Store resulting data (sampleid, features, label) in the data field.
@@ -87,11 +89,6 @@ class dataset extends evidence {
      * @return void
      */
     public function serialize(): void {
-        if (!isset($this->data)) throw new LogicException('No evidence has been collected yet that could be serialized. Make sure to collect the evidence first.');
-        if (isset($this->filestring)) {
-            throw new LogicException('Data has already been serialized.');
-        }
-
         $str = '';
         $columns = null;
 
@@ -107,7 +104,8 @@ class dataset extends evidence {
             }
         }
 
-        $heading = "sampleid,".$columns."\n";
+        $comma = (isset($columns)) ? ',' : null;
+        $heading = "sampleid".$comma.$columns."\n";
         $this->filestring = $heading.$str;
     }
 
@@ -121,41 +119,6 @@ class dataset extends evidence {
     }
 
     /**
-     * Helper: Shuffle a data set while preserving the key and the header.
-     *
-     * @param array $data
-     * @return array shuffled data
-     */
-    public static function get_shuffled(array $data): array {
-        if(sizeof($data) == 0) throw new DomainException('Data array to be shuffled can not be empty.');
-        $keys = array_keys($data);
-        $key = $keys[0];
-        $datawithheader = [];
-        foreach ($data as $arr) { // Each analysisinterval has an array.
-            if(sizeof($arr) == 1) {
-                throw new DomainException('Data array to be shuffled needs to be at least of size 2. 
-        The first item is kept as item one, being treated as the header.');
-            }
-            $header = array_slice($arr, 0, 1, true);
-            $remainingdata = array_slice($arr, 1, null, true);
-
-            $sampleids = array_keys($remainingdata);
-            if(sizeof($sampleids) < 2) return $data;
-            shuffle($sampleids);
-            $shuffleddata = [];
-            foreach ($sampleids as $id) {
-                // Assign to each key in the random order the value from the original array.
-                $shuffleddata[$id] = $remainingdata[$id];
-            }
-
-            $datawithheader[$key] = $header + $shuffleddata;
-            break;
-        }
-
-        return $datawithheader;
-    }
-
-    /**
      * Increases system memory and time limits.
      *
      * @return void
@@ -164,6 +127,6 @@ class dataset extends evidence {
         if (ini_get('memory_limit') != -1) {
             raise_memory_limit(MEMORY_HUGE);
         }
-        \core_php_time_limit::raise();
+        core_php_time_limit::raise();
     }
 }

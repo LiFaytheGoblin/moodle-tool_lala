@@ -60,7 +60,7 @@
             }]
     }
 }}
-<li class="activity activity-wrapper">
+<section class="activity activity-wrapper" aria-label="config{{id}}">
     <div class="activity-item">
         <div class="activity-basis d-flex w-100 align-items-center flex-column flex-md-row align-self-start">
             <h3 class="activity-instance activity-title">
@@ -132,12 +132,12 @@
                         <dd class="mb-0 px-1 col-sm">
                             {{firstindicator}}
                             {{#indicators}}
-                                <a class="collapse multi-collapse{{id}} show text-dark bg-secondary rounded-right px-1" data-toggle="collapse" href=".multi-collapse{{id}}" role="button" aria-expanded="false" aria-controls="indicators{{id}} more{{id}}" title="more indicators" id="more{{id}}">
+                                <a class="collapse multi-collapse{{id}} show text-dark bg-secondary rounded-right px-1" data-toggle="collapse" href=".multi-collapse{{id}}" role="button" aria-expanded="false" aria-controls="indicators{{id}} more{{id}}" id="more{{id}}">
                                     display more
                                 </a>
                                 <span class="collapse multi-collapse{{id}}" id="indicators{{id}}">
                                     {{indicators}}
-                                    <a class="border border-primary border-1 text-dark bg-secondary rounded-left px-1" data-toggle="collapse" href=".multi-collapse{{id}}" role="button" aria-expanded="true" aria-controls="indicators{{id}} more{{id}}" title="less indicators">
+                                    <a class="border border-primary border-1 text-dark bg-secondary rounded-left px-1" data-toggle="collapse" href=".multi-collapse{{id}}" role="button" aria-expanded="true" aria-controls="indicators{{id}} more{{id}}">
                                         display less
                                     </a>
                                 </span>
@@ -157,4 +157,4 @@
             </ul>
         </div>
     </div>
-</li>
+</section>

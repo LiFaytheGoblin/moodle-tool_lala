@@ -39,15 +39,7 @@ class predictions_dataset extends dataset {
      * @return void
      */
     public function collect(array $options): void {
-        if (!isset($options['model'])) {
-            throw new InvalidArgumentException('Missing trained model');
-        }
-        if (!isset($options['data'])) {
-            throw new InvalidArgumentException('Missing test dataset');
-        }
-        if (isset($this->data) && count($this->data) > 0) {
-            throw new LogicException('Data has already been collected and can not be changed.');
-        }
+        $this->validate($options);
 
         // Get the test data without analysisinterval container and header.
         $datawithoutheader = dataset_helper::get_rows($options['data']);
@@ -62,6 +54,22 @@ class predictions_dataset extends dataset {
         $analysisintervalkey = dataset_helper::get_analysisintervalkey($options['data']);
         $header = ['target', 'prediction'];
         $sampleids = array_keys($datawithoutheader);
-        $this->data = dataset_helper::build($analysisintervalkey, $header, $sampleids, $testxys['y'], $predictedlabels);;
+        $this->data = dataset_helper::build($analysisintervalkey, $header, $sampleids, $testxys['y'], $predictedlabels);
+    }
+
+    /** Validate the evidence's options.
+     * @param array $options
+     * @return void
+     */
+    public function validate(array $options): void {
+        if (!isset($options['model'])) {
+            throw new InvalidArgumentException('Missing trained model');
+        }
+        if (!isset($options['data'])) {
+            throw new InvalidArgumentException('Missing test dataset');
+        }
+        if (isset($this->data) && count($this->data) > 0) {
+            throw new LogicException('Data has already been collected and can not be changed.');
+        }
     }
 }

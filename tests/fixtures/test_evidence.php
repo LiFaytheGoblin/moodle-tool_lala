@@ -14,24 +14,27 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_laaudit;
+
+defined('MOODLE_INTERNAL') || die();
+
 /**
- * Test model.
+ * Test evidence.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace tool_laaudit;
-
-defined('MOODLE_INTERNAL') || die();
 class test_evidence extends evidence {
+    /** @var string[] RAWDATA */
     const RAWDATA =  ['a', 'b', 'c'];
+    /** @var string[] DATASTRING */
     const DATASTRING = "['a', 'b', 'c']";
+    /** @var string FILETYPE */
     const FILETYPE = 'txt';
 
     /**
-     * Creates an general piece of evidence for a version.
+     * Creates a general piece of evidence for a version.
      *
      * @param int $versionid
      * @return int evidenceid
@@ -55,7 +58,7 @@ class test_evidence extends evidence {
      * @return void
      */
     public function collect(array $options): void {
-        if(isset($this->data)) throw new Exception('Already collected.');
+        $this->validate($options);
         $this->data = self::RAWDATA;
     }
 
@@ -75,5 +78,13 @@ class test_evidence extends evidence {
      */
     protected function get_file_type(): string {
         return self::FILETYPE;
+    }
+
+    /** Validate the $options -
+     * @param array $options
+     * @return void
+     */
+    public function validate(array $options): void {
+        if (isset($this->data)) throw new Exception('Already collected.');
     }
 }

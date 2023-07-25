@@ -87,6 +87,8 @@ class model_version {
      *
      * @param int $id of the version
      * @return void
+     * @throws Exception
+     * @throws Exception
      */
     public function __construct(int $id) {
         global $DB;
@@ -123,6 +125,8 @@ class model_version {
      * Other loaded objects ($targetinstance, $indicatorinstances, $analysisintervalinstances) are only needed temporarily.
      *
      * @return void
+     * @throws Exception
+     * @throws Exception
      */
     private function load_objects(): void {
         $this->predictor = manager::get_predictions_processor($this->predictionsprocessor, true);
@@ -251,7 +255,10 @@ class model_version {
     /**
      * Call next step: Gather the data that can be used for training and testing this model version.
      *
+     * @param bool $anonymous whether to gather the dataset and anonymize it.
      * @return void
+     * @throws Exception
+     * @throws Exception
      */
     public function gather_dataset(bool $anonymous = true): void {
         $options = ['modelid' => $this->modelid, 'analyser' => $this->analyser, 'contexts' => $this->contexts];
@@ -261,19 +268,29 @@ class model_version {
         $evidence = $this->add($evidencetype, $options);
 
         if ($anonymous) {
-            $this->idmaps = [];
+            // Create idmap and safe for later.
+            if (!isset($this->idmaps)) {
+                $this->idmaps = [];
+            }
+            $rawdata = $evidence->get_raw_data();
             $origintablename = $this->analyser->get_samples_origin();
-            $this->idmaps[$origintablename] = $evidence->get_idmap();
+            $this->idmaps[$origintablename] = dataset_anonymized::create_idmap($rawdata);
+
+            // Pseudonomize the gathered data
+            $pseudonomizeddata = $evidence->pseudonomize($rawdata, $this->idmaps[$origintablename]);
+            $this->evidence[$evidencetype][$evidence->get_id()] = $pseudonomizeddata;
         }
 
         $evidence->store();
     }
 
     /**
-     * Call next step: Gather the data that can be used for training and testing this model version.
+     * Call next step: Gather the related data.
      *
      * @param bool $anonymous whether to anonymize the related data
      * @return void
+     * @throws Exception
+     * @throws Exception
      */
     public function gather_related_data(bool $anonymous = true): void {
         $source = $anonymous ? 'dataset_anonymized' : 'dataset';
@@ -290,7 +307,13 @@ class model_version {
         }
     }
 
-    public function gather_related_data_unanonymized($origintablename) : void {
+    /**
+     * Gather the related data without anonymizing it.
+     *
+     * @param string $origintablename
+     * @return void
+     */
+    public function gather_related_data_unanonymized(string $origintablename) : void {
         $data = $this->get_single_evidence('dataset');
         $originids = dataset_helper::get_ids_used_in_dataset($data);
 
@@ -305,7 +328,15 @@ class model_version {
         }
     }
 
-    public function gather_related_data_anonymized($origintablename) : void {
+    /**
+     * Gather the related data with anonymizing it.
+     *
+     * @param string $origintablename
+     * @return void
+     * @throws Exception
+     * @throws Exception
+     */
+    public function gather_related_data_anonymized(string $origintablename) : void {
         if (!isset($this->idmaps)) {
             throw new LogicException('No idmaps available.');
         }
@@ -327,7 +358,7 @@ class model_version {
 
             // Create idmaps.
             $notanonymizeddata = $evidence->get_raw_data();
-            $this->idmaps[$relatedtablename] = idmap::create_from_related_data($notanonymizeddata, $relatedtablename);
+            $this->idmaps[$relatedtablename] = related_data_anonymized::create_idmap($notanonymizeddata);
 
             $evidences[] = $evidence; // Store the evidence for anonymizing it later.
         }
@@ -345,13 +376,14 @@ class model_version {
      *
      * @return void
      */
-    public function split_training_test_data(bool $anonymous = true): void {
-        $sourcedataset = $anonymous ? 'dataset_anonymized' : 'dataset';
-
-        if (!isset($this->evidence[$sourcedataset])) {
+    public function split_training_test_data(): void {
+        if (isset($this->evidence['dataset_anonymized'])) {
+            $data = $this->get_single_evidence('dataset_anonymized');
+        } else if (isset($this->evidence['dataset'])) {
+            $data = $this->get_single_evidence('dataset');
+        } else {
             throw new LogicException('No data available to split into training and testing data. Have you gathered data?');
         }
-        $data = $this->get_single_evidence($sourcedataset);
 
         $datashuffled = dataset_helper::get_shuffled($data);
 
@@ -466,9 +498,9 @@ class model_version {
      * Get all evidence items of a type.
      *
      * @param string $evidencetype a valid name of an evidence inheriting class
-     * @return array[]|Phpml\Classification\Linear\LogisticRegression[]|null the evidence raw data
+     * @return array[]|Phpml\Classification\Linear\LogisticRegression[] the evidence raw data
      */
-    public function get_array_of_evidences(string $evidencetype): mixed {
+    public function get_array_of_evidences(string $evidencetype): array {
         return $this->evidence[$evidencetype];
     }
 }

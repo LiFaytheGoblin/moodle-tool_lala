@@ -16,6 +16,8 @@
 
 namespace tool_laaudit;
 
+use Exception;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/fixtures/test_model.php');
@@ -68,6 +70,7 @@ class training_dataset_test extends evidence_testcase {
                 ],
         ];
     }
+
     /**
      * Check that collect gathers all necessary data
      *
@@ -77,6 +80,8 @@ class training_dataset_test extends evidence_testcase {
      * @param int $ndatapoints data set size
      * @param float $testsize portion of the dataset to be used for testing
      * @param int $expectedressize absolute nr. of datapoints to be expected for training
+     * @throws Exception
+     * @throws Exception
      */
     public function test_evidence_collect(int $ndatapoints, float $testsize, int $expectedressize) : void {
         $options = [
@@ -96,10 +101,13 @@ class training_dataset_test extends evidence_testcase {
 
         $this->assertEquals($expectedressize, count($resdata));
     }
+
     /**
      * Data provider for {@see test_training_dataset_error_nodata()}.
      *
      * @return array List of source data information
+     * @throws Exception
+     * @throws Exception
      */
     public function tool_laaudit_get_source_data_error_parameters_provider(): array {
         return [
@@ -131,7 +139,7 @@ class training_dataset_test extends evidence_testcase {
                 'data' => $data,
                 'testsize' => $testsize,
         ];
-        $this->expectException(\Exception::class); // Expect exception if trying to collect but no data exists.
+        $this->expectException(Exception::class); // Expect exception if trying to collect but no data exists.
         $this->evidence->collect($options);
     }
 
@@ -139,10 +147,12 @@ class training_dataset_test extends evidence_testcase {
      * Get the options object needed for collecting this evidence.
      *
      * @return array
+     * @throws Exception
+     * @throws Exception
      */
     public function get_options(): array {
         return [
-                'data' => test_dataset_evidence::create(3),
+                'data' => test_dataset_evidence::create(),
                 'testsize' => 0.2,
         ];
     }

@@ -14,25 +14,27 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Test model.
- *
- * @package     tool_laaudit
- * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace tool_laaudit;
 
 use core_analytics\local\analyser\base;
 
 defined('MOODLE_INTERNAL') || die();
+
+/**
+ * Test analyser.
+ *
+ * @package     tool_laaudit
+ * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class test_analyser {
     /**
      * Creates an analyser for a specific modelid.
      *
      * @param int $modelid
      * @return base analyser
+     * @throws \Exception
+     * @throws \Exception
      */
     public static function create(int $modelid): base {
         $options = ['evaluation' => true, 'mode' => 'configuration'];

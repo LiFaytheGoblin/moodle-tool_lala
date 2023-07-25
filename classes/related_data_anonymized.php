@@ -31,10 +31,20 @@ use LogicException;
  * Class for the complete anonymized dataset evidence item.
  */
 class related_data_anonymized extends related_data {
+    /** @var string[] IGNORED_COLUMNS columns to ignore when retrieving the data */
     const IGNORED_COLUMNS = ['timecreated', 'timemodified', 'modifierid', 'password', 'username', 'firstname', 'lastname',
     'firstnamephonetic', 'lastnamephonetic', 'alternatename', 'email', 'phone1', 'phone2', 'address', 'lastip', 'secret',
     'middlename', 'imagealt', 'moodlenetprofile', 'picture', 'ip'];
 
+    /**
+     * Retrieve all relevant data related to the analysable samples.
+     * Make sure to only return allowed columns and only if enough data exists.
+     *
+     * @param array $options depending on the implementation
+     * @return void
+     * @throws Exception
+     * @throws Exception
+     */
     public function collect(array $options): void {
         $this->validate($options);
 
@@ -100,15 +110,13 @@ class related_data_anonymized extends related_data {
      * Make sure that the used data is shuffled, so that the order of keys does not give away the identity.
      *
      * @param array $data original data
-     * @param idmap[] $idmaps
+     * @param idmap[] $idmaps an array of idmaps that can be used for different id types
+     * @param string $type - which table the $data belongs to, and thus which idmap to use to pseudonomize the id.
      * @return array pseudonomized data
      */
     public function pseudonomize(array $data, array $idmaps, string $type): array {
-        if (!isset($data)) {
-            throw new LogicException('No evidence has been collected that can be pseudonomized.Make sure to collect first.');
-        }
         if (!key_exists($type, $idmaps)) {
-            throw new LogicException('No idmap for type '.$type.' exists. ');
+            throw new LogicException('No idmap for type ' . $type . ' exists. ');
         }
 
         $res = [];
@@ -151,5 +159,17 @@ class related_data_anonymized extends related_data {
         shuffle($res); // So that we can't match identities based on the order.
         $this->data = $res;
         return $res;
+    }
+
+    /** Create an idmap for a set of related data.
+     *
+     * @param array $relateddata
+     * @return idmap
+     * @throws Exception
+     * @throws Exception
+     */
+    public static function create_idmap(array $relateddata): idmap {
+        $originalids = related_data::get_ids_used($relateddata);
+        return idmap::create_from_ids($originalids);
     }
 }

@@ -34,7 +34,7 @@ use DomainException;
  */
 class dataset_helper {
     /**
-     * Helper: Shuffle a data set while preserving the key and the header.
+     * Shuffle a data set while preserving the key and the header.
      *
      * @param array $dataset
      * @return array shuffled data
@@ -64,7 +64,13 @@ class dataset_helper {
         return $datawithheader;
     }
 
-    public static function shuffle_array_preserving_keys($arr) : array {
+    /**
+     * Shuffle the provided array while keeping the key-value connection.
+     *
+     * @param array $arr
+     * @return array shuffled array
+     */
+    public static function shuffle_array_preserving_keys(array $arr) : array {
         $keys = array_keys($arr);
         if (count($keys) < 2) {
             return $arr;
@@ -78,12 +84,24 @@ class dataset_helper {
         return $shuffleddata;
     }
 
-    public static function get_rows($dataset) : array {
+    /**
+     * Extract rows from dataset.
+     *
+     * @param array $dataset
+     * @return array rows
+     */
+    public static function get_rows(array $dataset) : array {
         $analysisintervalkey = self::get_analysisintervalkey($dataset);
         return array_slice($dataset[$analysisintervalkey], 1, null, true);
     }
 
-    public static function get_separate_x_y_from_rows($rows) {
+    /**
+     * Extract x and y values from rows.
+     *
+     * @param array $rows
+     * @return array ['x' => array, 'y' => array]
+     */
+    public static function get_separate_x_y_from_rows(array $rows) : array {
         $testx = [];
         $testy = [];
         foreach ($rows as $row) {
@@ -97,7 +115,16 @@ class dataset_helper {
         ];
     }
 
-    public static function build(int|string $analysisintervalkey, $header, $sampleids, $xs, $ys) {
+    /**
+     * Build a dataset in the correct structure from analysisintervalkey, header, sampleids, x values and y values (will be joined for rows)
+     * @param string $analysisintervalkey
+     * @param array $header
+     * @param array $sampleids
+     * @param int[]|string[] $xs
+     * @param int[]|string[] $ys
+     * @return array
+     */
+    public static function build(string $analysisintervalkey, array $header, array $sampleids, array $xs, array $ys) : array {
         $mergeddata = [];
         $mergeddata['0'] = $header;
         foreach ($sampleids as $key => $sampleid) {
@@ -109,7 +136,14 @@ class dataset_helper {
         return $res;
     }
 
-    public static function replace_rows_in_dataset($dataset, array $newrows) : array {
+    /**
+     * Replace all rows (except the header) in a dataset with a new bunch of rows.
+     *
+     * @param array $dataset
+     * @param array $newrows
+     * @return array
+     */
+    public static function replace_rows_in_dataset(array $dataset, array $newrows) : array {
         $res = [];
         $analysisintervalkey = self::get_analysisintervalkey($dataset);
         $header = self::get_first_row($dataset);
@@ -117,12 +151,24 @@ class dataset_helper {
         return $res;
     }
 
-    public static function get_first_row(array $dataset) {
+    /**
+     * Get the first row of the dataset, usually this will be the header.
+     *
+     * @param array $dataset
+     * @return array
+     */
+    public static function get_first_row(array $dataset) : array {
         $analysisintervalkey = self::get_analysisintervalkey($dataset);
         return array_slice($dataset[$analysisintervalkey], 0, 1, true);
     }
 
-    public static function get_analysisintervalkey(array $dataset) {
+    /**
+     * Get the analysis interval key, that is the name of the analysisinterval type.
+     *
+     * @param array $dataset
+     * @return string
+     */
+    public static function get_analysisintervalkey(array $dataset) : string {
         return array_keys($dataset)[0];
     }
 

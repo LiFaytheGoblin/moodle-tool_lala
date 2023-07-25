@@ -14,6 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_laaudit;
+
+defined('MOODLE_INTERNAL') || die();
+
+use core_analytics\local\time_splitting\base;
+use core_analytics\manager;
+use Exception;
+
 /**
  * Test model.
  *
@@ -21,17 +29,16 @@
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace tool_laaudit;
-
-defined('MOODLE_INTERNAL') || die();
-
-use core_analytics\manager;
 class test_model {
+    /** @var string NAME of the testmodel */
     const NAME = 'testmodel';
+    /** @var string TARGET of the testmodel */
     const TARGET = '\core_course\analytics\target\course_gradetopass';
+    /** @var string INDICATORS of the testmodel */
     const INDICATORS = "[\"\\\\core\\\\analytics\\\\indicator\\\\any_course_access\"]";
+    /** @var string ANALYSISINTERVAL of the testmodel */
     const ANALYSISINTERVAL = '\core\analytics\time_splitting\past_3_days';
+    /** @var string PREDICTIONSPROCESSOR of the testmodel */
     const PREDICTIONSPROCESSOR = '\mlbackend_php\processor';
 
     /**
@@ -45,7 +52,12 @@ class test_model {
         return $DB->insert_record('analytics_models', $validmodelobject);
     }
 
-    public static function get_modelobj() {
+    /**
+     * Get the model data as an array.
+     *
+     * @return array
+     */
+    public static function get_modelobj() : array {
         return [
                 'name' => self::NAME,
                 'target' => self::TARGET,
@@ -71,6 +83,7 @@ class test_model {
      * Updates a model column.
      *
      * @param int $modelid
+     * @param string $column name
      */
     public static function update(int $modelid, string $column)  : void {
         global $DB;
@@ -86,7 +99,7 @@ class test_model {
      *
      * @param int $modelid
      */
-    public static function reset(int $modelid) {
+    public static function reset(int $modelid): void {
         global $DB;
         $newobj = self::get_modelobj();
         $newobj['id'] = $modelid;
@@ -150,14 +163,13 @@ class test_model {
     /**
      * Get instances for the test analysisinterval(s)
      *
-     * @return \core_analytics\local\time_splitting\base[] analysisinterval(s)
+     * @return base[] analysisinterval(s)
+     * @throws Exception
+     * @throws Exception
      */
     public static function get_analysisinterval_instances(): array {
         $analysisintervalinstanceinstance = manager::get_time_splitting(test_model::ANALYSISINTERVAL);
-        if(!$analysisintervalinstanceinstance) throw new \Exception('Analysisinterval instance not found for analysis interval with name '.test_model::ANALYSISINTERVAL);
+        if(!$analysisintervalinstanceinstance) throw new Exception('Analysisinterval instance not found for analysis interval with name '.test_model::ANALYSISINTERVAL);
         return [$analysisintervalinstanceinstance];
     }
-
-
-
 }

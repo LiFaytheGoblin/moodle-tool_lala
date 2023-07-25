@@ -31,9 +31,6 @@ require_once(__DIR__ . '/idmap.php');
  * Class for the anonymized complete dataset evidence item.
  */
 class dataset_anonymized extends dataset {
-    /** @var idmap $idmap used for anonymization */
-    private idmap $idmap;
-
     /**
      * Retrieve all available analysable samples, calculate features and label.
      * Store resulting data (sampleid, features, label) in the data field.
@@ -45,19 +42,14 @@ class dataset_anonymized extends dataset {
     public function collect(array $options): void {
         parent::collect($options);
 
-        $entitytype = $options['analyser']->get_samples_origin();
-        $this->idmap = idmap::create_from_dataset($this->data, $entitytype);
-
         if ($options['analyser']->processes_user_data()) {
-            $n = $this->idmap->count();
+            $n = count(dataset_helper::get_ids_used_in_dataset($this->data));
             if ($n < 3) {
                 $this->abort();
                 throw new Exception('Too few samples available. Found only ' . $n . ' sample(s) to gather.
                 To preserve anonymity with a model that processes user related data, at least 3 samples are needed.');
             }
         }
-
-        $this->pseudonomize($this->data, $this->idmap);
     }
 
     /**
@@ -67,6 +59,7 @@ class dataset_anonymized extends dataset {
      * @param array $data the data to anonymize ['analysisintervaltype' => ['0' => headerrow, 'someformerid' => datarow, ...]
      * @param idmap $idmap
      * @return array pseudonomized data ['analysisintervaltype' => ['0' => headerrow, 'somenewid' => datarow, ...]
+     * @throws Exception
      */
     public function pseudonomize(array $data, idmap $idmap): array {
         $rows = dataset_helper::get_rows($data);
@@ -84,12 +77,15 @@ class dataset_anonymized extends dataset {
         return $pseudonymizeddata;
     }
 
-    /**
-     * Get id map.
+    /** Create idmap from a dataset of a specific type.
      *
-     * @return idmap idmap
+     * @param array $dataset
+     * @return idmap
+     * @throws Exception
+     * @throws Exception
      */
-    public function get_idmap() : idmap {
-        return $this->idmap;
+    public static function create_idmap(array $dataset) : idmap {
+        $originalids = dataset_helper::get_ids_used_in_dataset($dataset);
+        return idmap::create_from_ids($originalids);
     }
 }

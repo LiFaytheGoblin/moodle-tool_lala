@@ -16,8 +16,10 @@
 
 namespace tool_laaudit\event;
 
+use coding_exception;
 use core\event\base;
 use context_system;
+use moodle_url;
 
 /**
  * Model version created event.
@@ -30,7 +32,7 @@ class model_version_created extends base {
     /**
      * Set basic properties for the event.
      */
-    protected function init() {
+    protected function init(): void {
         $this->data['crud'] = 'c';
         $this->data['edulevel'] = base::LEVEL_OTHER;
         $this->data['objecttable'] = 'tool_laaudit_model_versions';
@@ -42,7 +44,7 @@ class model_version_created extends base {
      *
      * @return string
      */
-    public static function get_name() {
+    public static function get_name(): string {
         return get_string('eventmodelversioncreated', 'tool_laaudit');
     }
 
@@ -51,17 +53,17 @@ class model_version_created extends base {
      *
      * @return string
      */
-    public function get_description() {
-        return "The user with id '$this->userid' has created a new version '{$this->contextinstanceid}' of model configuration
-         '{$this->other['modelid']} associated with model '{$this->other['modelid']}'.";
+    public function get_description(): string {
+        return 'The user with id '. $this->userid . ' has created a new version '. $this->contextinstanceid . ' of model configuration
+         '. $this->other['modelid'] . 'associated with model '. $this->other['modelid']. '.';
     }
 
     /**
      * Returns relevant URL.
-     * @return \moodle_url
+     * @return moodle_url
      */
-    public function get_url() {
-        return new \moodle_url('/admin/tool/laaudit/index.php#version'.$this->other['versionid']);
+    public function get_url(): moodle_url {
+        return new moodle_url('/admin/tool/laaudit/index.php#version'.$this->other['versionid']);
     }
 
     /**
@@ -69,15 +71,15 @@ class model_version_created extends base {
      *
      * @return void
      */
-    protected function validate_data() {
+    protected function validate_data(): void {
         parent::validate_data();
 
         if (!isset($this->other['configid'])) {
-            throw new \coding_exception('The \'configid\' value must be set in other.');
+            throw new coding_exception('The \'configid\' value must be set in other.');
         }
 
         if (!isset($this->other['modelid'])) {
-            throw new \coding_exception('The \'modelid\' value must be set in other.');
+            throw new coding_exception('The \'modelid\' value must be set in other.');
         }
     }
 }

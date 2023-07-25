@@ -40,8 +40,6 @@ abstract class evidence {
     protected int $versionid;
     /** @var string $name of the evidence. */
     protected string $name;
-    /** @var int $timecollectionstarted of the evidence. */
-    private int $timecollectionstarted;
     /** @var int|null $timecollectionfinished of the evidence. */
     private ?int $timecollectionfinished;
     /** @var string|null $serializedfilelocation path of the evidence. */
@@ -65,7 +63,6 @@ abstract class evidence {
         $this->id = $evidence->id;
         $this->versionid = $evidence->versionid;
         $this->name = $evidence->name;
-        $this->timecollectionstarted = $evidence->timecollectionstarted;
         $this->timecollectionfinished = $evidence->timecollectionfinished;
         $this->serializedfilelocation = $evidence->serializedfilelocation;
     }
@@ -75,6 +72,8 @@ abstract class evidence {
      *
      * @param int $versionid of the version
      * @return evidence of the created evidence
+     * @throws Exception
+     * @throws Exception
      */
     public static function create_scaffold_and_get_for_version(int $versionid): evidence {
         global $DB;
@@ -104,6 +103,14 @@ abstract class evidence {
      * @return void
      */
     abstract public function collect(array $options): void;
+
+    /**
+     * Validates the $options array.
+     *
+     * @param array $options depending on the implementation
+     * @return void
+     */
+    abstract public function validate(array $options): void;
 
     /**
      * Serializes the raw data.
@@ -172,6 +179,8 @@ abstract class evidence {
 
     /**
      * Returns the serialized data of the evidence.
+     * Useful for testing.
+     *
      * @return string|null serialized data
      */
     public function get_serialized_data(): ?string {
@@ -200,14 +209,6 @@ abstract class evidence {
 
         global $DB;
         $DB->set_field('tool_laaudit_evidence', 'serializedfilelocation', $this->serializedfilelocation, ['id' => $this->id]);
-    }
-
-    /**
-     * Returns the location of the serialized data as a file on the server, for later download.
-     * @return string path location
-     */
-    public function get_serializedfilelocation(): ?string {
-        return $this->serializedfilelocation;
     }
 
     /**
@@ -241,7 +242,7 @@ abstract class evidence {
     abstract protected function get_file_type(): string;
 
     /**
-     * Mark this evidence collection as finished in the data base.
+     * Mark this evidence collection as finished in the database.
      * @return void
      */
     public function finish(): void {

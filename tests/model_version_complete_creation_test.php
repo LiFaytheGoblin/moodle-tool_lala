@@ -16,8 +16,7 @@
 
 namespace tool_laaudit;
 
-use Exception;
-use LogicException;
+use advanced_testcase;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -35,11 +34,14 @@ require_once(__DIR__ . '/fixtures/test_course_with_students.php');
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class model_version_complete_creation_test extends \advanced_testcase {
+class model_version_complete_creation_test extends advanced_testcase {
     /** @var int $versionid the id of the created model version */
     private int $versionid;
     /** @var model_version $version the created model version */
     private model_version $version;
+    /** @var int $modelid the id of the used model */
+    private int $modelid;
+
     protected function setUp(): void {
         $this->resetAfterTest(true);
 
@@ -64,6 +66,7 @@ class model_version_complete_creation_test extends \advanced_testcase {
                 ]
         ];
     }
+
     /**
      * Check the happy path of the automatic model creation process
      *
@@ -71,8 +74,10 @@ class model_version_complete_creation_test extends \advanced_testcase {
      *
      * @dataProvider tool_laaudit_model_creation_parameters_provider
      * @param bool $anonymous
+     * @throws \Exception
+     * @throws \Exception
      */
-    public function test_model_version_complete_creation(bool $anonymous) {
+    public function test_model_version_complete_creation(bool $anonymous): void {
         // Generate test data.
         $nstudents = 10;
         test_course_with_students::create($this->getDataGenerator(), $nstudents, 3);
@@ -92,7 +97,7 @@ class model_version_complete_creation_test extends \advanced_testcase {
             $this->assertEquals(0, count($identicalids));
 
             // Check that datasets allocate the correct values to the correct users.
-            $this->version->gather_dataset(!$anonymous);
+            $this->version->gather_dataset(false);
             $originaldataset = $this->version->get_single_evidence('dataset');
 
             $originalrows = $originaldataset[test_model::ANALYSISINTERVAL];
@@ -122,14 +127,14 @@ class model_version_complete_creation_test extends \advanced_testcase {
             }
 
             // Check that the order of new ids does not give away the original id.
-            $possibleidmap = new idmap($originalidsinorder, $newidsinorder, 'user_enrolments');
+            $possibleidmap = new idmap($originalidsinorder, $newidsinorder);
 
             $this->assertFalse($idmap->contains($possibleidmap));
             $this->assertFalse($possibleidmap->contains($idmap));
         }
 
         // Now get split data.
-        $this->version->split_training_test_data($anonymous);
+        $this->version->split_training_test_data();
         $testdataset = $this->version->get_single_evidence('test_dataset');
         $this->assertTrue(isset($testdataset));
         $trainingdataset = $this->version->get_single_evidence('training_dataset');
@@ -219,9 +224,9 @@ class model_version_complete_creation_test extends \advanced_testcase {
      *
      * @covers ::tool_laaudit_model_version
      */
-    public function test_model_version_complete_creation_modeldeleted() {
+    public function test_model_version_complete_creation_modeldeleted(): void {
         // Generate test data.
-        test_course_with_students::create($this->getDataGenerator(), 10);
+        test_course_with_students::create($this->getDataGenerator());
         test_model::delete($this->modelid);
 
         // Data is available for gathering.
@@ -230,7 +235,7 @@ class model_version_complete_creation_test extends \advanced_testcase {
         $this->assertTrue(isset($dataset));
 
         // Now get split data.
-        $this->version->split_training_test_data(false);
+        $this->version->split_training_test_data();
         $testdataset = $this->version->get_single_evidence('test_dataset');
         $this->assertTrue(isset($testdataset));
         $trainingdataset = $this->version->get_single_evidence('training_dataset');

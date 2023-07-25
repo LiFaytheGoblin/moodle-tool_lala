@@ -36,6 +36,8 @@ class model_configurations {
      * Collect all model configuration objects.
      *
      * @return stdClass[] of model config objects
+     * @throws \Exception
+     * @throws \Exception
      */
     public static function init_and_get_all_model_config_objs(): array {
         global $DB;
@@ -109,7 +111,7 @@ class model_configurations {
      * @param stdClass $settingdbentry
      * @return stdClass[] of model config objects
      */
-    private static function get_settings_values(stdClass $settingdbentry) {
+    private static function get_settings_values(stdClass $settingdbentry): array {
         $vals = array_values((array) $settingdbentry);
         return array_slice($vals, 1, null);
     }

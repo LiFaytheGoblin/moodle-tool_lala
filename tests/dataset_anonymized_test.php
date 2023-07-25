@@ -16,6 +16,8 @@
 
 namespace tool_laaudit;
 
+use Exception;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/fixtures/test_model.php');
@@ -32,6 +34,11 @@ require_once(__DIR__ . '/dataset_test.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class dataset_anonymized_test extends dataset_test {
+    /**
+     * Get an evidence instance for the version id.
+     * @return evidence
+     * @throws Exception
+     */
     protected function get_evidence_instance() : evidence {
         return dataset_anonymized::create_scaffold_and_get_for_version($this->versionid);
     }
@@ -63,10 +70,10 @@ class dataset_anonymized_test extends dataset_test {
      *
      * @covers ::tool_laaudit_dataset_pseudonomize
      */
-    public function test_evidence_pseudonomize() {
+    public function test_evidence_pseudonomize(): void {
         $nsamples = 5;
         $data = test_dataset_evidence::create($nsamples);
-        $idmap = idmap::create_from_dataset($data, 'test');
+        $idmap = dataset_anonymized::create_idmap($data);
 
         $pseudonomizeddata = $this->evidence->pseudonomize($data, $idmap);
         $this->assertTrue(isset($pseudonomizeddata));
@@ -111,6 +118,7 @@ class dataset_anonymized_test extends dataset_test {
                 ]
         ];
     }
+
     /**
      * Check that collect throws an error if too few users exist.
      *
@@ -119,12 +127,14 @@ class dataset_anonymized_test extends dataset_test {
      * @dataProvider tool_laaudit_get_source_data_error_notenoughdata_parameters_provider
      * @param int $nstudents amount of students
      * @param int $createddaysago how many days ago a sample course should have been started
+     * @throws Exception
+     * @throws Exception
      */
     public function test_evidence_collect_error_notenoughdata(int $nstudents, int $createddaysago): void {
         $this->create_test_data($nstudents, $createddaysago);
         $options = $this->get_options();
 
-        $this->expectException(\Exception::class); // Expect exception if trying to collect but too little data exists.
+        $this->expectException(Exception::class); // Expect exception if trying to collect but too little data exists.
         $this->evidence->collect($options);
     }
 }

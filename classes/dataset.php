@@ -35,8 +35,6 @@ use LogicException;
  * Class for the complete dataset evidence item.
  */
 class dataset extends evidence {
-
-
     /**
      * Retrieve all available analysable samples, calculate features and label.
      * Store resulting data (sampleid, features, label) in the data field.
@@ -45,18 +43,7 @@ class dataset extends evidence {
      * @return void
      */
     public function collect(array $options): void {
-        if (!isset($options['contexts'])) {
-            throw new InvalidArgumentException('Options is missing contexts.');
-        }
-        if (!isset($options['analyser'])) {
-            throw new InvalidArgumentException('Options is missing analyser.');
-        }
-        if (!isset($options['modelid'])) {
-            throw new InvalidArgumentException('Options is missing model id.');
-        }
-        if (isset($this->data) && count($this->data) > 0) {
-            throw new LogicException('Data has already been collected and can not be changed.');
-        }
+        $this->validate($options);
 
         $this->heavy_duty_mode();
 
@@ -80,6 +67,25 @@ class dataset extends evidence {
         }
 
         $this->data = $allresults;
+    }
+
+    /** Validate the evidence's options.
+     * @param array $options
+     * @return void
+     */
+    public function validate(array $options) : void {
+        if (!isset($options['contexts'])) {
+            throw new InvalidArgumentException('Options is missing contexts.');
+        }
+        if (!isset($options['analyser'])) {
+            throw new InvalidArgumentException('Options is missing analyser.');
+        }
+        if (!isset($options['modelid'])) {
+            throw new InvalidArgumentException('Options is missing model id.');
+        }
+        if (isset($this->data) && count($this->data) > 0) {
+            throw new LogicException('Data has already been collected and can not be changed.');
+        }
     }
 
     /**
@@ -129,4 +135,5 @@ class dataset extends evidence {
         }
         core_php_time_limit::raise();
     }
+
 }

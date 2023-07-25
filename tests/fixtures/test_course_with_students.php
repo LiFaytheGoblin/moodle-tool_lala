@@ -14,14 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Test model.
- *
- * @package     tool_laaudit
- * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace tool_laaudit;
 
 defined('MOODLE_INTERNAL') || die();
@@ -31,6 +23,13 @@ use analytics\target\course_gradetopass;
 use core_analytics\manager;
 use core_analytics\course;
 
+/**
+ * Test course with students.
+ *
+ * @package     tool_laaudit
+ * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class test_course_with_students {
     /**
      * Generates a new course with students, but no activity.
@@ -56,12 +55,24 @@ class test_course_with_students {
         }
     }
 
-    public static function get_ids($tablename) {
+    /**
+     * Get the ids used in a table.
+     *
+     * @param string $tablename
+     * @return mixed
+     */
+    public static function get_ids(string $tablename) : array {
         global $DB;
         return $DB->get_fieldset_select($tablename, 'id', '1=1');
     }
 
-    public static function get_ids_for_referenced_by($referee, $referer) {
+    /**
+     * Get the ids of a table $referee referenced by a table $referer
+     * @param string $referee
+     * @param string $referer
+     * @return array
+     */
+    public static function get_ids_for_referenced_by(string $referee, string $referer) : array {
         global $DB;
         $fieldset = $DB->get_fieldset_select($referer, $referee.'id', '1=1');
         return array_unique($fieldset);

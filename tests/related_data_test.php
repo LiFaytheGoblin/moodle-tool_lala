@@ -30,12 +30,20 @@ require_once(__DIR__ . '/evidence_testcase.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class related_data_test extends evidence_testcase {
+    /**
+     * Set up resources before each test.
+     */
     protected function setUp(): void {
         parent::setUp();
 
         $this->evidence = $this->get_evidence_instance();
     }
 
+    /**
+     * Get an evidence instance for the version id.
+     * @return evidence
+     * @throws Exception
+     */
     protected function get_evidence_instance() : evidence {
         return related_data::create_scaffold_and_get_for_version($this->versionid);
     }
@@ -212,6 +220,8 @@ class related_data_test extends evidence_testcase {
 
     /**
      * Get the options object needed for collecting this evidence.
+     *
+     * @param string $tablename
      * @return array
      */
     public function get_options(string $tablename = 'user'): array {

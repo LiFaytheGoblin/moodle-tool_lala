@@ -24,6 +24,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Install the new roles for this plugin.
+ * @return void
+ */
 function xmldb_tool_laaudit_install() {
     $shortname = 'laaudit_auditor';
 
@@ -35,7 +39,7 @@ function xmldb_tool_laaudit_install() {
 
         set_role_contextlevels($auditorrole, [CONTEXT_SYSTEM]);
 
-    } catch (\dml_write_exception $e) {
+    } catch (dml_write_exception) {
         debugging('Role has already been created previously.');
     }
 

@@ -25,9 +25,10 @@ require_once(__DIR__ . '/fixtures/test_version.php');
 require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
 require_once(__DIR__ . '/evidence_testcase.php');
 
+use Exception;
 use Phpml\ModelManager;
 use Phpml\Estimator;
-use \core_analytics\predictor;
+use core_analytics\predictor;
 /**
  * Model test.
  *
@@ -49,7 +50,7 @@ class model_test extends evidence_testcase {
      *
      * @return array List of source data information
      */
-    public function tool_laaudit_get_source_data_parameters_provider() {
+    public function tool_laaudit_get_source_data_parameters_provider(): array {
         return [
                 'Min datapoints' => [
                         'ndatapoints' => 3
@@ -59,6 +60,7 @@ class model_test extends evidence_testcase {
                 ]
         ];
     }
+
     /**
      * Check that collect trains the model.
      *
@@ -66,8 +68,10 @@ class model_test extends evidence_testcase {
      *
      * @dataProvider tool_laaudit_get_source_data_parameters_provider
      * @param int $ndatapoints amount of datapoints in training data
+     * @throws Exception
+     * @throws Exception
      */
-    public function test_evidence_collect($ndatapoints) {
+    public function test_evidence_collect(int $ndatapoints): void {
         $dataset = test_dataset_evidence::create($ndatapoints);
 
         $options = [
@@ -103,8 +107,10 @@ class model_test extends evidence_testcase {
      * Data provider for {@see test_model_collect_error_nodata()}.
      *
      * @return array List of source data information
+     * @throws Exception
+     * @throws Exception
      */
-    public function tool_laaudit_get_source_data_error_parameters_provider() {
+    public function tool_laaudit_get_source_data_error_parameters_provider(): array {
         return [
                 'No dataset' => [
                         'dataset' => []
@@ -123,14 +129,14 @@ class model_test extends evidence_testcase {
      * @covers ::tool_laaudit_model_collect
      *
      * @dataProvider tool_laaudit_get_source_data_error_parameters_provider
-     * @param int $dataset training dataset
+     * @param array $dataset training dataset
      */
-    public function test_model_collect_error_nodata($dataset) {
+    public function test_model_collect_error_nodata(array $dataset): void {
         $options = [
                 'data' => $dataset,
                 'predictor' => $this->predictor,
         ];
-        $this->expectException(\Exception::class); // Expect exception if trying to collect but no(t enough) data exists.
+        $this->expectException(Exception::class); // Expect exception if trying to collect but no(t enough) data exists.
         $this->evidence->collect($options);
     }
 
@@ -139,7 +145,7 @@ class model_test extends evidence_testcase {
      *
      * @covers ::tool_laaudit_model_collect
      */
-    public function test_model_collect_deletedmodel() {
+    public function test_model_collect_deletedmodel(): void {
         test_model::delete($this->modelid);
 
         $options = $this->get_options();
@@ -155,6 +161,8 @@ class model_test extends evidence_testcase {
      * Get the options object needed for collecting this evidence.
      *
      * @return array
+     * @throws Exception
+     * @throws Exception
      */
     public function get_options(): array {
         return [

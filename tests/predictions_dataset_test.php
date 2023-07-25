@@ -23,7 +23,7 @@ require_once(__DIR__ . '/fixtures/test_version.php');
 require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
 require_once(__DIR__ . '/evidence_testcase.php');
 
-use \Phpml\Classification\Linear\LogisticRegression;
+use Phpml\Classification\Linear\LogisticRegression;
 
 /**
  * Training dataset test.
@@ -46,7 +46,7 @@ class predictions_dataset_test extends evidence_testcase {
      *
      * @return array List of source data information
      */
-    public function tool_laaudit_get_source_data_parameters_provider() {
+    public function tool_laaudit_get_source_data_parameters_provider(): array {
         return [
                 'Min datapoints' => [
                         'ndatapoints' => 1
@@ -56,15 +56,18 @@ class predictions_dataset_test extends evidence_testcase {
                 ]
         ];
     }
+
     /**
      * Check that collect gathers all necessary data
      *
      * @covers ::tool_laaudit_training_dataset_collect
      *
      * @dataProvider tool_laaudit_get_source_data_parameters_provider
-     * @param $ndatapoints  amount of datapoints in training data
+     * @param int $ndatapoints amount of datapoints in training data
+     * @throws \Exception
+     * @throws \Exception
      */
-    public function test_evidence_collect($ndatapoints) {
+    public function test_evidence_collect(int $ndatapoints): void {
         $options = [
                 'model' => $this->classifier,
                 'data' => test_dataset_evidence::create($ndatapoints),
@@ -87,11 +90,13 @@ class predictions_dataset_test extends evidence_testcase {
      * Get the options object needed for collecting this evidence.
      *
      * @return array
+     * @throws \Exception
+     * @throws \Exception
      */
     public function get_options(): array {
         return [
                 'model' => $this->classifier,
-                'data' => test_dataset_evidence::create(3),
+                'data' => test_dataset_evidence::create(),
         ];
     }
 }

@@ -16,6 +16,10 @@
 
 namespace tool_laaudit;
 
+use advanced_testcase;
+use dml_missing_record_exception;
+use Exception;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -30,13 +34,13 @@ require_once(__DIR__ . '/fixtures/test_model.php');
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class model_configuration_test extends \advanced_testcase {
+class model_configuration_test extends advanced_testcase {
     /**
      * Check that __construct() creates a model configuration.
      *
      * @covers ::tool_laaudit_model_configuration___construct
      */
-    public function test_model_configuration_construct() {
+    public function test_model_configuration_construct(): void {
         $this->resetAfterTest(true);
 
         $modelid = test_model::create();
@@ -62,7 +66,7 @@ class model_configuration_test extends \advanced_testcase {
      * @covers ::tool_laaudit_model_configuration___construct
      */
     public function test_model_configuration_construct_error() {
-        $this->expectException(\dml_missing_record_exception::class);
+        $this->expectException(dml_missing_record_exception::class);
         new model_configuration(test_config::get_highest_id() + 1);
     }
 
@@ -89,7 +93,7 @@ class model_configuration_test extends \advanced_testcase {
      * @covers ::tool_laaudit_model_configuration_get_or_create_and_get_for_model
      */
     public function test_model_configuration_create_and_get_for_model_error() {
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception::class);
         model_configuration::create_and_get_for_model(test_model::get_highest_id() + 1);
     }
 }

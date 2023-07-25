@@ -16,6 +16,8 @@
 
 namespace tool_laaudit;
 
+use Exception;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/fixtures/test_model.php');
@@ -31,12 +33,20 @@ require_once(__DIR__ . '/evidence_testcase.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class dataset_test extends evidence_testcase {
+    /**
+     * Set up resources before each test.
+     */
     protected function setUp(): void {
         parent::setUp();
 
         $this->evidence = $this->get_evidence_instance();
     }
 
+    /**
+     * Get an evidence instance for the version id.
+     * @return evidence
+     * @throws Exception
+     */
     protected function get_evidence_instance() : evidence {
         return dataset::create_scaffold_and_get_for_version($this->versionid);
     }
@@ -61,6 +71,7 @@ class dataset_test extends evidence_testcase {
                 ]
         ];
     }
+
     /**
      * Check that collect gathers all necessary data
      *
@@ -69,6 +80,8 @@ class dataset_test extends evidence_testcase {
      * @dataProvider tool_laaudit_get_source_data_parameters_provider
      * @param int $nstudents amount of students
      * @param int $createddaysago how many days ago a sample course should have been started
+     * @throws Exception
+     * @throws Exception
      */
     public function test_evidence_collect(int $nstudents, int $createddaysago): void {
         $this->create_test_data($nstudents, $createddaysago);
@@ -118,7 +131,7 @@ class dataset_test extends evidence_testcase {
     public function test_evidence_collect_error_nodata(): void {
         $options = $this->get_options();
 
-        $this->expectException(\Exception::class); // Expect exception if trying to collect but no data exists.
+        $this->expectException(Exception::class); // Expect exception if trying to collect but no data exists.
         $this->evidence->collect($options);
     }
 
@@ -174,7 +187,10 @@ class dataset_test extends evidence_testcase {
 
     /**
      * Get the options object needed for collecting this evidence.
+     *
      * @return array
+     * @throws Exception
+     * @throws Exception
      */
     public function get_options(): array {
         return [

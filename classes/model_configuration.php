@@ -25,6 +25,7 @@
 namespace tool_laaudit;
 
 use core_analytics\manager;
+use Exception;
 use stdClass;
 
 /**
@@ -52,12 +53,13 @@ class model_configuration {
     /** @var int[] $versions created of the model config. */
     private array $versions;
 
-
     /**
      * Constructor. Import from DB.
      *
      * @param number $id
      * @return void
+     * @throws Exception
+     * @throws Exception
      */
     public function __construct($id) {
         global $DB;
@@ -75,7 +77,7 @@ class model_configuration {
 
         $targetinstance = manager::get_target($this->target);
         if (!$targetinstance) {
-            throw new \Exception('Target could not be retrieved from target name '.$this->target);
+            throw new Exception('Target could not be retrieved from target name '.$this->target);
         }
         $this->modelanalysabletype = $targetinstance->get_analyser_class();
 
@@ -86,6 +88,8 @@ class model_configuration {
      * Retrieve versions from the DB and store in object properties
      *
      * @return stdClass[] versions
+     * @throws Exception
+     * @throws Exception
      */
     public function get_versions_from_db(): array {
         global $DB;
@@ -182,18 +186,30 @@ class model_configuration {
         return $obj;
     }
 
+    /** Getter for the config id.
+     * @return int
+     */
     public function get_id(): int {
         return $this->id;
     }
 
+    /** Getter for the config's model id.
+     * @return int
+     */
     public function get_modelid(): int {
         return $this->modelid;
     }
 
+    /** Getter for the config's name.
+     * @return string
+     */
     public function get_name(): string {
         return $this->name;
     }
 
+    /** Getter for the config's target.
+     * @return string
+     */
     public function get_target(): string {
         return $this->target;
     }

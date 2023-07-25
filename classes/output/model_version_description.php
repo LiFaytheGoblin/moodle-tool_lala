@@ -34,7 +34,7 @@ use stdClass;
  */
 class model_version_description implements templatable, renderable {
     /** @var stdClass $version of a model config */
-    protected $version;
+    protected stdClass $version;
     /**
      * Constructor for this object.
      *

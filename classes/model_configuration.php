@@ -84,6 +84,13 @@ class model_configuration {
         $this->versions = $this->get_versions_from_db();
     }
 
+    /** Getter for the config's target.
+     * @return string
+     */
+    public function get_target(): string {
+        return $this->target;
+    }
+
     /**
      * Retrieve versions from the DB and store in object properties
      *
@@ -205,12 +212,5 @@ class model_configuration {
      */
     public function get_name(): string {
         return $this->name;
-    }
-
-    /** Getter for the config's target.
-     * @return string
-     */
-    public function get_target(): string {
-        return $this->target;
     }
 }

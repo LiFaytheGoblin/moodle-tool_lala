@@ -40,14 +40,15 @@ abstract class evidence {
     protected int $versionid;
     /** @var string $name of the evidence. */
     protected string $name;
-    /** @var int|null $timecollectionfinished of the evidence. */
-    private ?int $timecollectionfinished;
-    /** @var string|null $serializedfilelocation path of the evidence. */
-    private ?string $serializedfilelocation;
     /** @var array|mixed|null $data raw data of the evidence. */
     protected mixed $data;
     /** @var string|null $filestring serialized data of the evidence. */
     protected ?string $filestring;
+    /** @var int|null $timecollectionfinished of the evidence. */
+    private ?int $timecollectionfinished;
+    /** @var string|null $serializedfilelocation path of the evidence. */
+    private ?string $serializedfilelocation;
+
     /**
      * Constructor. Deserialize DB object.
      *
@@ -113,14 +114,6 @@ abstract class evidence {
     abstract public function validate(array $options): void;
 
     /**
-     * Serializes the raw data.
-     * Store the serialization string in the filestring field.
-     *
-     * @return void
-     */
-    abstract public function serialize(): void;
-
-    /**
      * Stores a serialized data string in a file. Sets the serializedfilelocation property of the class.
      * @return void
      */
@@ -143,6 +136,71 @@ abstract class evidence {
         $this->set_serializedfilelocation();
 
         $this->finish();
+    }
+
+    /**
+     * Serializes the raw data.
+     * Store the serialization string in the filestring field.
+     *
+     * @return void
+     */
+    abstract public function serialize(): void;
+
+    /**
+     * Returns info on the serialized data file on the server.
+     * @return array
+     */
+    public function get_file_info(): array {
+        return [
+                'contextid' => context_system::instance()->id,
+                'component' => 'tool_laaudit',
+                'filearea'  => 'tool_laaudit',
+                'itemid'    => $this->id,
+                'filepath'  => '/evidence/',
+                'filename'  => 'modelversion' . $this->versionid . '-evidence' . $this->name . $this->id . '.' .
+                        $this->get_file_type(),
+        ];
+    }
+
+    /**
+     * Returns the type of the stored file, e.g. "csv".
+     * @return string
+     */
+    abstract protected function get_file_type(): string;
+
+    /**
+     * Sets the path where the serialized data is located as a file on the server, for later download.
+     *
+     * @return void
+     */
+    protected function set_serializedfilelocation(): void {
+        $fileinfo = $this->get_file_info();
+
+        $serializedfileurl = moodle_url::make_pluginfile_url(
+                $fileinfo['contextid'],
+                $fileinfo['component'],
+                $fileinfo['filearea'],
+                $fileinfo['itemid'],
+                $fileinfo['filepath'],
+                $fileinfo['filename'],
+                true
+        );
+
+        $this->serializedfilelocation = $serializedfileurl->out();
+
+        global $DB;
+        $DB->set_field('tool_laaudit_evidence', 'serializedfilelocation', $this->serializedfilelocation, ['id' => $this->id]);
+    }
+
+    /**
+     * Mark this evidence collection as finished in the database.
+     * @return void
+     */
+    public function finish(): void {
+        global $DB;
+
+        $this->timecollectionfinished = time();
+        $DB->set_field('tool_laaudit_evidence', 'timecollectionfinished', $this->timecollectionfinished, ['id' => $this->id]);
     }
 
     /**
@@ -188,68 +246,11 @@ abstract class evidence {
     }
 
     /**
-     * Sets the path where the serialized data is located as a file on the server, for later download.
-     *
-     * @return void
-     */
-    protected function set_serializedfilelocation(): void {
-        $fileinfo = $this->get_file_info();
-
-        $serializedfileurl = moodle_url::make_pluginfile_url(
-                $fileinfo['contextid'],
-                $fileinfo['component'],
-                $fileinfo['filearea'],
-                $fileinfo['itemid'],
-                $fileinfo['filepath'],
-                $fileinfo['filename'],
-                true
-        );
-
-        $this->serializedfilelocation = $serializedfileurl->out();
-
-        global $DB;
-        $DB->set_field('tool_laaudit_evidence', 'serializedfilelocation', $this->serializedfilelocation, ['id' => $this->id]);
-    }
-
-    /**
      * Returns the time when the collection was finished, if it has been finished already.
      * @return int|null
      */
     public function get_timecollectionfinished(): ?int {
         return $this->timecollectionfinished;
-    }
-
-    /**
-     * Returns info on the serialized data file on the server.
-     * @return array
-     */
-    public function get_file_info(): array {
-        return [
-                'contextid' => context_system::instance()->id,
-                'component' => 'tool_laaudit',
-                'filearea'  => 'tool_laaudit',
-                'itemid'    => $this->id,
-                'filepath'  => '/evidence/',
-                'filename'  => 'modelversion' . $this->versionid . '-evidence' . $this->name . $this->id . '.' .
-                        $this->get_file_type(),
-        ];
-    }
-
-    /**
-     * Returns the type of the stored file, e.g. "csv".
-     * @return string
-     */
-    abstract protected function get_file_type(): string;
-
-    /**
-     * Mark this evidence collection as finished in the database.
-     * @return void
-     */
-    public function finish(): void {
-        global $DB;
-
-        $this->timecollectionfinished = time();
-        $DB->set_field('tool_laaudit_evidence', 'timecollectionfinished', $this->timecollectionfinished, ['id' => $this->id]);
     }
 
     /**

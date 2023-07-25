@@ -89,6 +89,18 @@ class dataset extends evidence {
     }
 
     /**
+     * Increases system memory and time limits.
+     *
+     * @return void
+     */
+    private function heavy_duty_mode(): void {
+        if (ini_get('memory_limit') != -1) {
+            raise_memory_limit(MEMORY_HUGE);
+        }
+        core_php_time_limit::raise();
+    }
+
+    /**
      * Serialize the contents of the data field.
      * Store the serialization string in the filestring field.
      *
@@ -123,17 +135,4 @@ class dataset extends evidence {
     public function get_file_type(): string {
         return 'csv';
     }
-
-    /**
-     * Increases system memory and time limits.
-     *
-     * @return void
-     */
-    private function heavy_duty_mode(): void {
-        if (ini_get('memory_limit') != -1) {
-            raise_memory_limit(MEMORY_HUGE);
-        }
-        core_php_time_limit::raise();
-    }
-
 }

@@ -214,6 +214,38 @@ class model_version {
     }
 
     /**
+     * Call next step: Gather the data that can be used for training and testing this model version.
+     *
+     * @param bool $anonymous whether to gather the dataset and anonymize it.
+     * @return void
+     * @throws Exception
+     * @throws Exception
+     */
+    public function gather_dataset(bool $anonymous = true): void {
+        $options = ['modelid' => $this->modelid, 'analyser' => $this->analyser, 'contexts' => $this->contexts];
+
+        $evidencetype = $anonymous ? 'dataset_anonymized' : 'dataset';
+
+        $evidence = $this->add($evidencetype, $options);
+
+        if ($anonymous) {
+            // Create idmap and safe for later.
+            if (!isset($this->idmaps)) {
+                $this->idmaps = [];
+            }
+            $rawdata = $evidence->get_raw_data();
+            $origintablename = $this->analyser->get_samples_origin();
+            $this->idmaps[$origintablename] = dataset_anonymized::create_idmap($rawdata);
+
+            // Pseudonomize the gathered data
+            $pseudonomizeddata = $evidence->pseudonomize($rawdata, $this->idmaps[$origintablename]);
+            $this->evidence[$evidencetype][$evidence->get_id()] = $pseudonomizeddata;
+        }
+
+        $evidence->store();
+    }
+
+    /**
      * Add a next step and therefore next evidence in the model version creation process.
      * Steps ($evidencetype) can be:
      * 'dataset', 'test_dataset', 'training_dataset', 'model', 'predictions_dataset'.
@@ -253,35 +285,24 @@ class model_version {
     }
 
     /**
-     * Call next step: Gather the data that can be used for training and testing this model version.
+     * Getter for version id.
      *
-     * @param bool $anonymous whether to gather the dataset and anonymize it.
-     * @return void
-     * @throws Exception
-     * @throws Exception
+     * @return int id
      */
-    public function gather_dataset(bool $anonymous = true): void {
-        $options = ['modelid' => $this->modelid, 'analyser' => $this->analyser, 'contexts' => $this->contexts];
+    public function get_id(): int {
+        return $this->id;
+    }
 
-        $evidencetype = $anonymous ? 'dataset_anonymized' : 'dataset';
+    /**
+     * Register a thrown error in the error column of the model version table.
+     *
+     * @param moodle_exception|Exception $e the thrown exception
+     * @return void
+     */
+    private function register_error(moodle_exception|Exception $e): void {
+        global $DB;
 
-        $evidence = $this->add($evidencetype, $options);
-
-        if ($anonymous) {
-            // Create idmap and safe for later.
-            if (!isset($this->idmaps)) {
-                $this->idmaps = [];
-            }
-            $rawdata = $evidence->get_raw_data();
-            $origintablename = $this->analyser->get_samples_origin();
-            $this->idmaps[$origintablename] = dataset_anonymized::create_idmap($rawdata);
-
-            // Pseudonomize the gathered data
-            $pseudonomizeddata = $evidence->pseudonomize($rawdata, $this->idmaps[$origintablename]);
-            $this->evidence[$evidencetype][$evidence->get_id()] = $pseudonomizeddata;
-        }
-
-        $evidence->store();
+        $DB->set_field('tool_laaudit_model_versions', 'error', $e->getMessage(), ['id' => $this->id]);
     }
 
     /**
@@ -304,27 +325,6 @@ class model_version {
             $this->gather_related_data_anonymized($origintablename);
         } else {
             $this->gather_related_data_unanonymized($origintablename);
-        }
-    }
-
-    /**
-     * Gather the related data without anonymizing it.
-     *
-     * @param string $origintablename
-     * @return void
-     */
-    public function gather_related_data_unanonymized(string $origintablename) : void {
-        $data = $this->get_single_evidence('dataset');
-        $originids = dataset_helper::get_ids_used_in_dataset($data);
-
-        $relatedtables = database_helper::get_related_tables($origintablename, $originids, [$origintablename => $originids]);
-
-        $options = [];
-        foreach ($relatedtables as $relatedtablename => $relevantids) {
-            $options['tablename'] = $relatedtablename;
-            $options['ids'] = $relevantids;
-            $evidence = $this->add('related_data', $options);
-            $evidence->store();
         }
     }
 
@@ -369,6 +369,40 @@ class model_version {
             $this->evidence['related_data_anonymized'][$evidence->get_id()] = $pseudonomizeddata;
             $evidence->store(); // Only now can we store the data.
         }
+    }
+
+    /**
+     * Gather the related data without anonymizing it.
+     *
+     * @param string $origintablename
+     * @return void
+     */
+    public function gather_related_data_unanonymized(string $origintablename) : void {
+        $data = $this->get_single_evidence('dataset');
+        $originids = dataset_helper::get_ids_used_in_dataset($data);
+
+        $relatedtables = database_helper::get_related_tables($origintablename, $originids, [$origintablename => $originids]);
+
+        $options = [];
+        foreach ($relatedtables as $relatedtablename => $relevantids) {
+            $options['tablename'] = $relatedtablename;
+            $options['ids'] = $relevantids;
+            $evidence = $this->add('related_data', $options);
+            $evidence->store();
+        }
+    }
+
+    /**
+     * Get the first evidence item of a type.
+     *
+     * @param string $evidencetype a valid name of an evidence inheriting class
+     * @return array|Phpml\Classification\Linear\LogisticRegression|null the evidence raw data
+     */
+    public function get_single_evidence(string $evidencetype): mixed {
+        if (!isset($this->evidence[$evidencetype])) {
+            return null;
+        }
+        return array_values($this->evidence[$evidencetype])[0];
     }
 
     /**
@@ -452,46 +486,12 @@ class model_version {
     }
 
     /**
-     * Register a thrown error in the error column of the model version table.
-     *
-     * @param moodle_exception|Exception $e the thrown exception
-     * @return void
-     */
-    private function register_error(moodle_exception|Exception $e): void {
-        global $DB;
-
-        $DB->set_field('tool_laaudit_model_versions', 'error', $e->getMessage(), ['id' => $this->id]);
-    }
-
-    /**
-     * Getter for version id.
-     *
-     * @return int id
-     */
-    public function get_id(): int {
-        return $this->id;
-    }
-
-    /**
      * Getter for idmaps.
      *
      * @return idmap[] idmaps
      */
     public function get_idmaps(): array {
         return $this->idmaps;
-    }
-
-    /**
-     * Get the first evidence item of a type.
-     *
-     * @param string $evidencetype a valid name of an evidence inheriting class
-     * @return array|Phpml\Classification\Linear\LogisticRegression|null the evidence raw data
-     */
-    public function get_single_evidence(string $evidencetype): mixed {
-        if (!isset($this->evidence[$evidencetype])) {
-            return null;
-        }
-        return array_values($this->evidence[$evidencetype])[0];
     }
 
     /**

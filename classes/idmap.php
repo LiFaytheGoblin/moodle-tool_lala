@@ -95,15 +95,6 @@ class idmap {
         return count($this->pseudonyms);
     }
 
-    /** Verify whether the provided id can be found in the ids of the idmap.
-     *
-     * @param int|string $originalid
-     * @return bool whether the original id exists
-     */
-    public function has_original_id(int|string $originalid): bool {
-        return in_array($originalid, $this->originalids);
-    }
-
     /** Extract the id from the sampleid (id-analysisintervalpart), get the pseudonym for it and re-append the analysisintervalpart.
      *
      * @param string $originalsampleid
@@ -125,6 +116,15 @@ class idmap {
         }
 
         return $pseudonym;
+    }
+
+    /** Verify whether the provided id can be found in the ids of the idmap.
+     *
+     * @param int|string $originalid
+     * @return bool whether the original id exists
+     */
+    public function has_original_id(int|string $originalid): bool {
+        return in_array($originalid, $this->originalids);
     }
 
     /** Return the pseudonym for an id.
@@ -155,14 +155,6 @@ class idmap {
         return $this->originalids[$index];
     }
 
-    /** Getter for original ids
-     *
-     * @return int[]|string[] originalids
-     */
-    public function get_originalids() : array {
-        return $this->originalids;
-    }
-
     /** Verify if the id-pseudonym mappings of another idmap are part of this idmap.
      * Useful for testing.
      *
@@ -180,6 +172,14 @@ class idmap {
             }
         }
         return true;
+    }
+
+    /** Getter for original ids
+     *
+     * @return int[]|string[] originalids
+     */
+    public function get_originalids() : array {
+        return $this->originalids;
     }
 
     /** String representation of an idmap

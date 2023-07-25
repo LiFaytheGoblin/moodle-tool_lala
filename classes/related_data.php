@@ -31,10 +31,41 @@ use LogicException;
  * Class for the complete dataset evidence item.
  */
 class related_data extends dataset {
-    /** @var string|null $tablename to which the related data belongs */
-    protected ?string $tablename;
     /** @var string[] IGNORED_COLUMNS columns to ignore when retrieving the data */
     const IGNORED_COLUMNS = [];
+    /** @var string|null $tablename to which the related data belongs */
+    protected ?string $tablename;
+
+    /**
+     * Extracts the tablename from a serializedfilelocation.
+     *
+     * @param array $relateddata an array of objects that each have an id.
+     * @return array ids
+     */
+    public static function get_ids_used(array $relateddata): array {
+        return array_column($relateddata, 'id');
+    }
+
+    public static function get_tablename_from_evidenceid($evidenceid): string|bool {
+        global $DB;
+        $record = $DB->get_record('tool_laaudit_evidence', ['id' => $evidenceid], '*', MUST_EXIST);
+        return self::get_tablename_from_serializedfilelocation($record->serializedfilelocation);
+    }
+
+    /**
+     * Extracts the tablename from a serializedfilelocation.
+     *
+     * @param string $serializedfilelocation a path with file name and type
+     * @return string|bool tablename
+     */
+    public static function get_tablename_from_serializedfilelocation(string $serializedfilelocation): string|bool {
+        $pattern = "/(?<=\d-)([a-zA-Z_]+)(?=\.)/";
+        $hastablename = preg_match($pattern, $serializedfilelocation, $regexresults);
+        if ($hastablename) {
+            return $regexresults[0];
+        }
+        return false;
+    }
 
     /**
      * Retrieve all relevant data related to the analysable samples.
@@ -97,43 +128,12 @@ class related_data extends dataset {
     }
 
     /**
-     * Extracts the tablename from a serializedfilelocation.
-     *
-     * @param array $relateddata an array of objects that each have an id.
-     * @return array ids
-     */
-    public static function get_ids_used(array $relateddata): array {
-        return array_column($relateddata, 'id');
-    }
-
-    /**
      * Getter for the tablename.
      *
      * @return string tablename
      */
     public function get_tablename(): string {
         return $this->tablename;
-    }
-
-    public static function get_tablename_from_evidenceid($evidenceid): string|bool {
-        global $DB;
-        $record = $DB->get_record('tool_laaudit_evidence', ['id' => $evidenceid], '*', MUST_EXIST);
-        return self::get_tablename_from_serializedfilelocation($record->serializedfilelocation);
-    }
-
-    /**
-     * Extracts the tablename from a serializedfilelocation.
-     *
-     * @param string $serializedfilelocation a path with file name and type
-     * @return string|bool tablename
-     */
-    public static function get_tablename_from_serializedfilelocation(string $serializedfilelocation): string|bool {
-        $pattern = "/(?<=\d-)([a-zA-Z_]+)(?=\.)/";
-        $hastablename = preg_match($pattern, $serializedfilelocation, $regexresults);
-        if ($hastablename) {
-            return $regexresults[0];
-        }
-        return false;
     }
 
     /**

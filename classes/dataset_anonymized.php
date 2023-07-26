@@ -31,6 +31,18 @@ require_once(__DIR__ . '/idmap.php');
  * Class for the anonymized complete dataset evidence item.
  */
 class dataset_anonymized extends dataset {
+    /** Create idmap from a dataset of a specific type.
+     *
+     * @param array $dataset
+     * @return idmap
+     * @throws Exception
+     * @throws Exception
+     */
+    public static function create_idmap(array $dataset) : idmap {
+        $originalids = dataset_helper::get_ids_used_in_dataset($dataset);
+        return idmap::create_from_ids($originalids);
+    }
+
     /**
      * Retrieve all available analysable samples, calculate features and label.
      * Store resulting data (sampleid, features, label) in the data field.
@@ -75,17 +87,5 @@ class dataset_anonymized extends dataset {
         $pseudonymizeddata = dataset_helper::replace_rows_in_dataset($data, $newrowsshuffled);
         $this->data = $pseudonymizeddata;
         return $pseudonymizeddata;
-    }
-
-    /** Create idmap from a dataset of a specific type.
-     *
-     * @param array $dataset
-     * @return idmap
-     * @throws Exception
-     * @throws Exception
-     */
-    public static function create_idmap(array $dataset) : idmap {
-        $originalids = dataset_helper::get_ids_used_in_dataset($dataset);
-        return idmap::create_from_ids($originalids);
     }
 }

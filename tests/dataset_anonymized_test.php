@@ -82,7 +82,7 @@ class dataset_anonymized_test extends dataset_test {
         // All needed new ids made it to the pseudonomized dataset & structure is ok.
         $res = $pseudonomizeddata[test_model::ANALYSISINTERVAL];
         unset($res['0']); // Remove header.
-        $this->assertTrue(count($res) == $idmap->count());
+        $this->assertTrue(count($res) == count($idmap));
         $actualnewids = array_keys($res);
         $expectednewids = $idmap->get_pseudonyms();
         $missingnewids = array_diff($actualnewids, $expectednewids);

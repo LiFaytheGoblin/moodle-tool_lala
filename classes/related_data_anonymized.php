@@ -137,6 +137,10 @@ class related_data_anonymized extends related_data {
 
             // Pseudonomize the referenced ids.
             foreach ($row as $columnname => $columncontent) {
+                if ($columncontent == null || strlen($columncontent) == 0) {
+                    continue; // No content! No need to pseudonomize anything here.
+                }
+
                 if ($columnname == 'id') { // Pseudonomize the main id.
                     $newrow->id = $idmaps[$type]->get_pseudonym($row->id);
                     continue;

@@ -24,12 +24,13 @@
 
 namespace tool_laaudit;
 
+use Countable;
 use Exception;
 
 /**
  * Class for the complete dataset evidence item.
  */
-class idmap {
+class idmap implements Countable {
     /** @var int[]|string[] $originalids used for anonymization */
     private array $originalids;
     /** @var int[] $pseudonyms - ids used instead of originalids */
@@ -87,14 +88,6 @@ class idmap {
         return $actualpseudonyms;
     }
 
-    /** Return amount of originalid - pseudonym pairs in the idmap.
-     *
-     * @return int
-     */
-    public function count(): int {
-        return count($this->pseudonyms);
-    }
-
     /** Extract the id from the sampleid (id-analysisintervalpart), get the pseudonym for it and re-append the analysisintervalpart.
      *
      * @param string $originalsampleid
@@ -133,7 +126,7 @@ class idmap {
      * @return int the pseudonym
      */
     public function get_pseudonym(int|string $originalid) : int {
-        $index = array_search ($originalid, $this->originalids);
+        $index = array_search($originalid, $this->originalids);
         return $this->pseudonyms[$index];
     }
 
@@ -174,7 +167,8 @@ class idmap {
         return true;
     }
 
-    /** Getter for original ids
+    /**
+     * Getter for original ids
      *
      * @return int[]|string[] originalids
      */
@@ -182,11 +176,22 @@ class idmap {
         return $this->originalids;
     }
 
-    /** String representation of an idmap
+    /**
+     * String representation of an idmap
      *
      * @return string
      */
     public function __toString() : string {
         return json_encode(array_combine($this->originalids, $this->pseudonyms));
+    }
+
+    /**
+     * Return amount of originalid - pseudonym pairs in the idmap.
+     * Useful for testing
+     *
+     * @return int
+     */
+    public function count(): int {
+        return count($this->pseudonyms);
     }
 }

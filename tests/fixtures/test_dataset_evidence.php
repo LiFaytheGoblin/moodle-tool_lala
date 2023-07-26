@@ -14,6 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_laaudit;
+
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Test dataset (evidence).
  *
@@ -21,16 +25,14 @@
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace tool_laaudit;
-
-defined('MOODLE_INTERNAL') || die();
 class test_dataset_evidence {
     /**
      * Creates a random dataset evidence.
      *
      * @param int $size of the dataset
      * @return array the created dataset
+     * @throws \Exception
+     * @throws \Exception
      */
     public static function create(int $size = 3): array {
         $header = self::get_header();
@@ -63,6 +65,8 @@ class test_dataset_evidence {
      *
      * @param int $size amount of indicator values
      * @return array the indicator values
+     * @throws \Exception
+     * @throws \Exception
      */
     public static function create_x(int $size = 3): array {
         $indicators = json_decode(test_model::INDICATORS);

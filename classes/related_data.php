@@ -31,9 +31,41 @@ use LogicException;
  * Class for the complete dataset evidence item.
  */
 class related_data extends dataset {
+    /** @var string[] IGNORED_COLUMNS columns to ignore when retrieving the data */
+    const IGNORED_COLUMNS = [];
     /** @var string|null $tablename to which the related data belongs */
     protected ?string $tablename;
-    const IGNORED_COLUMNS = [];
+
+    /**
+     * Extracts the tablename from a serializedfilelocation.
+     *
+     * @param array $relateddata an array of objects that each have an id.
+     * @return array ids
+     */
+    public static function get_ids_used(array $relateddata): array {
+        return array_column($relateddata, 'id');
+    }
+
+    public static function get_tablename_from_evidenceid($evidenceid): string|bool {
+        global $DB;
+        $record = $DB->get_record('tool_laaudit_evidence', ['id' => $evidenceid], '*', MUST_EXIST);
+        return self::get_tablename_from_serializedfilelocation($record->serializedfilelocation);
+    }
+
+    /**
+     * Extracts the tablename from a serializedfilelocation.
+     *
+     * @param string $serializedfilelocation a path with file name and type
+     * @return string|bool tablename
+     */
+    public static function get_tablename_from_serializedfilelocation(string $serializedfilelocation): string|bool {
+        $pattern = "/(?<=\d-)([a-zA-Z_]+)(?=\.)/";
+        $hastablename = preg_match($pattern, $serializedfilelocation, $regexresults);
+        if ($hastablename) {
+            return $regexresults[0];
+        }
+        return false;
+    }
 
     /**
      * Retrieve all relevant data related to the analysable samples.
@@ -55,6 +87,12 @@ class related_data extends dataset {
         $this->data = $records;
     }
 
+    /**
+     * Validate the options of this evidence.
+     *
+     * @param $options
+     * @return void
+     */
     public function validate($options) : void {
         if (!isset($options['tablename'])) {
             throw new InvalidArgumentException('Options is missing the name of the related table.');
@@ -62,7 +100,7 @@ class related_data extends dataset {
         if (!isset($options['ids'])) {
             throw new InvalidArgumentException('Options is missing the ids the data should be related to.');
         }
-        if (isset($this->data) && sizeof($this->data) > 0) {
+        if (isset($this->data) && count($this->data) > 0) {
             throw new LogicException('Data has already been collected and can not be changed.');
         }
     }
@@ -89,25 +127,13 @@ class related_data extends dataset {
         $this->filestring = $heading.$str;
     }
 
-    public static function get_ids_used($related_data): array {
-        return array_column($related_data, 'id');
-    }
-
-    public static function get_tablename_from_evidenceid($evidenceid): mixed {
-        global $DB;
-        $record = $DB->get_record('tool_laaudit_evidence', ['id' => $evidenceid], '*', MUST_EXIST);
-        return self::get_tablename_from_serializedfilelocation($record->serializedfilelocation);
-    }
-
+    /**
+     * Getter for the tablename.
+     *
+     * @return string tablename
+     */
     public function get_tablename(): string {
         return $this->tablename;
-    }
-
-    public static function get_tablename_from_serializedfilelocation(string $serializedfilelocation): mixed {
-        $pattern = "/(?<=\d-)([a-zA-Z_]+)(?=\.)/";
-        $hastablename = preg_match($pattern, $serializedfilelocation, $regexresults);
-        if ($hastablename) return $regexresults[0];
-        return false;
     }
 
     /**
@@ -116,8 +142,8 @@ class related_data extends dataset {
      */
     public function get_file_info(): array {
         $info = parent::get_file_info();
-        $info['filename'] = 'modelversion' . $this->versionid . '-evidence' . $this->name . $this->id . '-' . $this->tablename . '.' .
-        $this->get_file_type();
+        $info['filename'] = 'modelversion' . $this->versionid . '-evidence' . $this->name . $this->id . '-' . $this->tablename .
+                '.' . $this->get_file_type();
         return $info;
     }
 }

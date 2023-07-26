@@ -16,6 +16,8 @@
 
 namespace tool_laaudit;
 
+use Exception;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/fixtures/test_model.php');
@@ -32,6 +34,11 @@ require_once(__DIR__ . '/dataset_test.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class dataset_anonymized_test extends dataset_test {
+    /**
+     * Get an evidence instance for the version id.
+     * @return evidence
+     * @throws Exception
+     */
     protected function get_evidence_instance() : evidence {
         return dataset_anonymized::create_scaffold_and_get_for_version($this->versionid);
     }
@@ -63,33 +70,35 @@ class dataset_anonymized_test extends dataset_test {
      *
      * @covers ::tool_laaudit_dataset_pseudonomize
      */
-    public function test_evidence_pseudonomize() {
+    public function test_evidence_pseudonomize(): void {
         $nsamples = 5;
         $data = test_dataset_evidence::create($nsamples);
-        $idmap = idmap::create_from_dataset($data, 'test');
+        $idmap = dataset_anonymized::create_idmap($data);
 
-        $pseudonomized_data = $this->evidence->pseudonomize($data, $idmap);
-        $this->assertTrue(isset($pseudonomized_data));
-        $this->assertTrue(sizeof($pseudonomized_data) == 1);
+        $pseudonomizeddata = $this->evidence->pseudonomize($data, $idmap);
+        $this->assertTrue(isset($pseudonomizeddata));
+        $this->assertTrue(count($pseudonomizeddata) == 1);
 
-        // All needed new ids made it to the pseudonomized dataset & structure is ok
-        $res = $pseudonomized_data[test_model::ANALYSISINTERVAL];
-        unset($res['0']); // Remove header
-        $this->assertTrue(count($res) == $idmap->count());
+        // All needed new ids made it to the pseudonomized dataset & structure is ok.
+        $res = $pseudonomizeddata[test_model::ANALYSISINTERVAL];
+        unset($res['0']); // Remove header.
+        $this->assertTrue(count($res) == count($idmap));
         $actualnewids = array_keys($res);
         $expectednewids = $idmap->get_pseudonyms();
         $missingnewids = array_diff($actualnewids, $expectednewids);
-        $this->assertTrue(sizeof($missingnewids) == 0);
+        $this->assertTrue(count($missingnewids) == 0);
 
-        // the value for each new id is the value we have in dataset for the fitting old id
+        // The value for each new id is the value we have in dataset for the fitting old id.
         $missingvalues = [];
         foreach ($res as $pseudonym => $actualvalues) {
             $originalid = $idmap->get_originalid($pseudonym);
             $expectedvalues = $data[test_model::ANALYSISINTERVAL][$originalid];
             $missingvaluesforthispseudonym = array_diff($expectedvalues, $actualvalues);
-            if (sizeof($missingvaluesforthispseudonym) > 0) $missingvalues[$pseudonym] = $missingvaluesforthispseudonym;
+            if (count($missingvaluesforthispseudonym) > 0) {
+                $missingvalues[$pseudonym] = $missingvaluesforthispseudonym;
+            }
         }
-        $this->assertTrue(sizeof($missingvalues) == 0);
+        $this->assertTrue(count($missingvalues) == 0);
     }
 
     /**
@@ -109,6 +118,7 @@ class dataset_anonymized_test extends dataset_test {
                 ]
         ];
     }
+
     /**
      * Check that collect throws an error if too few users exist.
      *
@@ -117,12 +127,14 @@ class dataset_anonymized_test extends dataset_test {
      * @dataProvider tool_laaudit_get_source_data_error_notenoughdata_parameters_provider
      * @param int $nstudents amount of students
      * @param int $createddaysago how many days ago a sample course should have been started
+     * @throws Exception
+     * @throws Exception
      */
     public function test_evidence_collect_error_notenoughdata(int $nstudents, int $createddaysago): void {
         $this->create_test_data($nstudents, $createddaysago);
         $options = $this->get_options();
 
-        $this->expectException(\Exception::class); // Expect exception if trying to collect but too little data exists.
+        $this->expectException(Exception::class); // Expect exception if trying to collect but too little data exists.
         $this->evidence->collect($options);
     }
 }

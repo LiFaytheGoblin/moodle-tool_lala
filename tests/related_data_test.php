@@ -30,12 +30,20 @@ require_once(__DIR__ . '/evidence_testcase.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class related_data_test extends evidence_testcase {
+    /**
+     * Set up resources before each test.
+     */
     protected function setUp(): void {
         parent::setUp();
 
         $this->evidence = $this->get_evidence_instance();
     }
 
+    /**
+     * Get an evidence instance for the version id.
+     * @return evidence
+     * @throws Exception
+     */
     protected function get_evidence_instance() : evidence {
         return related_data::create_scaffold_and_get_for_version($this->versionid);
     }
@@ -86,7 +94,7 @@ class related_data_test extends evidence_testcase {
                         'nstudents' => 10,
                         'createddaysago' => 3,
                         'tablename' => 'course',
-                        'nrowsexpected' => 2, // There's also a site entry in the course table
+                        'nrowsexpected' => 2, // There's also a site entry in the course table.
                 ],
                 'Some users, min days, table role' => [
                         'nstudents' => 10,
@@ -138,13 +146,13 @@ class related_data_test extends evidence_testcase {
         $notinheader = array_diff(related_data::IGNORED_COLUMNS, $resheader);
         $this->assertEquals(related_data::IGNORED_COLUMNS, $notinheader);
 
-        // Test serialize()
+        // Test serialize().
         $this->evidence->serialize();
 
         $serializedstring = $this->evidence->get_serialized_data();
 
         $this->assertTrue(strlen($serializedstring) >= $expectedheadersize); // The string should contain at least a header.
-        $this->assertTrue(str_contains($serializedstring, ',')); // the string should have commas.
+        $this->assertTrue(str_contains($serializedstring, ',')); // The string should have commas.
     }
 
     /**
@@ -179,9 +187,8 @@ class related_data_test extends evidence_testcase {
      * @dataProvider tool_laaudit_deleted_model_parameters_provider
      * @param int $nstudents amount of students
      * @param int $createddaysago how many days ago a sample course should have been started
-     * @param int[]|string[]|null $expectedids ids to be expected in the collected data
      */
-    public function test_dataset_collect_deletedmodel(int $nstudents, int $createddaysago, ?array $expectedids = null): void {
+    public function test_dataset_collect_deletedmodel(int $nstudents, int $createddaysago): void {
         $this->create_test_data($nstudents, $createddaysago);
         test_model::delete($this->modelid);
 
@@ -213,6 +220,8 @@ class related_data_test extends evidence_testcase {
 
     /**
      * Get the options object needed for collecting this evidence.
+     *
+     * @param string $tablename
      * @return array
      */
     public function get_options(string $tablename = 'user'): array {

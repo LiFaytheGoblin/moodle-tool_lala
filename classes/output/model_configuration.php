@@ -83,7 +83,7 @@ class model_configuration implements templatable, renderable {
         $indicators = json_decode($this->modelconfig->indicators);
         if (gettype($indicators) == 'array') {
             $data['firstindicator'] = $indicators[0];
-            if (sizeof($indicators) > 1) {
+            if (count($indicators) > 1) {
                 $data['firstindicator'] = $data['firstindicator'] . ', ';
                 $remainingindicators = array_slice($indicators, 1);
                 $data['indicators'] = implode(', ', $remainingindicators);
@@ -94,8 +94,8 @@ class model_configuration implements templatable, renderable {
 
         // Add buttons.
         $buttons = [];
-        $buttons[] = new single_button(new moodle_url('modelversion.php', ['configid' => $this->modelconfig->id, 'sesskey' => sesskey()]),
-                get_string('automaticallycreateversion', 'tool_laaudit'), 'post');
+        $buttons[] = new single_button(new moodle_url('modelversion.php', ['configid' => $this->modelconfig->id,
+                'sesskey' => sesskey()]), get_string('automaticallycreateversion', 'tool_laaudit'), 'post');
         foreach ($buttons as $key => $button) {
             $buttons[$key] = $button->export_for_template($output);
         }

@@ -14,9 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * The privacy provider.
+ *
+ * @package     tool_laaudit
+ * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace tool_laaudit\privacy;
 
-class provider implements \core_privacy\local\metadata\null_provider {
+use core_privacy\local\metadata\null_provider;
+
+/**
+ * Privacy provider.
+ */
+class provider implements null_provider {
 
     /**
      * Get the language string identifier with the component's language

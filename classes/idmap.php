@@ -24,47 +24,56 @@
 
 namespace tool_laaudit;
 
+use Countable;
 use Exception;
 
 /**
  * Class for the complete dataset evidence item.
  */
-class idmap {
+class idmap implements Countable {
     /** @var int[]|string[] $originalids used for anonymization */
     private array $originalids;
-    /** @var int[]|string[] $pseudonyms - ids used instead of originalids */
+    /** @var int[] $pseudonyms - ids used instead of originalids */
     private array $pseudonyms;
-    /** @var string $entitytype type of ids, eg. 'user', 'user_enrolment' */
-    private string $entitytype;
 
-    public function __construct(array $originalids, array $pseudonyms, string $entitytype) {
-        if (count($originalids) !== count($pseudonyms)) throw new Exception('Must provide as many pseudonyms as originalids.');
-        if (count($originalids) === 0) throw new Exception('Can not create empty idmap. No ids provided.');
+    /** Construct the idmap instance.
+     *
+     * @param int[]|string[] $originalids
+     * @param int[] $pseudonyms
+     * @throws Exception
+     */
+    public function __construct(array $originalids, array $pseudonyms) {
+        if (count($originalids) === 0) {
+            throw new Exception('Can not create empty idmap. No ids provided.');
+        }
+        if (count(array_unique($originalids)) !== count($originalids)) {
+            throw new Exception('Duplicate ids found. Ids must be unique.');
+        }
+        if (count($originalids) !== count($pseudonyms)) {
+            throw new Exception('Must provide as many pseudonyms as originalids.');
+        }
+
         $this->originalids = $originalids;
         $this->pseudonyms = $pseudonyms;
-        $this->entitytype = $entitytype;
     }
 
-    public static function create_from_dataset($dataset, $entitytype) {
-        $originalids = dataset_helper::get_ids_used_in_dataset($dataset);
+    /** Create an idmap based on an array of ids
+     *
+     * @param int[]|string[] $ids
+     * @return idmap
+     * @throws Exception
+     * @throws Exception
+     */
+    public static function create_from_ids(array $ids) : idmap {
+        $pseudonyms = self::create_pseudonyms($ids);
 
-        $pseudonyms = self::create_pseudonyms($originalids);
-
-        return new static($originalids, $pseudonyms, $entitytype);
+        return new static($ids, $pseudonyms);
     }
 
-    public static function create_from_related_data($related_data, $entitytype) {
-        $originalids = related_data::get_ids_used($related_data);
-
-        $pseudonyms = self::create_pseudonyms($originalids);
-
-        return new static($originalids, $pseudonyms, $entitytype);
-    }
-
-    /**
-     * @param int $offset  // Moodle has two standard users, 1 and 2.
-     * @param array $orignalids
-     * @return array
+    /** Create pseudonyms for an array of ids.
+     *
+     * @param int[]|string[] $orignalids
+     * @return int[]
      */
     public static function create_pseudonyms(array $orignalids): array {
         shuffle($orignalids);
@@ -79,17 +88,18 @@ class idmap {
         return $actualpseudonyms;
     }
 
-    public function count(): int {
-        return count($this->pseudonyms);
-    }
-
-    public function has_original_id(mixed $originalid): bool {
-        return in_array($originalid, $this->originalids);
-    }
-
-    public function get_pseudonym_sampleid(mixed $originalsampleid) : mixed {
+    /** Extract the id from the sampleid (id-analysisintervalpart), get the pseudonym for it and re-append the analysisintervalpart.
+     *
+     * @param string $originalsampleid
+     * @return string the pseudonomized sampleid
+     * @throws Exception
+     * @throws Exception
+     */
+    public function get_pseudonym_sampleid(string $originalsampleid) : string {
         $originalid = dataset_helper::get_id_part($originalsampleid);
-        if (!$this->has_original_id($originalid)) throw new Exception('Idmap is incomplete. No pseudonym found for id.');
+        if (!$this->has_original_id($originalid)) {
+            throw new Exception('Idmap is incomplete. No pseudonym found for id.');
+        }
 
         $pseudonym = $this->get_pseudonym($originalid);
         $analysisintervalpart = dataset_helper::get_analysisinterval_part($originalsampleid);
@@ -101,37 +111,87 @@ class idmap {
         return $pseudonym;
     }
 
-    public function get_pseudonym(mixed $originalid) : mixed {
-        $index = array_search ($originalid, $this->originalids);
+    /** Verify whether the provided id can be found in the ids of the idmap.
+     *
+     * @param int|string $originalid
+     * @return bool whether the original id exists
+     */
+    public function has_original_id(int|string $originalid): bool {
+        return in_array($originalid, $this->originalids);
+    }
+
+    /** Return the pseudonym for an id.
+     *
+     * @param int|string $originalid
+     * @return int the pseudonym
+     */
+    public function get_pseudonym(int|string $originalid) : int {
+        $index = array_search($originalid, $this->originalids);
         return $this->pseudonyms[$index];
     }
 
-    public function get_pseudonyms() : mixed {
+    /** Getter for pseudonyms
+     *
+     * @return int[] pseudonyms
+     */
+    public function get_pseudonyms() : array {
         return $this->pseudonyms;
     }
 
-    public function get_originalid($pseudonym) : mixed {
+    /** Return the original id for a pseudonym.
+     *
+     * @param int $pseudonym
+     * @return string|int
+     */
+    public function get_originalid(int $pseudonym) : string|int {
         $index = array_search($pseudonym, $this->pseudonyms);
         return $this->originalids[$index];
     }
 
-    public function get_originalids() : mixed {
-        return $this->originalids;
-    }
-
+    /** Verify if the id-pseudonym mappings of another idmap are part of this idmap.
+     * Useful for testing.
+     *
+     * @param idmap $other
+     * @return bool whether $other is contained in this idmap
+     */
     public function contains(idmap $other) : bool {
-        foreach ($this->originalids as $myoriginalid) {
-            if (!$other->has_original_id($myoriginalid)) return false;
-            if ($this->get_pseudonym($myoriginalid) != $other->get_pseudonym($myoriginalid)) return false;
+        $otheroriginalids = $other->get_originalids();
+        foreach ($otheroriginalids as $otheroriginalid) {
+            if ($this->has_original_id($otheroriginalid)) {
+                return false;
+            }
+            if ($this->get_pseudonym($otheroriginalid) != $other->get_pseudonym($otheroriginalid)) {
+                return false;
+            }
         }
         return true;
     }
 
-    public function get_entitytype() : string {
-        return $this->entitytype;
+    /**
+     * Getter for original ids
+     *
+     * @return int[]|string[] originalids
+     */
+    public function get_originalids() : array {
+        return $this->originalids;
     }
 
+    /**
+     * String representation of an idmap
+     *
+     * @return string
+     */
     public function __toString() : string {
         return json_encode(array_combine($this->originalids, $this->pseudonyms));
+    }
+
+    /**
+     * Return amount of originalid - pseudonym pairs in the idmap.
+     * Useful for testing
+     *
+     * @return int
+     */
+    public function count(): int {
+        return count($this->pseudonyms);
     }
 }

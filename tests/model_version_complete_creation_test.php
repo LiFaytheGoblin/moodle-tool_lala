@@ -16,8 +16,7 @@
 
 namespace tool_laaudit;
 
-use Exception;
-use LogicException;
+use advanced_testcase;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -35,11 +34,14 @@ require_once(__DIR__ . '/fixtures/test_course_with_students.php');
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class model_version_complete_creation_test extends \advanced_testcase {
+class model_version_complete_creation_test extends advanced_testcase {
     /** @var int $versionid the id of the created model version */
     private int $versionid;
     /** @var model_version $version the created model version */
     private model_version $version;
+    /** @var int $modelid the id of the used model */
+    private int $modelid;
+
     protected function setUp(): void {
         $this->resetAfterTest(true);
 
@@ -64,6 +66,7 @@ class model_version_complete_creation_test extends \advanced_testcase {
                 ]
         ];
     }
+
     /**
      * Check the happy path of the automatic model creation process
      *
@@ -71,28 +74,30 @@ class model_version_complete_creation_test extends \advanced_testcase {
      *
      * @dataProvider tool_laaudit_model_creation_parameters_provider
      * @param bool $anonymous
+     * @throws \Exception
+     * @throws \Exception
      */
-    public function test_model_version_complete_creation(bool $anonymous) {
-        // Generate test data
+    public function test_model_version_complete_creation(bool $anonymous): void {
+        // Generate test data.
         $nstudents = 10;
         test_course_with_students::create($this->getDataGenerator(), $nstudents, 3);
 
-        // Data is available for gathering
+        // Data is available for gathering.
         $this->version->gather_dataset($anonymous);
         $evidencetype = $anonymous ? 'dataset_anonymized' : 'dataset';
         $dataset = $this->version->get_single_evidence($evidencetype);
         $this->assertTrue(isset($dataset));
-        $this->assertTrue(sizeof($dataset[test_model::ANALYSISINTERVAL]) == $nstudents + 1); // +1 for the header.
+        $this->assertTrue(count($dataset[test_model::ANALYSISINTERVAL]) == $nstudents + 1); // Add 1 for the header.
 
         if ($anonymous) {
-            // Check that dataset does not contain the original userids but new userids
+            // Check that dataset does not contain the original userids but new userids.
             $originalids = test_course_with_students::get_ids('user_enrolments');
             $newids = dataset_helper::get_ids_used_in_dataset($dataset);
             $identicalids = array_intersect($originalids, $newids);
-            $this->assertEquals(0, sizeof($identicalids));
+            $this->assertEquals(0, count($identicalids));
 
-            // Check that datasets allocate the correct values to the correct users
-            $this->version->gather_dataset(!$anonymous);
+            // Check that datasets allocate the correct values to the correct users.
+            $this->version->gather_dataset(false);
             $originaldataset = $this->version->get_single_evidence('dataset');
 
             $originalrows = $originaldataset[test_model::ANALYSISINTERVAL];
@@ -102,7 +107,9 @@ class model_version_complete_creation_test extends \advanced_testcase {
             $originalidsinorder = [];
             $newidsinorder = [];
             foreach ($originalrows as $originasamplelid => $originalvalues) {
-                if ($originasamplelid == '0') continue; // skip header
+                if ($originasamplelid == '0') {
+                    continue; // Skip header.
+                }
 
                 $newsampleid = $idmap->get_pseudonym_sampleid($originasamplelid);
                 $newvalues = $newrows[$newsampleid];
@@ -111,35 +118,39 @@ class model_version_complete_creation_test extends \advanced_testcase {
                 $originalid = dataset_helper::get_id_part($originasamplelid);
                 $newid = $idmap->get_pseudonym($originalid);
 
-                if (!in_array($originalid, $originalidsinorder)) $originalidsinorder[] = $originalid;
-                if (!in_array($newid, $newidsinorder)) $newidsinorder[] = $newsampleid;
+                if (!in_array($originalid, $originalidsinorder)) {
+                    $originalidsinorder[] = $originalid;
+                }
+                if (!in_array($newid, $newidsinorder)) {
+                    $newidsinorder[] = $newsampleid;
+                }
             }
 
-            // Check that the order of new ids does not give away the original id
-            $possibleidmap = new idmap($originalidsinorder, $newidsinorder, 'user_enrolments');
+            // Check that the order of new ids does not give away the original id.
+            $possibleidmap = new idmap($originalidsinorder, $newidsinorder);
 
             $this->assertFalse($idmap->contains($possibleidmap));
             $this->assertFalse($possibleidmap->contains($idmap));
         }
 
-        // Now get split data
-        $this->version->split_training_test_data($anonymous);
+        // Now get split data.
+        $this->version->split_training_test_data();
         $testdataset = $this->version->get_single_evidence('test_dataset');
         $this->assertTrue(isset($testdataset));
         $trainingdataset = $this->version->get_single_evidence('training_dataset');
         $this->assertTrue(isset($trainingdataset));
 
-        // Train the model
+        // Train the model.
         $this->version->train();
         $model = $this->version->get_single_evidence('model');
         $this->assertTrue(isset($model));
 
-        // Get predictions
+        // Get predictions.
         $this->version->predict();
         $predictionsdataset = $this->version->get_single_evidence('predictions_dataset');
         $this->assertTrue(isset($predictionsdataset));
 
-        // Get related data
+        // Get related data.
         $this->version->gather_related_data($anonymous);
         $evidencetype = $anonymous ? 'related_data_anonymized' : 'related_data';
         $relateddatasets = $this->version->get_array_of_evidences($evidencetype);
@@ -183,64 +194,64 @@ class model_version_complete_creation_test extends \advanced_testcase {
                 $tablename = related_data::get_tablename_from_evidenceid($evidenceid);
 
                 $identicalids = array_intersect($originalids[$tablename], $newids);
-                $this->assertEquals(0, sizeof($identicalids));
+                $this->assertEquals(0, count($identicalids));
 
                 // Check that datasets do not reference the original ids.
                 if (count($newreferenceduserids) > 0) {
                     $identicaluserids = array_intersect($originalids['user'], $newreferenceduserids);
-                    $this->assertEquals(0, sizeof($identicaluserids));
+                    $this->assertEquals(0, count($identicaluserids));
                 }
                 if (count($newreferencedenrolids) > 0) {
                     $identicalenrolids = array_intersect($originalids['enrol'], $newreferencedenrolids);
-                    $this->assertEquals(0, sizeof($identicalenrolids));
+                    $this->assertEquals(0, count($identicalenrolids));
                 }
                 if (count($newreferencedcourseids) > 0) {
                     $identicalcourseids = array_intersect($originalids['course'], $newreferencedcourseids);
-                    $this->assertEquals(0, sizeof($identicalcourseids));
+                    $this->assertEquals(0, count($identicalcourseids));
                 }
                 if (count($newreferencedroleids) > 0) {
                     $identicalroleids = array_intersect($originalids['role'], $newreferencedroleids);
-                    $this->assertEquals(0, sizeof($identicalroleids));
+                    $this->assertEquals(0, count($identicalroleids));
                 }
             }
         }
 
         $error = test_version::haserror($this->versionid);
-        $this->assertFalse($error); // An error has not been registered
+        $this->assertFalse($error); // An error has not been registered.
     }
     /**
      * Check the happy path of the automatic model creation process still works of model was deleted
      *
      * @covers ::tool_laaudit_model_version
      */
-    public function test_model_version_complete_creation_modeldeleted() {
-        // Generate test data
-        test_course_with_students::create($this->getDataGenerator(), 10);
+    public function test_model_version_complete_creation_modeldeleted(): void {
+        // Generate test data.
+        test_course_with_students::create($this->getDataGenerator());
         test_model::delete($this->modelid);
 
-        // Data is available for gathering
+        // Data is available for gathering.
         $this->version->gather_dataset(false);
         $dataset = $this->version->get_single_evidence('dataset');
         $this->assertTrue(isset($dataset));
 
-        // Now get split data
-        $this->version->split_training_test_data(false);
+        // Now get split data.
+        $this->version->split_training_test_data();
         $testdataset = $this->version->get_single_evidence('test_dataset');
         $this->assertTrue(isset($testdataset));
         $trainingdataset = $this->version->get_single_evidence('training_dataset');
         $this->assertTrue(isset($trainingdataset));
 
-        // Train the model
+        // Train the model.
         $this->version->train();
         $model = $this->version->get_single_evidence('model');
         $this->assertTrue(isset($model));
 
-        // Get predictions
+        // Get predictions.
         $this->version->predict();
         $predictionsdataset = $this->version->get_single_evidence('predictions_dataset');
         $this->assertTrue(isset($predictionsdataset));
 
         $error = test_version::haserror($this->versionid);
-        $this->assertFalse($error); // An error has not been registered
+        $this->assertFalse($error); // An error has not been registered.
     }
 }

@@ -16,6 +16,9 @@
 
 namespace tool_laaudit;
 
+use advanced_testcase;
+use Exception;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/fixtures/test_config.php');
@@ -32,9 +35,9 @@ require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class evidence_testcase extends \advanced_testcase {
+abstract class evidence_testcase extends advanced_testcase {
     /** @var mixed $evidence the evidence that is created during set up of an implementing class. */
-    protected $evidence;
+    protected mixed $evidence;
     /** @var int $modelid the id of the belonging Moodle model. */
     protected int $modelid;
     /** @var int $versionid the id of the belonging model version. */
@@ -53,19 +56,19 @@ abstract class evidence_testcase extends \advanced_testcase {
     /**
      * Check that collect throws an error if trying to call it twice for the same evidence.
      *
-     * @covers ::tool_laaudit_training_dataset_collect
+     * @covers ::tool_laaudit_evidence_collect
      */
     protected function test_evidence_collect_error_again() : void {
         $options = $this->get_options();
         $this->evidence->collect($options);
 
-        $this->expectException(\Exception::class); // Expect exception if trying to collect again.
+        $this->expectException(Exception::class); // Expect exception if trying to collect again.
         $this->evidence->collect($options);
     }
-     /**
+    /**
      * Get the options object needed for collecting this evidence.
      *
      * @return array
      */
-    abstract function get_options(): array;
+    abstract public function get_options(): array;
 }

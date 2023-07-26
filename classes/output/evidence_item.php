@@ -65,7 +65,9 @@ class evidence_item implements templatable, renderable {
         $data['serializedfilelocation'] = $this->item->serializedfilelocation;
 
         $tablename = related_data::get_tablename_from_serializedfilelocation($this->item->serializedfilelocation);
-        if ($tablename !== false) $data['tablename'] = $tablename;
+        if ($tablename !== false) {
+            $data['tablename'] = $tablename;
+        }
 
         return $data;
     }

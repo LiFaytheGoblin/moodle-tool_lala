@@ -28,7 +28,7 @@ use DomainException;
 use InvalidArgumentException;
 use LengthException;
 use LogicException;
-use \Phpml\Classification\Linear\LogisticRegression;
+use Phpml\Classification\Linear\LogisticRegression;
 
 /**
  * Class for the trained model evidence item.
@@ -43,34 +43,44 @@ class model extends evidence {
      * @return void
      */
     public function collect(array $options): void {
-        if (!isset($options['predictor'])) {
-            throw new InvalidArgumentException('Options array is missing predictor.');
-        }
-        if (!isset($options['data'])) {
-            throw new InvalidArgumentException('Options array is missing training data.');
-        }
-        if (sizeof($options['data']) == 0) {
-            throw new DomainException('Training dataset can not be empty.');
-        }
-        if (isset($this->data)) {
-            throw new LogicException('Model has already been trained and can not be changed.');
-        }
+        $this->validate($options);
 
         // Get only samples and targets.
         $datawithoutheader = dataset_helper::get_rows($options['data']);
-        if (sizeof($datawithoutheader) < 2) {
+        if (count($datawithoutheader) < 2) {
             throw new LengthException('Not enough training data. Need to provide at least 2 datapoints.');
         }
 
         // Separate rows into x and y values.
         $trainxys = dataset_helper::get_separate_x_y_from_rows($datawithoutheader);
-        if (sizeof($trainxys['x'][0]) < 1) throw new LengthException('Need to provide at least one column of indicator values in the training data.');
+        if (count($trainxys['x'][0]) < 1) {
+            throw new LengthException('Need to provide at least one column of indicator values in the training data.');
+        }
 
         // Currently always uses a logistic regression classifier.
         // (https://github.com/moodle/moodle/blob/MOODLE_402_STABLE/lib/mlbackend/php/classes/processor.php#L548).
         $iterations = $options['predictor']::TRAIN_ITERATIONS;
         $this->data = new LogisticRegression($iterations, true, LogisticRegression::CONJUGATE_GRAD_TRAINING, 'log');
         $this->data->train($trainxys['x'], $trainxys['y']);
+    }
+
+    /** Validate the options.
+     * @param array $options
+     * @return void
+     */
+    public function validate(array $options): void {
+        if (!isset($options['predictor'])) {
+            throw new InvalidArgumentException('Options array is missing predictor.');
+        }
+        if (!isset($options['data'])) {
+            throw new InvalidArgumentException('Options array is missing training data.');
+        }
+        if (count($options['data']) == 0) {
+            throw new DomainException('Training dataset can not be empty.');
+        }
+        if (isset($this->data)) {
+            throw new LogicException('Model has already been trained and can not be changed.');
+        }
     }
 
     /**
@@ -91,4 +101,6 @@ class model extends evidence {
     protected function get_file_type(): string {
         return 'ser';
     }
+
+
 }

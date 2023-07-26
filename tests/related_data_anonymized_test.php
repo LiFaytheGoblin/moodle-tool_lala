@@ -16,6 +16,8 @@
 
 namespace tool_laaudit;
 
+use Exception;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/fixtures/test_course_with_students.php');
@@ -29,6 +31,11 @@ require_once(__DIR__ . '/related_data_test.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class related_data_anonymized_test extends related_data_test {
+    /**
+     * Get an evidence instance for the version id.
+     * @return evidence
+     * @throws Exception
+     */
     protected function get_evidence_instance() : evidence {
         return related_data_anonymized::create_scaffold_and_get_for_version($this->versionid);
     }
@@ -80,7 +87,7 @@ class related_data_anonymized_test extends related_data_test {
                         'nstudents' => 10,
                         'createddaysago' => 3,
                         'tablename' => 'course',
-                        'nrowsexpected' => 2, // There's also a site entry in the course table
+                        'nrowsexpected' => 2, // There's also a site entry in the course table.
                 ],
                 'Some users, min days, table role' => [
                         'nstudents' => 10,
@@ -96,7 +103,7 @@ class related_data_anonymized_test extends related_data_test {
      *
      * @covers ::tool_laaudit_dataset_pseudonomize
      */
-    public function test_evidence_pseudonomize() {
+    public function test_evidence_pseudonomize(): void {
         $typemain = 'test';
         $typesecondary = 'other';
         $secondaryfieldname = $typesecondary.'id';
@@ -123,32 +130,31 @@ class related_data_anonymized_test extends related_data_test {
         ];
 
         $pseudonymsmain = [7, 8 , 9];
-        $idmapmain = new idmap(array_column($data, 'id'), $pseudonymsmain, $typemain);
+        $idmapmain = new idmap(array_column($data, 'id'), $pseudonymsmain);
 
         $pseudonymssecondary = [10, 11, 12];
         $secondaryids = array_column($data, $secondaryfieldname);
-        $idmapsecondary = new idmap($secondaryids, $pseudonymssecondary, $typesecondary);
+        $idmapsecondary = new idmap($secondaryids, $pseudonymssecondary);
 
-        $pseudonomized_data = $this->evidence->pseudonomize($data, [$typemain => $idmapmain, $typesecondary => $idmapsecondary], $typemain);
-        $this->assertTrue(isset($pseudonomized_data));
-        // has correct size
-        $this->assertEquals(3, count($pseudonomized_data));
+        $pseudonomizeddata = $this->evidence->pseudonomize($data, [$typemain => $idmapmain, $typesecondary => $idmapsecondary],
+                $typemain);
+        $this->assertTrue(isset($pseudonomizeddata));
+        $this->assertEquals(3, count($pseudonomizeddata));
 
-        // All needed new ids made it to the pseudonomized dataset & structure is ok
-        $missingpseudonyms = array_diff($idmapmain->get_pseudonyms(), related_data::get_ids_used($pseudonomized_data));
+        // All needed new ids made it to the pseudonomized dataset & structure is ok.
+        $missingpseudonyms = array_diff($idmapmain->get_pseudonyms(), related_data::get_ids_used($pseudonomizeddata));
         $this->assertEquals(0, count($missingpseudonyms));
 
         $secondarypseudonyms = $idmapsecondary->get_pseudonyms();
-        $missingsecondarypseudonyms = array_diff($secondarypseudonyms, array_column($pseudonomized_data, $secondaryfieldname));
+        $missingsecondarypseudonyms = array_diff($secondarypseudonyms, array_column($pseudonomizeddata, $secondaryfieldname));
         $this->assertEquals(0, count($missingsecondarypseudonyms));
 
-        $missingternarypseudonyms = array_diff(array_column($pseudonomized_data, $ternaryfieldname), $secondarypseudonyms);
+        $missingternarypseudonyms = array_diff(array_column($pseudonomizeddata, $ternaryfieldname), $secondarypseudonyms);
         $this->assertEquals(0, count($missingternarypseudonyms));
 
-        // The value for each new id is the value we have in dataset for the fitting old id, but the secondary id changed
-        $missingvalues = [];
+        // The value for each new id is the value we have in dataset for the fitting old id, but the secondary id changed.
         $originalids = array_column($data, 'id');
-        foreach ($pseudonomized_data as $actualvalues) {
+        foreach ($pseudonomizeddata as $actualvalues) {
             $pseudonymmain = $actualvalues->id;
             $originalid = $idmapmain->get_originalid($pseudonymmain);
             $originalindex = array_search($originalid, $originalids);
@@ -164,7 +170,6 @@ class related_data_anonymized_test extends related_data_test {
             $newternaryid = $actualvalues->$ternaryfieldname;
             $this->assertNotEquals($originalternaryid, $newternaryid);
         }
-        $this->assertTrue(sizeof($missingvalues) == 0);
     }
 
     /**
@@ -184,6 +189,7 @@ class related_data_anonymized_test extends related_data_test {
                 ]
         ];
     }
+
     /**
      * Check that collect throws an error if too few users exist.
      *
@@ -192,24 +198,30 @@ class related_data_anonymized_test extends related_data_test {
      * @dataProvider tool_laaudit_get_source_data_error_notenoughdata_parameters_provider
      * @param int $nstudents amount of students
      * @param int $createddaysago how many days ago a sample course should have been started
+     * @throws Exception
+     * @throws Exception
      */
     public function test_evidence_collect_error_notenoughdata(int $nstudents, int $createddaysago): void {
         $this->create_test_data($nstudents, $createddaysago);
         $options = $this->get_options('user_enrolments');
 
-        $this->expectException(\Exception::class); // Expect exception if trying to collect but too little data exists.
+        $this->expectException(Exception::class); // Expect exception if trying to collect but too little data exists.
         $this->evidence->collect($options);
     }
 
     /**
      * Get the options object needed for collecting this evidence.
+     *
+     * @param string $tablename
      * @return array
+     * @throws Exception
+     * @throws Exception
      */
     public function get_options(string $tablename = 'user'): array {
         $options = parent::get_options($tablename);
         $ids = test_course_with_students::get_ids($tablename);
         $pseudonyms = range(1, count($ids));
-        $options['idmap'] = new idmap($ids, $pseudonyms, $tablename);
+        $options['idmap'] = new idmap($ids, $pseudonyms);
         return $options;
     }
 }

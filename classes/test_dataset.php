@@ -40,30 +40,41 @@ class test_dataset extends dataset {
      * @return void
      */
     public function collect(array $options): void {
-        if (!isset($options['data'])) {
-            throw new InvalidArgumentException('Missing split dataset');
-        }
-        if (!isset($options['testsize'])) {
-            throw new InvalidArgumentException('Missing test size');
-        }
-        if (sizeof($options['data']) == 0) {
-            throw new InvalidArgumentException('Dataset can not be empty. No training data can be extracted from it.');
-        }
-        if (isset($this->data) && sizeof($this->data) > 0) {
-            throw new LogicException('Data has already been collected and can not be changed.');
-        }
+        $this->validate($options);
 
         $datawithoutheader = dataset_helper::get_rows($options['data']);
 
         $ntotaldatapoints = count($datawithoutheader);
         $ntestdatapoints = round($options['testsize'] * $ntotaldatapoints);
 
-        if($ntestdatapoints < 1) {
-            throw new LengthException('Not enough data available for creating a training and testing split. Need at least 1 datapoint for testing, and 2 for training.');
+        if ($ntestdatapoints < 1) {
+            throw new LengthException('Not enough data available for creating a training and testing split. Need at least
+            1 datapoint for testing, and 2 for training.');
         }
 
         $newrows = array_slice($datawithoutheader, 0, $ntestdatapoints, true);
 
         $this->data = dataset_helper::replace_rows_in_dataset($options['data'], $newrows);
+    }
+
+    /**
+     * Validates this evidence's options.
+     *
+     * @param array $options
+     * @return void
+     */
+    public function validate(array $options): void {
+        if (!isset($options['data'])) {
+            throw new InvalidArgumentException('Missing dataset that can be split.');
+        }
+        if (!isset($options['testsize'])) {
+            throw new InvalidArgumentException('Missing test size.');
+        }
+        if (count($options['data']) == 0) {
+            throw new InvalidArgumentException('Dataset can not be empty. No test data can be extracted from it.');
+        }
+        if (isset($this->data) && count($this->data) > 0) {
+            throw new LogicException('Data has already been collected and can not be changed.');
+        }
     }
 }

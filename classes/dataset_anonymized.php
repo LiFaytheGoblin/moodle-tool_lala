@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * The dataset class.
+ * The dataset anonymized class.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
@@ -28,11 +28,20 @@ use Exception;
 require_once(__DIR__ . '/idmap.php');
 
 /**
- * Class for the complete dataset evidence item.
+ * Class for the anonymized complete dataset evidence item.
  */
 class dataset_anonymized extends dataset {
-    /** @var idmap $idmap used for anonymization */
-    private idmap $idmap;
+    /** Create idmap from a dataset of a specific type.
+     *
+     * @param array $dataset
+     * @return idmap
+     * @throws Exception
+     * @throws Exception
+     */
+    public static function create_idmap(array $dataset) : idmap {
+        $originalids = dataset_helper::get_ids_used_in_dataset($dataset);
+        return idmap::create_from_ids($originalids);
+    }
 
     /**
      * Retrieve all available analysable samples, calculate features and label.
@@ -45,19 +54,14 @@ class dataset_anonymized extends dataset {
     public function collect(array $options): void {
         parent::collect($options);
 
-        $entitytype = $options['analyser']->get_samples_origin();
-        $this->idmap = idmap::create_from_dataset($this->data, $entitytype);
-
         if ($options['analyser']->processes_user_data()) {
-            $n = $this->idmap->count();
+            $n = count(dataset_helper::get_ids_used_in_dataset($this->data));
             if ($n < 3) {
                 $this->abort();
-                throw new Exception('Too few samples available. Found only ' . $n . ' sample(s) to gather. 
+                throw new Exception('Too few samples available. Found only ' . $n . ' sample(s) to gather.
                 To preserve anonymity with a model that processes user related data, at least 3 samples are needed.');
             }
         }
-
-        $this->pseudonomize($this->data, $this->idmap);
     }
 
     /**
@@ -67,6 +71,7 @@ class dataset_anonymized extends dataset {
      * @param array $data the data to anonymize ['analysisintervaltype' => ['0' => headerrow, 'someformerid' => datarow, ...]
      * @param idmap $idmap
      * @return array pseudonomized data ['analysisintervaltype' => ['0' => headerrow, 'somenewid' => datarow, ...]
+     * @throws Exception
      */
     public function pseudonomize(array $data, idmap $idmap): array {
         $rows = dataset_helper::get_rows($data);
@@ -76,19 +81,11 @@ class dataset_anonymized extends dataset {
             $newrows[$pseudonym] = $values;
         }
 
-        $newrowsshuffled = dataset_helper::shuffle_array_preserving_keys($newrows); // Re-sort so that order of keys does not give away identity.
+        // Re-sort so that order of keys does not give away identity.
+        $newrowsshuffled = dataset_helper::shuffle_array_preserving_keys($newrows);
 
         $pseudonymizeddata = dataset_helper::replace_rows_in_dataset($data, $newrowsshuffled);
         $this->data = $pseudonymizeddata;
         return $pseudonymizeddata;
-    }
-
-    /**
-     * Get id map.
-     *
-     * @return idmap idmap
-     */
-    public function get_idmap() : idmap {
-        return $this->idmap;
     }
 }

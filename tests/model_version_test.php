@@ -16,6 +16,10 @@
 
 namespace tool_laaudit;
 
+use advanced_testcase;
+use dml_missing_record_exception;
+use Exception;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -31,24 +35,24 @@ require_once(__DIR__ . '/fixtures/test_version.php');
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class model_version_test extends \advanced_testcase {
+class model_version_test extends advanced_testcase {
     /**
      * Check that __construct() creates a model version.
      *
      * @covers ::tool_laaudit_model_version___construct
      */
-    public function test_model_version_create() {
+    public function test_model_version_create(): void {
         $this->resetAfterTest(true);
 
         $modelid = test_model::create();
         $configid = test_config::create($modelid);
         $versionid = test_version::create($configid);
 
-        // Create a model configuration from a config with an existing model
+        // Create a model configuration from a config with an existing model.
         $version = new model_version($versionid);
         $this->assertEquals($version->get_id(), $versionid);
 
-        // Delete model and create a model configuration from a config with a now deleted model
+        // Delete model and create a model configuration from a config with a now deleted model.
         test_model::delete($modelid);
 
         $version2 = new model_version($versionid);
@@ -60,8 +64,8 @@ class model_version_test extends \advanced_testcase {
      *
      * @covers ::tool_laaudit_model_version___construct
      */
-    public function test_model_version_create_error() {
-        $this->expectException(\dml_missing_record_exception::class);
+    public function test_model_version_create_error(): void {
+        $this->expectException(dml_missing_record_exception::class);
         new model_version(test_version::get_highest_id() + 1);
     }
 
@@ -70,19 +74,19 @@ class model_version_test extends \advanced_testcase {
      *
      * @covers ::tool_laaudit_model_version_create_scaffold_and_get_for_config
      */
-    public function test_model_version_create_scaffold_and_get_for_config() {
+    public function test_model_version_create_scaffold_and_get_for_config(): void {
         $this->resetAfterTest(true);
         $modelid = test_model::create();
 
-        // create a config
+        // Create a config.
         $configid = test_config::create($modelid);
 
-        // for valid config & model
+        // For valid config & model...
         $maxidbeforenewversioncreation = test_version::get_highest_id();
         $versionid = model_version::create_scaffold_and_get_for_config($configid);
         $this->assertGreaterThan($maxidbeforenewversioncreation, $versionid);
 
-        // for valid config & deleted model
+        // For valid config & deleted model...
         test_model::delete($modelid);
         $versionid2 = model_version::create_scaffold_and_get_for_config($configid);
         $this->assertGreaterThan($maxidbeforenewversioncreation, $versionid2);
@@ -93,8 +97,8 @@ class model_version_test extends \advanced_testcase {
      *
      * @covers ::tool_laaudit_model_version_create_scaffold_and_get_for_config
      */
-    public function test_model_version_create_scaffold_and_get_for_config_error() {
-        $this->expectException(\Exception::class);
+    public function test_model_version_create_scaffold_and_get_for_config_error(): void {
+        $this->expectException(Exception::class);
         model_version::create_scaffold_and_get_for_config(test_config::get_highest_id() + 1);
     }
 }

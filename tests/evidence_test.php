@@ -55,14 +55,15 @@ class evidence_test extends evidence_testcase {
         $evidence = test_evidence::create_scaffold_and_get_for_version($this->versionid);
         $this->assertEquals($evidence->get_versionid(), $this->versionid);
 
-        // Delete model and construct evidence from a version of a now deleted model
+        // Delete model and construct evidence from a version of a now deleted model.
         test_model::delete($this->modelid);
         $evidence2 = test_evidence::create_scaffold_and_get_for_version($this->versionid);
         $this->assertEquals($evidence2->get_versionid(), $this->versionid);
     }
 
     /**
-     * Check that create_scaffold_and_get_for_version() throws an error if the provided version id does not exist in tool_laaudit_evidence.
+     * Check that create_scaffold_and_get_for_version() throws an error
+     * if the provided version id does not exist in tool_laaudit_evidence.
      *
      * @covers ::tool_laaudit_evidence_create_scaffold_and_get_for_version
      */
@@ -137,13 +138,16 @@ class evidence_test extends evidence_testcase {
         $evidenceid = test_evidence::create($this->versionid);
         $evidence = new test_evidence($evidenceid);
 
-        // get db entry
+        // Get DB entry for the evidence.
         global $DB;
         $resultid = $DB->get_fieldset_select('tool_laaudit_evidence', 'id', 'id='.$evidenceid)[0];
         $this->assertEquals($evidenceid, $resultid);
 
+        // Create some evidence.
         $evidence->collect([]);
         $evidence->store();
+
+        // Test abort().
         $evidence->abort();
 
         $resultids = $DB->get_fieldset_select('tool_laaudit_evidence', 'id', 'id='.$evidenceid);
@@ -156,7 +160,12 @@ class evidence_test extends evidence_testcase {
         $this->assertFalse($file);
     }
 
-    function get_options(): array {
+    /**
+     * Get options for this evidence type.
+     *
+     * @@eturn array of options for this evidence type.
+     */
+    public function get_options(): array {
         return [];
     }
 }

@@ -24,7 +24,7 @@
 
 require(__DIR__ . '/../../../config.php');
 
-use \tool_laaudit\model_version;
+use tool_laaudit\model_version;
 
 $configid = optional_param('configid', 0, PARAM_INT);
 
@@ -51,11 +51,11 @@ if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // If route contains auto param, do it automatically.
     try {
-        $version->gather_dataset(true);
-        $version->split_training_test_data(true);
+        $version->gather_dataset();
+        $version->split_training_test_data();
         $version->train();
         $version->predict();
-        $version->gather_related_data(true);
+        $version->gather_related_data();
     } finally {
         $version->finish();
     }

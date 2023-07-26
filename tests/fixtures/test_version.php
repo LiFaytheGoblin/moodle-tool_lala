@@ -14,22 +14,24 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_laaudit;
+
+use core_analytics\manager;
+use core_analytics\predictor;
+use Exception;
+use Phpml\Classification\Linear\LogisticRegression;
+
+defined('MOODLE_INTERNAL') || die();
+
 /**
- * Test model.
+ * Test version.
  *
  * @package     tool_laaudit
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace tool_laaudit;
-
-use \core_analytics\manager;
-use \core_analytics\predictor;
-use Phpml\Classification\Linear\LogisticRegression;
-
-defined('MOODLE_INTERNAL') || die();
 class test_version {
+    /** @var float RELATIVETESTSETSIZE */
     const RELATIVETESTSETSIZE = 0.2;
 
     /**
@@ -48,8 +50,7 @@ class test_version {
                 'indicators' => test_model::INDICATORS,
                 'relativetestsetsize' => self::RELATIVETESTSETSIZE,
         ];
-        $versionid = $DB->insert_record('tool_laaudit_model_versions', $valididversionobject);
-        return $versionid;
+        return $DB->insert_record('tool_laaudit_model_versions', $valididversionobject);
     }
 
     /**
@@ -79,10 +80,12 @@ class test_version {
      * Get a predictor for this version.
      *
      * @return predictor predictor
+     * @throws Exception
+     * @throws Exception
      */
     public static function get_predictor() : predictor {
         $predictor = manager::get_predictions_processor(test_model::PREDICTIONSPROCESSOR);
-        if(!$predictor) throw new \Exception('Predictor not found for predictionsprocessor with name '.test_model::PREDICTIONSPROCESSOR);
+        if(!$predictor) throw new Exception('Predictor not found for predictionsprocessor with name '.test_model::PREDICTIONSPROCESSOR);
         return $predictor;
     }
 
@@ -91,9 +94,11 @@ class test_version {
      *
      * @param int $versionid
      * @return LogisticRegression classifier
+     * @throws Exception
+     * @throws Exception
      */
     public static function get_classifier(int $versionid) : LogisticRegression {
-        $dataset = test_dataset_evidence::create(3);
+        $dataset = test_dataset_evidence::create();
         $evidence = model::create_scaffold_and_get_for_version($versionid);
         $predictor = test_version::get_predictor();
         $options=[

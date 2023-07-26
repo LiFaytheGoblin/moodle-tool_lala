@@ -16,6 +16,8 @@
 
 namespace tool_laaudit;
 
+use Exception;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/fixtures/test_model.php');
@@ -31,12 +33,20 @@ require_once(__DIR__ . '/evidence_testcase.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class dataset_test extends evidence_testcase {
+    /**
+     * Set up resources before each test.
+     */
     protected function setUp(): void {
         parent::setUp();
 
         $this->evidence = $this->get_evidence_instance();
     }
 
+    /**
+     * Get an evidence instance for the version id.
+     * @return evidence
+     * @throws Exception
+     */
     protected function get_evidence_instance() : evidence {
         return dataset::create_scaffold_and_get_for_version($this->versionid);
     }
@@ -61,6 +71,7 @@ class dataset_test extends evidence_testcase {
                 ]
         ];
     }
+
     /**
      * Check that collect gathers all necessary data
      *
@@ -69,6 +80,8 @@ class dataset_test extends evidence_testcase {
      * @dataProvider tool_laaudit_get_source_data_parameters_provider
      * @param int $nstudents amount of students
      * @param int $createddaysago how many days ago a sample course should have been started
+     * @throws Exception
+     * @throws Exception
      */
     public function test_evidence_collect(int $nstudents, int $createddaysago): void {
         $this->create_test_data($nstudents, $createddaysago);
@@ -78,26 +91,26 @@ class dataset_test extends evidence_testcase {
 
         $rawdata = $this->evidence->get_raw_data();
         $this->assertTrue(isset($rawdata));
-        $this->assertEquals(1, sizeof($rawdata));
+        $this->assertEquals(1, count($rawdata));
 
         $res = $rawdata[test_model::ANALYSISINTERVAL];
 
         $resheader = array_slice($res, 0, 1, true)[0];
         $resdata = array_slice($res, 1, null, true);
 
-        $expectedheadersize = sizeof(test_model::get_indicator_instances()) + 1; // The header should contain indicator and target names.
-        $this->assertEquals($expectedheadersize, sizeof($resheader));
+        $expectedheadersize = count(test_model::get_indicator_instances()) + 1; // Header should contain indicator and target names.
+        $this->assertEquals($expectedheadersize, count($resheader));
 
-        $this->assertEquals(sizeof($resdata), $nstudents * floor($createddaysago / 3));
+        $this->assertEquals(count($resdata), $nstudents * floor($createddaysago / 3));
 
-        // Test serialize()
+        // Test serialize().
         $this->evidence->serialize();
 
         $serializedstring = $this->evidence->get_serialized_data();
 
-        $expectedheadersize = sizeof(test_model::get_indicator_instances()) + 1;
+        $expectedheadersize = count(test_model::get_indicator_instances()) + 1;
         $this->assertTrue(strlen($serializedstring) >= $expectedheadersize); // The string should contain at least a header.
-        $this->assertTrue(str_contains($serializedstring, ',')); // the string should have commas.
+        $this->assertTrue(str_contains($serializedstring, ',')); // The string should have commas.
     }
 
     /**
@@ -118,7 +131,7 @@ class dataset_test extends evidence_testcase {
     public function test_evidence_collect_error_nodata(): void {
         $options = $this->get_options();
 
-        $this->expectException(\Exception::class); // Expect exception if trying to collect but no data exists.
+        $this->expectException(Exception::class); // Expect exception if trying to collect but no data exists.
         $this->evidence->collect($options);
     }
 
@@ -139,12 +152,12 @@ class dataset_test extends evidence_testcase {
 
         $rawdata = $this->evidence->get_raw_data();
         $this->assertTrue(isset($rawdata));
-        $this->assertEquals(1, sizeof($rawdata));
+        $this->assertEquals(1, count($rawdata));
 
         $res = $rawdata[test_model::ANALYSISINTERVAL];
-        $this->assertTrue(sizeof($res) == $nstudents + 1);
+        $this->assertTrue(count($res) == $nstudents + 1);
         $resdata = array_slice($res, 1, null, true);
-        $this->assertEquals(sizeof($resdata), $nstudents * floor($createddaysago / 3));
+        $this->assertEquals(count($resdata), $nstudents * floor($createddaysago / 3));
     }
 
     /**
@@ -158,7 +171,7 @@ class dataset_test extends evidence_testcase {
         $res = dataset_helper::get_shuffled($data);
 
         $this->assertFalse(json_encode($data) == json_encode($res));
-        $this->assertEquals(sizeof($data), sizeof($res));
+        $this->assertEquals(count($data), count($res));
         $this->assertTrue(str_contains(json_encode($res), json_encode(test_dataset_evidence::get_header())));
     }
 
@@ -174,7 +187,10 @@ class dataset_test extends evidence_testcase {
 
     /**
      * Get the options object needed for collecting this evidence.
+     *
      * @return array
+     * @throws Exception
+     * @throws Exception
      */
     public function get_options(): array {
         return [

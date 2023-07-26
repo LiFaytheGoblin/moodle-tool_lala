@@ -40,16 +40,15 @@ abstract class evidence {
     protected int $versionid;
     /** @var string $name of the evidence. */
     protected string $name;
-    /** @var int $timecollectionstarted of the evidence. */
-    private int $timecollectionstarted;
-    /** @var int|null $timecollectionfinished of the evidence. */
-    private ?int $timecollectionfinished;
-    /** @var string|null $serializedfilelocation path of the evidence. */
-    private ?string $serializedfilelocation;
     /** @var array|mixed|null $data raw data of the evidence. */
     protected mixed $data;
     /** @var string|null $filestring serialized data of the evidence. */
     protected ?string $filestring;
+    /** @var int|null $timecollectionfinished of the evidence. */
+    private ?int $timecollectionfinished;
+    /** @var string|null $serializedfilelocation path of the evidence. */
+    private ?string $serializedfilelocation;
+
     /**
      * Constructor. Deserialize DB object.
      *
@@ -65,7 +64,6 @@ abstract class evidence {
         $this->id = $evidence->id;
         $this->versionid = $evidence->versionid;
         $this->name = $evidence->name;
-        $this->timecollectionstarted = $evidence->timecollectionstarted;
         $this->timecollectionfinished = $evidence->timecollectionfinished;
         $this->serializedfilelocation = $evidence->serializedfilelocation;
     }
@@ -75,6 +73,8 @@ abstract class evidence {
      *
      * @param int $versionid of the version
      * @return evidence of the created evidence
+     * @throws Exception
+     * @throws Exception
      */
     public static function create_scaffold_and_get_for_version(int $versionid): evidence {
         global $DB;
@@ -82,7 +82,8 @@ abstract class evidence {
         $obj = new stdClass();
 
         if (!$DB->record_exists('tool_laaudit_model_versions', ['id' => $versionid])) {
-            throw new Exception('No evidence can be created for version with id '.$versionid.'because this version does not exist.');
+            throw new Exception('No evidence can be created for version with id '.$versionid.'because this version does not
+            exist.');
         }
 
         $obj->versionid = $versionid;
@@ -105,19 +106,22 @@ abstract class evidence {
     abstract public function collect(array $options): void;
 
     /**
-     * Serializes the raw data.
-     * Store the serialization string in the filestring field.
+     * Validates the $options array.
      *
+     * @param array $options depending on the implementation
      * @return void
      */
-    abstract public function serialize(): void;
+    abstract public function validate(array $options): void;
 
     /**
      * Stores a serialized data string in a file. Sets the serializedfilelocation property of the class.
      * @return void
      */
     public function store(): void {
-        if (!isset($this->data)) throw new LogicException('No evidence has been collected yet that could be serialized. Make sure to collect the evidence first.');
+        if (!isset($this->data)) {
+            throw new LogicException('No evidence has been collected yet that could be serialized. Make sure to collect the
+            evidence first.');
+        }
 
         if (!isset($this->filestring)) {
             $this->serialize();
@@ -132,6 +136,71 @@ abstract class evidence {
         $this->set_serializedfilelocation();
 
         $this->finish();
+    }
+
+    /**
+     * Serializes the raw data.
+     * Store the serialization string in the filestring field.
+     *
+     * @return void
+     */
+    abstract public function serialize(): void;
+
+    /**
+     * Returns info on the serialized data file on the server.
+     * @return array
+     */
+    public function get_file_info(): array {
+        return [
+                'contextid' => context_system::instance()->id,
+                'component' => 'tool_laaudit',
+                'filearea'  => 'tool_laaudit',
+                'itemid'    => $this->id,
+                'filepath'  => '/evidence/',
+                'filename'  => 'modelversion' . $this->versionid . '-evidence' . $this->name . $this->id . '.' .
+                        $this->get_file_type(),
+        ];
+    }
+
+    /**
+     * Returns the type of the stored file, e.g. "csv".
+     * @return string
+     */
+    abstract protected function get_file_type(): string;
+
+    /**
+     * Sets the path where the serialized data is located as a file on the server, for later download.
+     *
+     * @return void
+     */
+    protected function set_serializedfilelocation(): void {
+        $fileinfo = $this->get_file_info();
+
+        $serializedfileurl = moodle_url::make_pluginfile_url(
+                $fileinfo['contextid'],
+                $fileinfo['component'],
+                $fileinfo['filearea'],
+                $fileinfo['itemid'],
+                $fileinfo['filepath'],
+                $fileinfo['filename'],
+                true
+        );
+
+        $this->serializedfilelocation = $serializedfileurl->out();
+
+        global $DB;
+        $DB->set_field('tool_laaudit_evidence', 'serializedfilelocation', $this->serializedfilelocation, ['id' => $this->id]);
+    }
+
+    /**
+     * Mark this evidence collection as finished in the database.
+     * @return void
+     */
+    public function finish(): void {
+        global $DB;
+
+        $this->timecollectionfinished = time();
+        $DB->set_field('tool_laaudit_evidence', 'timecollectionfinished', $this->timecollectionfinished, ['id' => $this->id]);
     }
 
     /**
@@ -168,42 +237,12 @@ abstract class evidence {
 
     /**
      * Returns the serialized data of the evidence.
+     * Useful for testing.
+     *
      * @return string|null serialized data
      */
     public function get_serialized_data(): ?string {
         return $this->filestring;
-    }
-
-    /**
-     * Sets the path where the serialized data is located as a file on the server, for later download.
-     *
-     * @return void
-     */
-    protected function set_serializedfilelocation(): void {
-        $fileinfo = $this->get_file_info();
-
-        $serializedfileurl = moodle_url::make_pluginfile_url(
-                $fileinfo['contextid'],
-                $fileinfo['component'],
-                $fileinfo['filearea'],
-                $fileinfo['itemid'],
-                $fileinfo['filepath'],
-                $fileinfo['filename'],
-                true
-        );
-
-        $this->serializedfilelocation = $serializedfileurl->out();
-
-        global $DB;
-        $DB->set_field('tool_laaudit_evidence', 'serializedfilelocation', $this->serializedfilelocation, ['id' => $this->id]);
-    }
-
-    /**
-     * Returns the location of the serialized data as a file on the server, for later download.
-     * @return string path location
-     */
-    public function get_serializedfilelocation(): ?string {
-        return $this->serializedfilelocation;
     }
 
     /**
@@ -212,39 +251,6 @@ abstract class evidence {
      */
     public function get_timecollectionfinished(): ?int {
         return $this->timecollectionfinished;
-    }
-
-    /**
-     * Returns info on the serialized data file on the server.
-     * @return array
-     */
-    public function get_file_info(): array {
-        return [
-                'contextid' => context_system::instance()->id,
-                'component' => 'tool_laaudit',
-                'filearea'  => 'tool_laaudit',
-                'itemid'    => $this->id,
-                'filepath'  => '/evidence/',
-                'filename'  => 'modelversion' . $this->versionid . '-evidence' . $this->name . $this->id . '.' .
-                        $this->get_file_type(),
-        ];
-    }
-
-    /**
-     * Returns the type of the stored file, e.g. "csv".
-     * @return string
-     */
-    abstract protected function get_file_type(): string;
-
-    /**
-     * Mark this evidence collection as finished in the data base.
-     * @return void
-     */
-    public function finish(): void {
-        global $DB;
-
-        $this->timecollectionfinished = time();
-        $DB->set_field('tool_laaudit_evidence', 'timecollectionfinished', $this->timecollectionfinished, ['id' => $this->id]);
     }
 
     /**

@@ -17,7 +17,7 @@
 /**
  * Adds a link to the tool page to the admin settings.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $context = context_system::instance();
 if (manager::is_analytics_enabled()) {
-    $ADMIN->add('analytics', new admin_externalpage('tool_laaudit_index',
-            get_string('pluginname', 'tool_laaudit'),
-            $CFG->wwwroot . '/' . $CFG->admin . '/tool/laaudit/index.php', 'tool/laaudit:viewpagecontent'));
+    $ADMIN->add('analytics', new admin_externalpage('tool_lala_index',
+            get_string('pluginname', 'tool_lala'),
+            $CFG->wwwroot . '/' . $CFG->admin . '/tool/lala/index.php', 'tool/lala:viewpagecontent'));
 }

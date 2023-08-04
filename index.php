@@ -17,23 +17,16 @@
 /**
  * The main screen of the tool.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require(__DIR__ . '/../../../config.php');
 
-/////// CONTROLLER
-
-// Get all model configurations.
-$modelconfigobjs = tool_laaudit\model_configurations::init_and_get_all_model_config_objs();
-
-/////// VIEW
-
 // Set some page parameters.
-$pageurl = new moodle_url('/admin/tool/laaudit/index.php');
-$heading = get_string('pluginname', 'tool_laaudit');
+$pageurl = new moodle_url('/admin/tool/lala/index.php');
+$heading = get_string('pluginname', 'tool_lala');
 $context = context_system::instance();
 
 $PAGE->set_context($context);
@@ -43,14 +36,17 @@ $PAGE->set_title(format_string($heading));
 $PAGE->set_heading($heading);
 
 require_login();
-require_capability('tool/laaudit:viewpagecontent', $context);
+require_capability('tool/lala:viewpagecontent', $context);
+
+// Get all model configurations.
+$modelconfigobjs = tool_lala\model_configurations::init_and_get_all_model_config_objs();
 
 // Output the page.
-$output = $PAGE->get_renderer('tool_laaudit');
+$output = $PAGE->get_renderer('tool_lala');
 
 echo $output->header();
 
-$modelconfigsrenderable = new tool_laaudit\output\model_configurations($modelconfigobjs);
+$modelconfigsrenderable = new tool_lala\output\model_configurations($modelconfigobjs);
 echo $output->render($modelconfigsrenderable);
 
 echo $output->footer();

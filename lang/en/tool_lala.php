@@ -17,7 +17,7 @@
 /**
  * Plugin strings are defined here.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @category    string
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -54,7 +54,7 @@ $string['error'] = 'error';
 $string['traintestsplit'] = 'train-test-split';
 $string['traintest'] = 'Train: {$a->trainsize}%, Test: {$a->testsize}%';
 $string['eventmodelversioncreated'] = 'Model version created';
-$string['laaudit:viewpagecontent'] = 'View the content of the plugin page';
-$string['laaudit:downloadevidence'] = 'Download the evidence produced for model versions';
-$string['laaudit:createmodelversion'] = 'Trigger the creation of a new model version';
+$string['lala:viewpagecontent'] = 'View the content of the plugin page';
+$string['lala:downloadevidence'] = 'Download the evidence produced for model versions';
+$string['lala:createmodelversion'] = 'Trigger the creation of a new model version';
 $string['privacy:metadata'] = 'This plugin only creates database tables concerning model configuration, version and evidence meta data. Some data is gathered from the Moodle instance during the model version creation, and provided to admins and auditors as evidence. This data is anonymized BEFORE storing it permanently a file.';

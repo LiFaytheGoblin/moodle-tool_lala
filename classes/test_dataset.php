@@ -17,12 +17,12 @@
 /**
  * The test dataset class, inheriting from the dataset class.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_laaudit;
+namespace tool_lala;
 
 use InvalidArgumentException;
 use LengthException;
@@ -72,6 +72,9 @@ class test_dataset extends dataset {
         }
         if (count($options['data']) == 0) {
             throw new InvalidArgumentException('Dataset can not be empty. No test data can be extracted from it.');
+        }
+        if ($options['testsize'] <= 0 || $options['testsize'] >= 1) {
+            throw new InvalidArgumentException('Testsize must be a float between 0 and 1.');
         }
         if (isset($this->data) && count($this->data) > 0) {
             throw new LogicException('Data has already been collected and can not be changed.');

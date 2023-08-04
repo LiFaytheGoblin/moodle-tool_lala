@@ -17,12 +17,12 @@
 /**
  * Output for a single model configuration.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_laaudit\output;
+namespace tool_lala\output;
 
 use renderer_base;
 use templatable;
@@ -71,7 +71,7 @@ class model_configuration implements templatable, renderable {
         $analysisintervalnameparts = explode('\\', $this->modelconfig->analysisinterval);
         $data['analysisinterval'] = end($analysisintervalnameparts);
 
-        $data['defaultcontextids'] = get_string('allcontexts', 'tool_laaudit');
+        $data['defaultcontextids'] = get_string('allcontexts', 'tool_lala');
         $contextids = json_decode($this->modelconfig->defaultcontextids);
         if (gettype($contextids) == 'array') {
             $data['defaultcontextids'] = implode(', ', $contextids);
@@ -95,7 +95,7 @@ class model_configuration implements templatable, renderable {
         // Add buttons.
         $buttons = [];
         $buttons[] = new single_button(new moodle_url('modelversion.php', ['configid' => $this->modelconfig->id,
-                'sesskey' => sesskey()]), get_string('automaticallycreateversion', 'tool_laaudit'), 'post');
+                'sesskey' => sesskey()]), get_string('automaticallycreateversion', 'tool_lala'), 'post');
         foreach ($buttons as $key => $button) {
             $buttons[$key] = $button->export_for_template($output);
         }

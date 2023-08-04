@@ -17,18 +17,18 @@
 /**
  * Output for a single model version.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_laaudit\output;
+namespace tool_lala\output;
 
 use renderer_base;
 use templatable;
 use renderable;
 use stdClass;
-use tool_laaudit\related_data;
+use tool_lala\related_data;
 
 /**
  * Class for the output for a single model version.

@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_laaudit;
+namespace tool_lala;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -25,7 +25,7 @@ use Exception;
 /**
  * Test model.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -129,7 +129,7 @@ class test_model {
      */
     public static function get_highest_id(): int {
         global $DB;
-        $existingmodelidsinconfigs = $DB->get_fieldset_select('tool_laaudit_model_configs', 'modelid', '1=1');
+        $existingmodelidsinconfigs = $DB->get_fieldset_select('tool_lala_model_configs', 'modelid', '1=1');
         $existingmodelidsinmodels = $DB->get_fieldset_select('analytics_models', 'id', '1=1');
 
         $allmodelids = array_merge($existingmodelidsinconfigs, $existingmodelidsinmodels);

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="admin/tool/laaudit/db" VERSION="20230726" COMMENT="XMLDB file for Moodle admin/tool/laaudit"
+<XMLDB PATH="admin/tool/lala/db" VERSION="2023080400" COMMENT="XMLDB file for Moodle admin/tool/lala"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
 >
     <TABLES>
-        <TABLE NAME="tool_laaudit_model_configs" COMMENT="Model configurations derived from analytics_models (differing by their settings)">
+        <TABLE NAME="tool_lala_model_configs" COMMENT="Model configurations derived from analytics_models (differing by their settings)">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" DEFAULT="default" SEQUENCE="false" COMMENT="Name of the model, 'model' + modelid if none was given by the original model"/>
@@ -20,7 +20,7 @@
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
         </TABLE>
-        <TABLE NAME="tool_laaudit_model_versions" COMMENT="Versions of model configurations (differing by the used data)">
+        <TABLE NAME="tool_lala_model_versions" COMMENT="Versions of model configurations (differing by the used data)">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="default" SEQUENCE="false" COMMENT="Name of the model version, 'default' if version was created automatically"/>
@@ -33,10 +33,10 @@
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-                <KEY NAME="configid" TYPE="foreign" FIELDS="configid" REFTABLE="tool_laaudit_model_configs" REFFIELDS="id"/>
+                <KEY NAME="configid" TYPE="foreign" FIELDS="configid" REFTABLE="tool_lala_model_configs" REFFIELDS="id"/>
             </KEYS>
         </TABLE>
-        <TABLE NAME="tool_laaudit_evidence" COMMENT="References to the files and information about the evidence produced by the plugin">
+        <TABLE NAME="tool_lala_evidence" COMMENT="References to the files and information about the evidence produced by the plugin">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="versionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -47,7 +47,7 @@
             </FIELDS>
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-                <KEY NAME="versionid" TYPE="foreign" FIELDS="versionid" REFTABLE="tool_laaudit_model_versions" REFFIELDS="id"/>
+                <KEY NAME="versionid" TYPE="foreign" FIELDS="versionid" REFTABLE="tool_lala_model_versions" REFFIELDS="id"/>
             </KEYS>
         </TABLE>
     </TABLES>

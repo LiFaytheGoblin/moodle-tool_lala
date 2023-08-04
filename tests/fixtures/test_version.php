@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_laaudit;
+namespace tool_lala;
 
 use core_analytics\manager;
 use core_analytics\predictor;
@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Test version.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -50,7 +50,7 @@ class test_version {
                 'indicators' => test_model::INDICATORS,
                 'relativetestsetsize' => self::RELATIVETESTSETSIZE,
         ];
-        return $DB->insert_record('tool_laaudit_model_versions', $valididversionobject);
+        return $DB->insert_record('tool_lala_model_versions', $valididversionobject);
     }
 
     /**
@@ -60,7 +60,7 @@ class test_version {
      */
     public static function get_highest_id(): int {
         global $DB;
-        $existingversionids = $DB->get_fieldset_select('tool_laaudit_model_versions', 'id', '1=1');
+        $existingversionids = $DB->get_fieldset_select('tool_lala_model_versions', 'id', '1=1');
         return (sizeof($existingversionids) > 0) ? max($existingversionids) : 1;
     }
 
@@ -72,7 +72,7 @@ class test_version {
      */
     public static function haserror(int $versionid) : bool {
         global $DB;
-        $error = $DB->get_fieldset_select('tool_laaudit_model_versions', 'error', 'id='.$versionid)[0];
+        $error = $DB->get_fieldset_select('tool_lala_model_versions', 'error', 'id='.$versionid)[0];
         return isset($error);
     }
 

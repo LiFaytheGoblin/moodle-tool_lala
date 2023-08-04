@@ -17,12 +17,12 @@
 /**
  * Output for a single model version description.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_laaudit\output;
+namespace tool_lala\output;
 
 use renderer_base;
 use templatable;
@@ -63,14 +63,14 @@ class model_version_description implements templatable, renderable {
         $finished = (int) $this->version->timecreationfinished > 0;
         $data['timecreationfinishedicon'] = $finished ? 'end' : 'half';
         $data['timecreationfinished'] = $finished ?
-                userdate((int) $this->version->timecreationfinished) : get_string('unfinished', 'tool_laaudit');
+                userdate((int) $this->version->timecreationfinished) : get_string('unfinished', 'tool_lala');
 
         $params = new stdClass();
         $params->testsize = $this->version->relativetestsetsize * 100;
         $params->trainsize = 100 - $params->testsize;
-        $data['traintestsplit'] = get_string('traintest', 'tool_laaudit', $params);
+        $data['traintestsplit'] = get_string('traintest', 'tool_lala', $params);
 
-        $data['contextids'] = get_string('allcontexts', 'tool_laaudit');
+        $data['contextids'] = get_string('allcontexts', 'tool_lala');
         $contextids = json_decode($this->version->contextids);
         if (gettype($contextids) == 'array') {
             $data['contextids'] = implode(', ', $contextids);

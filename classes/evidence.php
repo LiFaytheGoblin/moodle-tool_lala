@@ -17,12 +17,12 @@
 /**
  * The abstract evidence class that can be extended.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_laaudit;
+namespace tool_lala;
 
 use Exception;
 use LogicException;
@@ -58,7 +58,7 @@ abstract class evidence {
     public function __construct(int $id) {
         global $DB;
 
-        $evidence = $DB->get_record('tool_laaudit_evidence', ['id' => $id], '*', MUST_EXIST);
+        $evidence = $DB->get_record('tool_lala_evidence', ['id' => $id], '*', MUST_EXIST);
 
         // Fill properties from DB.
         $this->id = $evidence->id;
@@ -81,7 +81,7 @@ abstract class evidence {
 
         $obj = new stdClass();
 
-        if (!$DB->record_exists('tool_laaudit_model_versions', ['id' => $versionid])) {
+        if (!$DB->record_exists('tool_lala_model_versions', ['id' => $versionid])) {
             throw new Exception('No evidence can be created for version with id '.$versionid.'because this version does not
             exist.');
         }
@@ -92,7 +92,7 @@ abstract class evidence {
         $obj->name = end($classnameparts);
         $obj->timecollectionstarted = time();
 
-        $id = $DB->insert_record('tool_laaudit_evidence', $obj);
+        $id = $DB->insert_record('tool_lala_evidence', $obj);
 
         return new static($id);
     }
@@ -153,8 +153,8 @@ abstract class evidence {
     public function get_file_info(): array {
         return [
                 'contextid' => context_system::instance()->id,
-                'component' => 'tool_laaudit',
-                'filearea'  => 'tool_laaudit',
+                'component' => 'tool_lala',
+                'filearea'  => 'tool_lala',
                 'itemid'    => $this->id,
                 'filepath'  => '/evidence/',
                 'filename'  => 'modelversion' . $this->versionid . '-evidence' . $this->name . $this->id . '.' .
@@ -189,7 +189,7 @@ abstract class evidence {
         $this->serializedfilelocation = $serializedfileurl->out();
 
         global $DB;
-        $DB->set_field('tool_laaudit_evidence', 'serializedfilelocation', $this->serializedfilelocation, ['id' => $this->id]);
+        $DB->set_field('tool_lala_evidence', 'serializedfilelocation', $this->serializedfilelocation, ['id' => $this->id]);
     }
 
     /**
@@ -200,7 +200,7 @@ abstract class evidence {
         global $DB;
 
         $this->timecollectionfinished = time();
-        $DB->set_field('tool_laaudit_evidence', 'timecollectionfinished', $this->timecollectionfinished, ['id' => $this->id]);
+        $DB->set_field('tool_lala_evidence', 'timecollectionfinished', $this->timecollectionfinished, ['id' => $this->id]);
     }
 
     /**
@@ -260,7 +260,7 @@ abstract class evidence {
     public function abort(): void {
         global $DB;
 
-        $DB->delete_records('tool_laaudit_evidence', ['id' => $this->id]);
+        $DB->delete_records('tool_lala_evidence', ['id' => $this->id]);
 
         if (isset($this->serializedfilelocation)) {
             $fs = get_file_storage();

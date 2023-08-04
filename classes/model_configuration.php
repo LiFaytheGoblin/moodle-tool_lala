@@ -17,12 +17,12 @@
 /**
  * The model configuration class, built on top of the analytics/model class.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_laaudit;
+namespace tool_lala;
 
 use core_analytics\manager;
 use Exception;
@@ -50,7 +50,7 @@ class model_configuration {
     private ?string $defaultcontextids;
     /** @var string $indicators used by the model version */
     private string $indicators;
-    /** @var int[] $versions created of the model config. */
+    /** @var stdClass[] $versions created of the model config. */
     private array $versions;
 
     /**
@@ -64,7 +64,7 @@ class model_configuration {
     public function __construct($id) {
         global $DB;
 
-        $modelconfig = $DB->get_record('tool_laaudit_model_configs', ['id' => $id], '*', MUST_EXIST);
+        $modelconfig = $DB->get_record('tool_lala_model_configs', ['id' => $id], '*', MUST_EXIST);
 
         $this->id = $modelconfig->id;
         $this->modelid = $modelconfig->modelid;
@@ -101,7 +101,7 @@ class model_configuration {
     public function get_versions_from_db(): array {
         global $DB;
 
-        $versionids = $DB->get_fieldset_select('tool_laaudit_model_versions', 'id', 'configid='.$this->id);
+        $versionids = $DB->get_fieldset_select('tool_lala_model_versions', 'id', 'configid='.$this->id);
 
         $versions = [];
         foreach ($versionids as $versionid) {
@@ -129,7 +129,7 @@ class model_configuration {
         $obj->modelid = $modelid;
         $obj->name = $modelobj->name;
         if (!isset($obj->name)) {
-            $modelidcount = $DB->count_records('tool_laaudit_model_configs', ['modelid' => $modelid]);
+            $modelidcount = $DB->count_records('tool_lala_model_configs', ['modelid' => $modelid]);
             $obj->name = 'config' . $modelid . '/' . $modelidcount;
         }
         $obj->target = $modelobj->target;
@@ -157,7 +157,7 @@ class model_configuration {
 
         $obj->timecreated = time();
 
-        return $DB->insert_record('tool_laaudit_model_configs', $obj);
+        return $DB->insert_record('tool_lala_model_configs', $obj);
     }
 
     /**

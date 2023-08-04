@@ -14,12 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_laaudit;
+namespace tool_lala;
 
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot . '/admin/tool/laaudit/classes/model.php');
+require_once($CFG->dirroot . '/admin/tool/lala/classes/model.php');
 require_once(__DIR__ . '/fixtures/test_model.php');
 require_once(__DIR__ . '/fixtures/test_version.php');
 require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
@@ -32,7 +32,7 @@ use core_analytics\predictor;
 /**
  * Model test.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -50,7 +50,7 @@ class model_test extends evidence_testcase {
      *
      * @return array List of source data information
      */
-    public function tool_laaudit_get_source_data_parameters_provider(): array {
+    public function tool_lala_get_source_data_parameters_provider(): array {
         return [
                 'Min datapoints' => [
                         'ndatapoints' => 3
@@ -64,9 +64,9 @@ class model_test extends evidence_testcase {
     /**
      * Check that collect trains the model.
      *
-     * @covers ::tool_laaudit_model_collect
+     * @covers ::tool_lala_model_collect
      *
-     * @dataProvider tool_laaudit_get_source_data_parameters_provider
+     * @dataProvider tool_lala_get_source_data_parameters_provider
      * @param int $ndatapoints amount of datapoints in training data
      * @throws Exception
      * @throws Exception
@@ -110,7 +110,7 @@ class model_test extends evidence_testcase {
      * @throws Exception
      * @throws Exception
      */
-    public function tool_laaudit_get_source_data_error_parameters_provider(): array {
+    public function tool_lala_get_source_data_error_parameters_provider(): array {
         return [
                 'No dataset' => [
                         'dataset' => []
@@ -126,9 +126,9 @@ class model_test extends evidence_testcase {
     /**
      * Check that collect throws an exception if no(t enough) training data is available.
      *
-     * @covers ::tool_laaudit_model_collect
+     * @covers ::tool_lala_model_collect
      *
-     * @dataProvider tool_laaudit_get_source_data_error_parameters_provider
+     * @dataProvider tool_lala_get_source_data_error_parameters_provider
      * @param array $dataset training dataset
      */
     public function test_model_collect_error_nodata(array $dataset): void {
@@ -143,7 +143,7 @@ class model_test extends evidence_testcase {
     /**
      * Check that model collect still works when the original model has been deleted.
      *
-     * @covers ::tool_laaudit_model_collect
+     * @covers ::tool_lala_model_collect
      */
     public function test_model_collect_deletedmodel(): void {
         test_model::delete($this->modelid);

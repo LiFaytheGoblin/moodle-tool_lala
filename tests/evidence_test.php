@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_laaudit;
+namespace tool_lala;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -30,7 +30,7 @@ use Exception;
 /**
  * Model evidence test.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -48,7 +48,7 @@ class evidence_test extends evidence_testcase {
     /**
      * Check that create_scaffold_and_get_for_version() creates an evidence scaffold.
      *
-     * @covers ::tool_laaudit_evidence_create_scaffold_and_get_for_version
+     * @covers ::tool_lala_evidence_create_scaffold_and_get_for_version
      */
     public function test_evidence_create_scaffold_and_get_for_version() : void {
         // Create a new piece of evidence for the version.
@@ -63,9 +63,9 @@ class evidence_test extends evidence_testcase {
 
     /**
      * Check that create_scaffold_and_get_for_version() throws an error
-     * if the provided version id does not exist in tool_laaudit_evidence.
+     * if the provided version id does not exist in tool_lala_evidence.
      *
-     * @covers ::tool_laaudit_evidence_create_scaffold_and_get_for_version
+     * @covers ::tool_lala_evidence_create_scaffold_and_get_for_version
      */
     public function test_evidence_create_scaffold_and_get_for_version_error() : void {
         $this->expectException(Exception::class);
@@ -75,7 +75,7 @@ class evidence_test extends evidence_testcase {
     /**
      * Check that store() creates a file which has as content the filestring
      *
-     * @covers ::tool_laaudit_evidence_store
+     * @covers ::tool_lala_evidence_store
      */
     public function test_evidence_store() : void {
         // Create a new piece of evidence for the version and store it.
@@ -87,7 +87,7 @@ class evidence_test extends evidence_testcase {
 
         // Read the file content.
         $fs = get_file_storage();
-        $file = $fs->get_file(context_system::instance()->id, 'tool_laaudit', 'tool_laaudit', $evidenceid,
+        $file = $fs->get_file(context_system::instance()->id, 'tool_lala', 'tool_lala', $evidenceid,
                 '/evidence/', 'modelversion' . $this->versionid . '-evidence' . $evidence->get_name() . $evidenceid . '.' .
                 $evidence::FILETYPE);
         $contents = $file->get_content();
@@ -98,7 +98,7 @@ class evidence_test extends evidence_testcase {
     /**
      * Check that store() throws an error if no serialized filestring exists yet.
      *
-     * @covers ::tool_laaudit_evidence_store
+     * @covers ::tool_lala_evidence_store
      */
     public function test_evidence_store_error() : void {
         // Create a new piece of evidence for the version.
@@ -112,7 +112,7 @@ class evidence_test extends evidence_testcase {
     /**
      * Check that finish() sets the timecollectionfinished property in the database and field
      *
-     * @covers ::tool_laaudit_evidence_finish
+     * @covers ::tool_lala_evidence_finish
      */
     public function test_evidence_finish() : void {
         // Create a new piece of evidence for the version and store it.
@@ -124,14 +124,14 @@ class evidence_test extends evidence_testcase {
         $this->assertTrue($evidence->get_timecollectionfinished() !== null);
 
         global $DB;
-        $finished = $DB->get_fieldset_select('tool_laaudit_evidence', 'timecollectionfinished', 'id='.$evidenceid);
+        $finished = $DB->get_fieldset_select('tool_lala_evidence', 'timecollectionfinished', 'id='.$evidenceid);
         $this->assertTrue($finished !== null);
     }
 
     /**
      * Check that abort() deletes the evidence from the database
      *
-     * @covers ::tool_laaudit_evidence_abort
+     * @covers ::tool_lala_evidence_abort
      */
     public function test_evidence_abort() : void {
         // Create a new piece of evidence for the version and store it.
@@ -140,7 +140,7 @@ class evidence_test extends evidence_testcase {
 
         // Get DB entry for the evidence.
         global $DB;
-        $resultid = $DB->get_fieldset_select('tool_laaudit_evidence', 'id', 'id='.$evidenceid)[0];
+        $resultid = $DB->get_fieldset_select('tool_lala_evidence', 'id', 'id='.$evidenceid)[0];
         $this->assertEquals($evidenceid, $resultid);
 
         // Create some evidence.
@@ -150,11 +150,11 @@ class evidence_test extends evidence_testcase {
         // Test abort().
         $evidence->abort();
 
-        $resultids = $DB->get_fieldset_select('tool_laaudit_evidence', 'id', 'id='.$evidenceid);
+        $resultids = $DB->get_fieldset_select('tool_lala_evidence', 'id', 'id='.$evidenceid);
         $this->assertEquals([], $resultids);
 
         $fs = get_file_storage();
-        $file = $fs->get_file(context_system::instance()->id, 'tool_laaudit', 'tool_laaudit', $evidenceid,
+        $file = $fs->get_file(context_system::instance()->id, 'tool_lala', 'tool_lala', $evidenceid,
                 '/evidence/', 'modelversion' . $this->versionid . '-evidence' . $evidence->get_name() . $evidenceid . '.' .
                 $evidence::FILETYPE);
         $this->assertFalse($file);

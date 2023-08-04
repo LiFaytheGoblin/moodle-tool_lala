@@ -17,12 +17,12 @@
 /**
  * The related data evidence class.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_laaudit;
+namespace tool_lala;
 
 use InvalidArgumentException;
 use LogicException;
@@ -48,7 +48,7 @@ class related_data extends dataset {
 
     public static function get_tablename_from_evidenceid($evidenceid): string|bool {
         global $DB;
-        $record = $DB->get_record('tool_laaudit_evidence', ['id' => $evidenceid], '*', MUST_EXIST);
+        $record = $DB->get_record('tool_lala_evidence', ['id' => $evidenceid], '*', MUST_EXIST);
         return self::get_tablename_from_serializedfilelocation($record->serializedfilelocation);
     }
 

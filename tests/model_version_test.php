@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_laaudit;
+namespace tool_lala;
 
 use advanced_testcase;
 use dml_missing_record_exception;
@@ -23,7 +23,7 @@ use Exception;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot . '/admin/tool/laaudit/classes/model_version.php');
+require_once($CFG->dirroot . '/admin/tool/lala/classes/model_version.php');
 require_once(__DIR__ . '/fixtures/test_config.php');
 require_once(__DIR__ . '/fixtures/test_model.php');
 require_once(__DIR__ . '/fixtures/test_version.php');
@@ -31,7 +31,7 @@ require_once(__DIR__ . '/fixtures/test_version.php');
 /**
  * Model version __construct() and create_scaffold_and_get_for_config() test.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -39,7 +39,7 @@ class model_version_test extends advanced_testcase {
     /**
      * Check that __construct() creates a model version.
      *
-     * @covers ::tool_laaudit_model_version___construct
+     * @covers ::tool_lala_model_version___construct
      */
     public function test_model_version_create(): void {
         $this->resetAfterTest(true);
@@ -60,9 +60,9 @@ class model_version_test extends advanced_testcase {
     }
 
     /**
-     * Check that __construct() throws an error if the provided version id does not exist in tool_laaudit_model_versions.
+     * Check that __construct() throws an error if the provided version id does not exist in tool_lala_model_versions.
      *
-     * @covers ::tool_laaudit_model_version___construct
+     * @covers ::tool_lala_model_version___construct
      */
     public function test_model_version_create_error(): void {
         $this->expectException(dml_missing_record_exception::class);
@@ -72,7 +72,7 @@ class model_version_test extends advanced_testcase {
     /**
      * Check that create_scaffold_and_get_for_config() references and creates correct model version scaffolds.
      *
-     * @covers ::tool_laaudit_model_version_create_scaffold_and_get_for_config
+     * @covers ::tool_lala_model_version_create_scaffold_and_get_for_config
      */
     public function test_model_version_create_scaffold_and_get_for_config(): void {
         $this->resetAfterTest(true);
@@ -95,7 +95,7 @@ class model_version_test extends advanced_testcase {
     /**
      * Check that create_scaffold_and_get_for_config() throws an error if the provided config id does not exist.
      *
-     * @covers ::tool_laaudit_model_version_create_scaffold_and_get_for_config
+     * @covers ::tool_lala_model_version_create_scaffold_and_get_for_config
      */
     public function test_model_version_create_scaffold_and_get_for_config_error(): void {
         $this->expectException(Exception::class);

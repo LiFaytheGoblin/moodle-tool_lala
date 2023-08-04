@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_laaudit;
+namespace tool_lala;
 
 use Exception;
 
@@ -29,7 +29,7 @@ require_once(__DIR__ . '/dataset_test.php');
 /**
  * Dataset test.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -48,7 +48,7 @@ class dataset_anonymized_test extends dataset_test {
      *
      * @return array List of source data information
      */
-    public function tool_laaudit_get_source_data_parameters_provider() : array {
+    public function tool_lala_get_source_data_parameters_provider() : array {
         return [
                 'Min user, min days' => [
                         'nstudents' => 3,
@@ -68,7 +68,7 @@ class dataset_anonymized_test extends dataset_test {
     /**
      * Check that collect gathers all necessary data
      *
-     * @covers ::tool_laaudit_dataset_pseudonomize
+     * @covers ::tool_lala_dataset_pseudonomize
      */
     public function test_evidence_pseudonomize(): void {
         $nsamples = 5;
@@ -106,7 +106,7 @@ class dataset_anonymized_test extends dataset_test {
      *
      * @return array List of source data information
      */
-    public function tool_laaudit_get_source_data_error_notenoughdata_parameters_provider() : array {
+    public function tool_lala_get_source_data_error_notenoughdata_parameters_provider() : array {
         return [
                 'Too few user, min days' => [
                         'nstudents' => 1,
@@ -122,9 +122,9 @@ class dataset_anonymized_test extends dataset_test {
     /**
      * Check that collect throws an error if too few users exist.
      *
-     * @covers ::tool_laaudit_dataset_anonymized_collect
+     * @covers ::tool_lala_dataset_anonymized_collect
      *
-     * @dataProvider tool_laaudit_get_source_data_error_notenoughdata_parameters_provider
+     * @dataProvider tool_lala_get_source_data_error_notenoughdata_parameters_provider
      * @param int $nstudents amount of students
      * @param int $createddaysago how many days ago a sample course should have been started
      * @throws Exception

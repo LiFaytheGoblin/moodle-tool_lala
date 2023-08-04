@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_laaudit;
+namespace tool_lala;
 
 use advanced_testcase;
 
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot . '/admin/tool/laaudit/classes/model_version.php');
+require_once($CFG->dirroot . '/admin/tool/lala/classes/model_version.php');
 require_once(__DIR__ . '/fixtures/test_config.php');
 require_once(__DIR__ . '/fixtures/test_model.php');
 require_once(__DIR__ . '/fixtures/test_version.php');
@@ -30,7 +30,7 @@ require_once(__DIR__ . '/fixtures/test_course_with_students.php');
 /**
  * Model version gather_dataset() test.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -56,7 +56,7 @@ class model_version_complete_creation_test extends advanced_testcase {
      *
      * @return array with the info whether the data should be anonymized.
      */
-    public function tool_laaudit_model_creation_parameters_provider() : array {
+    public function tool_lala_model_creation_parameters_provider() : array {
         return [
                 'Anonymous' => [
                         'anonymous' => true,
@@ -70,9 +70,9 @@ class model_version_complete_creation_test extends advanced_testcase {
     /**
      * Check the happy path of the automatic model creation process
      *
-     * @covers ::tool_laaudit_model_version
+     * @covers ::tool_lala_model_version
      *
-     * @dataProvider tool_laaudit_model_creation_parameters_provider
+     * @dataProvider tool_lala_model_creation_parameters_provider
      * @param bool $anonymous
      * @throws \Exception
      * @throws \Exception
@@ -222,7 +222,7 @@ class model_version_complete_creation_test extends advanced_testcase {
     /**
      * Check the happy path of the automatic model creation process still works of model was deleted
      *
-     * @covers ::tool_laaudit_model_version
+     * @covers ::tool_lala_model_version
      */
     public function test_model_version_complete_creation_modeldeleted(): void {
         // Generate test data.

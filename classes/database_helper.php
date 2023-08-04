@@ -17,12 +17,12 @@
 /**
  * The model version class, built on top of the analytics/model class.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_laaudit;
+namespace tool_lala;
 
 /**
  * Class for the model configuration.

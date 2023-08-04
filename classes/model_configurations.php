@@ -17,12 +17,12 @@
 /**
  * The model configuration list class.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_laaudit;
+namespace tool_lala;
 
 use stdClass;
 use core_analytics\manager;
@@ -43,11 +43,11 @@ class model_configurations {
         global $DB;
 
         // Get all existing model configs ids.
-        $modelconfigids = $DB->get_fieldset_select('tool_laaudit_model_configs', 'id', '1=1');
+        $modelconfigids = $DB->get_fieldset_select('tool_lala_model_configs', 'id', '1=1');
 
         // Add configs for new models/ models that have not received a config entry yet.
         // Can we use something else than modelid? The version is stored somewhere I think?
-        $modelidsinconfigtable = $DB->get_fieldset_select('tool_laaudit_model_configs', 'modelid', '1=1');
+        $modelidsinconfigtable = $DB->get_fieldset_select('tool_lala_model_configs', 'modelid', '1=1');
         $modelidsinanalyticsmodelstable = $DB->get_fieldset_select('analytics_models', 'id', '1=1');
 
         // If a model has changed indicators, predictionsprocessor, analysisinterval,
@@ -56,13 +56,13 @@ class model_configurations {
         $modelidsfromanalyticsmodeltableinconfigtable = array_intersect($modelidsinanalyticsmodelstable, $modelidsinconfigtable);
         if (count($modelidsfromanalyticsmodeltableinconfigtable) > 0) {
             foreach ($modelidsfromanalyticsmodeltableinconfigtable as $modelid) {
-                $configtimecreated = $DB->get_fieldset_select('tool_laaudit_model_configs', 'timecreated', 'modelid='.$modelid);
+                $configtimecreated = $DB->get_fieldset_select('tool_lala_model_configs', 'timecreated', 'modelid='.$modelid);
                 $modeltimemodified = $DB->get_fieldset_select('analytics_models', 'timemodified', 'id='.$modelid)[0];
 
                 if ($modeltimemodified > max($configtimecreated)) {
                     $analyticsmodelsettings = $DB->get_records('analytics_models', ['id' => $modelid], null,
                             'id, predictionsprocessor, timesplitting, indicators');
-                    $configsettings = $DB->get_records('tool_laaudit_model_configs', ['modelid' => $modelid], null,
+                    $configsettings = $DB->get_records('tool_lala_model_configs', ['modelid' => $modelid], null,
                             'id, predictionsprocessor, analysisinterval, indicators');
                     $analyticsmodelsetting = $analyticsmodelsettings[$modelid];
                     $analyticsmodelsettingvalues = self::get_settings_values($analyticsmodelsetting);

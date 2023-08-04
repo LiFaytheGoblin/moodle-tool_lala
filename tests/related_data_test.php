@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_laaudit;
+namespace tool_lala;
 
 use Exception;
 
@@ -25,7 +25,7 @@ require_once(__DIR__ . '/evidence_testcase.php');
 /**
  * Dataset test.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -52,7 +52,7 @@ class related_data_test extends evidence_testcase {
      *
      * @return array List of source data information
      */
-    public function tool_laaudit_all_parameters_provider() : array {
+    public function tool_lala_all_parameters_provider() : array {
         return [
                 'Min user, min days, table user' => [
                         'nstudents' => 1,
@@ -107,9 +107,9 @@ class related_data_test extends evidence_testcase {
     /**
      * Check that collect gathers all necessary data
      *
-     * @covers ::tool_laaudit_related_data_collect
+     * @covers ::tool_lala_related_data_collect
      *
-     * @dataProvider tool_laaudit_all_parameters_provider
+     * @dataProvider tool_lala_all_parameters_provider
      * @param int $nstudents amount of students
      * @param int $createddaysago how many days ago a sample course should have been started
      * @param string $tablename name of the table to collect data from
@@ -158,7 +158,7 @@ class related_data_test extends evidence_testcase {
     /**
      * Check that collect throws an error if trying to call it twice for the same evidence.
      *
-     * @covers ::tool_laaudit_related_data_collect
+     * @covers ::tool_lala_related_data_collect
      */
     public function test_evidence_collect_error_again(): void {
         $this->create_test_data();
@@ -170,7 +170,7 @@ class related_data_test extends evidence_testcase {
      *
      * @return array List of source data information
      */
-    public function tool_laaudit_deleted_model_parameters_provider() : array {
+    public function tool_lala_deleted_model_parameters_provider() : array {
         return [
                 'Regular test case' => [
                         'nstudents' => 3,
@@ -182,9 +182,9 @@ class related_data_test extends evidence_testcase {
     /**
      * Check that collect works even if the original model has been deleted.
      *
-     * @covers ::tool_laaudit_related_data_collect
+     * @covers ::tool_lala_related_data_collect
      *
-     * @dataProvider tool_laaudit_deleted_model_parameters_provider
+     * @dataProvider tool_lala_deleted_model_parameters_provider
      * @param int $nstudents amount of students
      * @param int $createddaysago how many days ago a sample course should have been started
      */

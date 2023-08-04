@@ -17,29 +17,29 @@
 /**
  * The model version router
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require(__DIR__ . '/../../../config.php');
 
-use tool_laaudit\model_version;
+use tool_lala\model_version;
 
 $configid = optional_param('configid', 0, PARAM_INT);
 
 // Routes
-// POST /admin/tool/laaudit/modelversion.php?configid=<configid>
+// POST /admin/tool/lala/modelversion.php?configid=<configid>
 
 // Set some page parameters.
-$pageurl = new moodle_url('/admin/tool/laaudit/modelversion.php', ['configid' => $configid]);
+$pageurl = new moodle_url('/admin/tool/lala/modelversion.php', ['configid' => $configid]);
 $context = context_system::instance();
 
 $PAGE->set_url($pageurl);
 $PAGE->set_context($context);
 
 require_login();
-require_capability('tool/laaudit:createmodelversion', $context);
+require_capability('tool/lala:createmodelversion', $context);
 require_sesskey();
 
 $versionid = null;
@@ -62,6 +62,6 @@ if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $versionaddendum = (isset($versionid) ? '#version'.$versionid : '');
-$priorurl = new moodle_url('/admin/tool/laaudit/index.php'.$versionaddendum);
+$priorurl = new moodle_url('/admin/tool/lala/index.php'.$versionaddendum);
 redirect($priorurl);
 

@@ -17,7 +17,7 @@
 /**
  * Adds a new role to the system
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -28,8 +28,8 @@ defined('MOODLE_INTERNAL') || die();
  * Install the new roles for this plugin.
  * @return void
  */
-function xmldb_tool_laaudit_install() {
-    $shortname = 'laaudit_auditor';
+function xmldb_tool_lala_install() {
+    $shortname = 'lala_auditor';
 
     try {
         $auditorrole = create_role('Learning Analytics Auditor', $shortname, 'A Learning Analytics Auditor may only view,
@@ -43,16 +43,16 @@ function xmldb_tool_laaudit_install() {
         debugging('Role has already been created previously.');
     }
 
-    update_capabilities('tool_laaudit');
+    update_capabilities('tool_lala');
 
     $context = context_system::instance();
 
     global $DB;
     $rolerecord = $DB->get_record('role', ['shortname' => $shortname], '*', MUST_EXIST);
 
-    assign_capability('tool/laaudit:viewpagecontent', CAP_ALLOW, $rolerecord->id, $context->id, true);
-    assign_capability('tool/laaudit:downloadevidence', CAP_ALLOW, $rolerecord->id, $context->id, true);
-    assign_capability('tool/laaudit:createmodelversion', CAP_ALLOW, $rolerecord->id, $context->id, true);
+    assign_capability('tool/lala:viewpagecontent', CAP_ALLOW, $rolerecord->id, $context->id, true);
+    assign_capability('tool/lala:downloadevidence', CAP_ALLOW, $rolerecord->id, $context->id, true);
+    assign_capability('tool/lala:createmodelversion', CAP_ALLOW, $rolerecord->id, $context->id, true);
 
     $context->mark_dirty();
 }

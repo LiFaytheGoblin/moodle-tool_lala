@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_laaudit;
+namespace tool_lala;
 
 use Exception;
 
@@ -27,7 +27,7 @@ require_once(__DIR__ . '/evidence_testcase.php');
 /**
  * Test dataset test.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -42,7 +42,7 @@ class test_dataset_test extends evidence_testcase {
      *
      * @return array List of source data information
      */
-    public function tool_laaudit_get_source_data_parameters_provider() : array {
+    public function tool_lala_get_source_data_parameters_provider() : array {
         return [
                 'Min dataset, min testsize' => [
                         'ndatapoints' => 2,
@@ -70,9 +70,9 @@ class test_dataset_test extends evidence_testcase {
     /**
      * Check that collect gathers all necessary data.
      *
-     * @covers ::tool_laaudit_test_dataset_collect
+     * @covers ::tool_lala_test_dataset_collect
      *
-     * @dataProvider tool_laaudit_get_source_data_parameters_provider
+     * @dataProvider tool_lala_get_source_data_parameters_provider
      * @param int $ndatapoints
      * @param float $testsize portion of the dataset to be used for testing
      * @param int $expectedressize absolute nr. of datapoints to be expected for training
@@ -105,7 +105,7 @@ class test_dataset_test extends evidence_testcase {
      * @throws Exception
      * @throws Exception
      */
-    public function tool_laaudit_get_source_data_error_parameters_provider(): array {
+    public function tool_lala_get_source_data_error_parameters_provider(): array {
         return [
                 'No dataset, small testsize' => [
                         'data' => [],
@@ -124,9 +124,9 @@ class test_dataset_test extends evidence_testcase {
     /**
      * Check that collect throws error if not enough data available.
      *
-     * @covers ::tool_laaudit_test_dataset_collect
+     * @covers ::tool_lala_test_dataset_collect
      *
-     * @dataProvider tool_laaudit_get_source_data_error_parameters_provider
+     * @dataProvider tool_lala_get_source_data_error_parameters_provider
      * @param array $data
      * @param float $testsize portion of the dataset to be used as test data
      */

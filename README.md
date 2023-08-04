@@ -12,7 +12,7 @@ that allows developers and administrators to train and test an LA model configur
 results and providing these data sets as downloads. By enabling fairer LA models and increasing trust in their predictions, 
 we hope to reach more learners and maximize the potential benefits of these models.
 
-For the extensive documentation of this plugin, see the [Wiki](https://github.com/LiFaytheGoblin/moodle-tool_laaudit/wiki).
+For the extensive documentation of this plugin, see the [Wiki](https://github.com/LiFaytheGoblin/moodle-tool_lala/wiki).
 
 [^1]: Riazy, S. and Simbeck, K. (2019) Predictive Algorithms in Learning Analytics and their Fairness. Gesellschaft für Informatik e.V. Available at: https://doi.org/10.18420/delfi2019_305.
 
@@ -28,7 +28,7 @@ For the extensive documentation of this plugin, see the [Wiki](https://github.co
 
 The plugin can be also installed by putting the contents of this directory to
 
-    {your/moodle/dirroot}/admin/tool/laaudit
+    {your/moodle/dirroot}/admin/tool/lala
 
 Afterwards, log in to your Moodle site as an admin and go to _Site administration >
 Notifications_ to complete the installation.
@@ -56,13 +56,13 @@ You should have received a copy of the GNU General Public License along with
 this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ## Cite as ##
-Fernsel, L. (2023) Let's audit Learning Analytics [Moodle Plugin]. Available at: https://github.com/LiFaytheGoblin/moodle-tool_laaudit/.
+Fernsel, L. (2023) Let's audit Learning Analytics [Moodle Plugin]. Available at: https://github.com/LiFaytheGoblin/moodle-tool_lala/.
 
 ```biblatex
 @software{lala,
   author = {Linda Fernsel},
   title={Let’s audit Learning Analytics [Moodle Plugin]}, 
-  url={https://github.com/LiFaytheGoblin/moodle-tool_laaudit/}, 
+  url={https://github.com/LiFaytheGoblin/moodle-tool_lala/}, 
   version = {1.0.0},
   date = {2023-07-26},
 }

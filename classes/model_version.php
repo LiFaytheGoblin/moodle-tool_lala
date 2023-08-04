@@ -17,13 +17,13 @@
 /**
  * The model version class, built on top of the analytics/model class.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 
-namespace tool_laaudit;
+namespace tool_lala;
 
 use Exception;
 use LogicException;
@@ -34,7 +34,7 @@ use core_analytics\context;
 use core_analytics\predictor;
 use core_analytics\local\analyser\base;
 use Phpml\Classification\Linear\LogisticRegression;
-use tool_laaudit\event\model_version_created;
+use tool_lala\event\model_version_created;
 
 require_once(__DIR__ . '/dataset_anonymized.php');
 /**
@@ -93,7 +93,7 @@ class model_version {
     public function __construct(int $id) {
         global $DB;
 
-        $version = $DB->get_record('tool_laaudit_model_versions', ['id' => $id], '*', MUST_EXIST);
+        $version = $DB->get_record('tool_lala_model_versions', ['id' => $id], '*', MUST_EXIST);
 
         // Fill properties from DB.
         $this->id = $version->id;
@@ -105,9 +105,9 @@ class model_version {
         $this->relativetestsetsize = $version->relativetestsetsize;
         $this->contextids = $version->contextids;
         $this->error = $version->error;
-        $this->evidenceobjects = $DB->get_records('tool_laaudit_evidence', ['versionid' => $this->id]);
+        $this->evidenceobjects = $DB->get_records('tool_lala_evidence', ['versionid' => $this->id]);
 
-        $config = $DB->get_record('tool_laaudit_model_configs', ['id' => $this->configid], '*', MUST_EXIST);
+        $config = $DB->get_record('tool_lala_model_configs', ['id' => $this->configid], '*', MUST_EXIST);
         $this->modelid = $config->modelid;
         $this->target = $config->target;
         $this->predictionsprocessor = $config->predictionsprocessor;
@@ -186,10 +186,10 @@ class model_version {
         $obj->relativetestsetsize = self::DEFAULT_RELATIVE_TEST_SET_SIZE;
 
         // Copy values from model.
-        $modelconfig = $DB->get_record('tool_laaudit_model_configs', ['id' => $configid], 'defaultcontextids', MUST_EXIST);
+        $modelconfig = $DB->get_record('tool_lala_model_configs', ['id' => $configid], 'defaultcontextids', MUST_EXIST);
         $obj->contextids = $modelconfig->defaultcontextids;
 
-        return $DB->insert_record('tool_laaudit_model_versions', $obj);
+        return $DB->insert_record('tool_lala_model_versions', $obj);
     }
 
     /**
@@ -256,7 +256,7 @@ class model_version {
      * @return evidence
      */
     private function add(string $evidencetype, array $options): evidence {
-        $class = '\tool_laaudit\\'.$evidencetype;
+        $class = '\tool_lala\\'.$evidencetype;
 
         try {
             $evidence = $class::create_scaffold_and_get_for_version($this->id);
@@ -302,7 +302,7 @@ class model_version {
     private function register_error(moodle_exception|Exception $e): void {
         global $DB;
 
-        $DB->set_field('tool_laaudit_model_versions', 'error', $e->getMessage(), ['id' => $this->id]);
+        $DB->set_field('tool_lala_model_versions', 'error', $e->getMessage(), ['id' => $this->id]);
     }
 
     /**
@@ -476,7 +476,7 @@ class model_version {
         global $DB;
 
         $this->timecreationfinished = time();
-        $DB->set_field('tool_laaudit_model_versions', 'timecreationfinished', $this->timecreationfinished,
+        $DB->set_field('tool_lala_model_versions', 'timecreationfinished', $this->timecreationfinished,
                 ['id' => $this->id]);
 
         // Register an event.

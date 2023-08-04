@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_laaudit;
+namespace tool_lala;
 
 use advanced_testcase;
 use dml_missing_record_exception;
@@ -23,14 +23,14 @@ use Exception;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot . '/admin/tool/laaudit/classes/model_configuration.php');
+require_once($CFG->dirroot . '/admin/tool/lala/classes/model_configuration.php');
 require_once(__DIR__ . '/fixtures/test_config.php');
 require_once(__DIR__ . '/fixtures/test_model.php');
 
 /**
  * Model configuration test.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -38,7 +38,7 @@ class model_configuration_test extends advanced_testcase {
     /**
      * Check that __construct() creates a model configuration.
      *
-     * @covers ::tool_laaudit_model_configuration___construct
+     * @covers ::tool_lala_model_configuration___construct
      */
     public function test_model_configuration_construct(): void {
         $this->resetAfterTest(true);
@@ -61,9 +61,9 @@ class model_configuration_test extends advanced_testcase {
     }
 
     /**
-     * Check that __construct() throws an error if the provided config id does not exist in tool_laaudit_model_configs.
+     * Check that __construct() throws an error if the provided config id does not exist in tool_lala_model_configs.
      *
-     * @covers ::tool_laaudit_model_configuration___construct
+     * @covers ::tool_lala_model_configuration___construct
      */
     public function test_model_configuration_construct_error() {
         $this->expectException(dml_missing_record_exception::class);
@@ -73,7 +73,7 @@ class model_configuration_test extends advanced_testcase {
     /**
      * Check that create_and_get_for_model() references and creates correct configs.
      *
-     * @covers ::tool_laaudit_model_configuration_get_or_create_and_get_for_model
+     * @covers ::tool_lala_model_configuration_get_or_create_and_get_for_model
      */
     public function test_model_configuration_create_and_get_for_model() {
         $this->resetAfterTest(true);
@@ -88,9 +88,9 @@ class model_configuration_test extends advanced_testcase {
 
     /**
      * Check that get_model_config_obj() throws an error if the provided model id does not exist neither in analytics_models nor
-     * in tool_laaudit_model_configs.
+     * in tool_lala_model_configs.
      *
-     * @covers ::tool_laaudit_model_configuration_get_or_create_and_get_for_model
+     * @covers ::tool_lala_model_configuration_get_or_create_and_get_for_model
      */
     public function test_model_configuration_create_and_get_for_model_error() {
         $this->expectException(Exception::class);

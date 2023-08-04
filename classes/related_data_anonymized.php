@@ -17,12 +17,12 @@
 /**
  * The related data anonymized evidence class.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_laaudit;
+namespace tool_lala;
 
 use Exception;
 use LogicException;
@@ -71,8 +71,8 @@ class related_data_anonymized extends related_data {
                 continue;
             }
             if (str_contains($columnname, 'id')) {
-                continue;
-            } // We keep ids for now, as they are pseudonomized later on.
+                continue; // We keep ids for now, as they are pseudonomized later on.
+            }
             // We do not want other columns with unique values, such as username.
             // Columns that can contain text should also be treated as sensitive.
             if ($columnmetadata->unique) {

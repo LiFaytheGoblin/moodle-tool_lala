@@ -17,12 +17,12 @@
 /**
  * Renderer.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_laaudit\output;
+namespace tool_lala\output;
 
 use plugin_renderer_base;
 
@@ -38,7 +38,7 @@ class renderer extends plugin_renderer_base {
      */
     public function render_evidence_item(evidence_item $page): string {
         $data = $page->export_for_template($this);
-        return parent::render_from_template('tool_laaudit/evidence_item', $data);
+        return parent::render_from_template('tool_lala/evidence_item', $data);
     }
     /**
      * Defer to template.
@@ -48,7 +48,7 @@ class renderer extends plugin_renderer_base {
      */
     public function render_model_version_description(model_version_description $page): string {
         $data = $page->export_for_template($this);
-        return parent::render_from_template('tool_laaudit/model_version_description', $data);
+        return parent::render_from_template('tool_lala/model_version_description', $data);
     }
     /**
      * Defer to template.
@@ -58,7 +58,7 @@ class renderer extends plugin_renderer_base {
      */
     public function render_model_version(model_version $page): string {
         $data = $page->export_for_template($this);
-        return parent::render_from_template('tool_laaudit/model_version', $data);
+        return parent::render_from_template('tool_lala/model_version', $data);
     }
 
     /**
@@ -69,7 +69,7 @@ class renderer extends plugin_renderer_base {
      */
     public function render_model_configuration(model_configuration $page): string {
         $data = $page->export_for_template($this);
-        return parent::render_from_template('tool_laaudit/model_configuration', $data);
+        return parent::render_from_template('tool_lala/model_configuration', $data);
     }
 
     /**
@@ -80,6 +80,6 @@ class renderer extends plugin_renderer_base {
      */
     public function render_model_configurations(model_configurations $page): string {
         $data = $page->export_for_template($this);
-        return parent::render_from_template('tool_laaudit/model_configurations', $data);
+        return parent::render_from_template('tool_lala/model_configurations', $data);
     }
 }

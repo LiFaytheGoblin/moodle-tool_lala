@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_laaudit;
+namespace tool_lala;
 
 use advanced_testcase;
 use Exception;
@@ -31,7 +31,7 @@ require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
 /**
  * Dataset test.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -56,7 +56,7 @@ abstract class evidence_testcase extends advanced_testcase {
     /**
      * Check that collect throws an error if trying to call it twice for the same evidence.
      *
-     * @covers ::tool_laaudit_evidence_collect
+     * @covers ::tool_lala_evidence_collect
      */
     protected function test_evidence_collect_error_again() : void {
         $options = $this->get_options();

@@ -14,20 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_laaudit;
+namespace tool_lala;
 
 use advanced_testcase;
 
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot . '/admin/tool/laaudit/classes/model_configurations.php');
+require_once($CFG->dirroot . '/admin/tool/lala/classes/model_configurations.php');
 require_once(__DIR__ . '/fixtures/test_model.php');
 
 /**
  * Model configurations test
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -35,7 +35,7 @@ class model_configurations_test extends advanced_testcase {
     /**
      * Check that init_and_get_all_model_config_objs() creates model configurations and returns them.
      *
-     * @covers ::tool_laaudit_model_model_configurations_init_and_get_all_model_config_objs
+     * @covers ::tool_lala_model_model_configurations_init_and_get_all_model_config_objs
      */
     public function test_model_configurations_init_and_get_all_model_config_objs(): void {
         $this->resetAfterTest(true);
@@ -60,7 +60,7 @@ class model_configurations_test extends advanced_testcase {
     /**
      * Check that init_and_get_all_model_config_objs() creates new model configs if former configs have been updated.
      *
-     * @covers ::tool_laaudit_model_model_configurations_init_and_get_all_model_config_objs
+     * @covers ::tool_lala_model_model_configurations_init_and_get_all_model_config_objs
      */
     public function test_model_configurations_model_update_init_and_get_all_model_config_objs(): void {
         $this->resetAfterTest(true);

@@ -17,7 +17,7 @@
 /**
  * Adds a link to the tool page to the admin settings.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,18 +25,18 @@
 defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
-        'tool/laaudit:viewpagecontent' => [
+        'tool/lala:viewpagecontent' => [
             'captype' => 'read',
             'contextlevel' => CONTEXT_SYSTEM,
             'archetypes' => [],
         ],
-        'tool/laaudit:downloadevidence' => [
+        'tool/lala:downloadevidence' => [
             'riskbitmask' => RISK_PERSONAL,
             'captype' => 'read',
             'contextlevel' => CONTEXT_SYSTEM,
             'archetypes' => [],
         ],
-        'tool/laaudit:createmodelversion' => [
+        'tool/lala:createmodelversion' => [
             'riskbitmask' => RISK_SPAM,
             'captype' => 'write',
             'contextlevel' => CONTEXT_SYSTEM,

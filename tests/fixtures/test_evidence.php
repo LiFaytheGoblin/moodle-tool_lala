@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_laaudit;
+namespace tool_lala;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
  * Test evidence.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -48,7 +48,7 @@ class test_evidence extends evidence {
                 'timecollectionstarted' => time(),
         ];
 
-        return $DB->insert_record('tool_laaudit_evidence', $validmodelobject);
+        return $DB->insert_record('tool_lala_evidence', $validmodelobject);
     }
 
     /**

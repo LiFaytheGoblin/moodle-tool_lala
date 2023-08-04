@@ -17,15 +17,15 @@
 /**
  * Plugin version and other meta-data are defined here.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'tool_laaudit';
-$plugin->release = '1.0.0';
-$plugin->version = 20230726;
+$plugin->component = 'tool_lala';
+$plugin->release = '1.0.1';
+$plugin->version = 2023080400;
 $plugin->requires = 2022041900;
 $plugin->maturity = MATURITY_BETA;

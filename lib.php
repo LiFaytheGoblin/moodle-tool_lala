@@ -17,7 +17,7 @@
 /**
  * The plugin lib
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -36,7 +36,7 @@ defined('MOODLE_INTERNAL') || die();
  * @param array $options additional options affecting the file serving
  * @return bool false if the file not found, just send the file otherwise and do not return anything
  */
-function tool_laaudit_pluginfile(
+function tool_lala_pluginfile(
         $course,
         $cm,
         $context,
@@ -51,13 +51,13 @@ function tool_laaudit_pluginfile(
     }
 
     // Make sure the filearea is one of those used by the plugin.
-    if ($filearea !== 'tool_laaudit') {
+    if ($filearea !== 'tool_lala') {
         return false;
     }
 
     // Make sure the user is logged in and has access to the module.
     require_login();
-    require_capability('tool/laaudit:downloadevidence', $context);
+    require_capability('tool/lala:downloadevidence', $context);
 
     // The args is an array containing [itemid, path].
     // Fetch the itemid from the path.
@@ -72,7 +72,7 @@ function tool_laaudit_pluginfile(
     }
 
     $fs = get_file_storage();
-    $file = $fs->get_file($context->id, 'tool_laaudit', $filearea, $itemid, $filepath, $filename);
+    $file = $fs->get_file($context->id, 'tool_lala', $filearea, $itemid, $filepath, $filename);
     if (!$file) {
         // The file does not exist.
         return false;
@@ -88,12 +88,12 @@ function tool_laaudit_pluginfile(
  *
  * @param navigation_node $frontpage Node representing the front page in the navigation tree.
  */
-function tool_laaudit_extend_navigation_frontpage(navigation_node $frontpage) {
+function tool_lala_extend_navigation_frontpage(navigation_node $frontpage) {
     $context = context_system::instance();
-    if (!is_siteadmin() && has_capability('tool/laaudit:viewpagecontent', $context)) {
+    if (!is_siteadmin() && has_capability('tool/lala:viewpagecontent', $context)) {
         $frontpage->add(
-                get_string('pluginname', 'tool_laaudit'),
-                new moodle_url('/admin/tool/laaudit/index.php')
+                get_string('pluginname', 'tool_lala'),
+                new moodle_url('/admin/tool/lala/index.php')
         );
     }
 }

@@ -17,12 +17,12 @@
 /**
  * The privacy provider.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_laaudit\privacy;
+namespace tool_lala\privacy;
 
 use core_privacy\local\metadata\null_provider;
 

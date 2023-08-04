@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_laaudit\event;
+namespace tool_lala\event;
 
 use coding_exception;
 use core\event\base;
@@ -24,7 +24,7 @@ use moodle_url;
 /**
  * Model version created event.
  *
- * @package     tool_laaudit
+ * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -35,7 +35,7 @@ class model_version_created extends base {
     protected function init(): void {
         $this->data['crud'] = 'c';
         $this->data['edulevel'] = base::LEVEL_OTHER;
-        $this->data['objecttable'] = 'tool_laaudit_model_versions';
+        $this->data['objecttable'] = 'tool_lala_model_versions';
         $this->context = context_system::instance();
     }
 
@@ -45,7 +45,7 @@ class model_version_created extends base {
      * @return string
      */
     public static function get_name(): string {
-        return get_string('eventmodelversioncreated', 'tool_laaudit');
+        return get_string('eventmodelversioncreated', 'tool_lala');
     }
 
     /**
@@ -55,7 +55,7 @@ class model_version_created extends base {
      */
     public function get_description(): string {
         return 'The user with id '. $this->userid . ' has created a new version '. $this->contextinstanceid . ' of model configuration
-         '. $this->other['modelid'] . 'associated with model '. $this->other['modelid']. '.';
+         '. $this->other['configid'] . 'associated with model '. $this->other['modelid']. '.';
     }
 
     /**
@@ -63,7 +63,7 @@ class model_version_created extends base {
      * @return moodle_url
      */
     public function get_url(): moodle_url {
-        return new moodle_url('/admin/tool/laaudit/index.php#version'.$this->other['versionid']);
+        return new moodle_url('/admin/tool/lala/index.php#version'.$this->other['versionid']);
     }
 
     /**

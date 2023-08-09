@@ -191,7 +191,7 @@ class model_version_complete_creation_test extends advanced_testcase {
                 }
 
                 // Check that the original primary id is not used.
-                $tablename = related_data::get_tablename_from_evidenceid($evidenceid);
+                $tablename = related_data_helper::get_tablename_from_evidenceid($evidenceid);
 
                 $identicalids = array_intersect($originalids[$tablename], $newids);
                 $this->assertEquals(0, count($identicalids));

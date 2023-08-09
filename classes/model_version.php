@@ -235,7 +235,7 @@ class model_version {
             }
             $rawdata = $evidence->get_raw_data();
             $origintablename = $this->analyser->get_samples_origin();
-            $this->idmaps[$origintablename] = dataset_anonymized::create_idmap($rawdata);
+            $this->idmaps[$origintablename] = dataset_helper::create_idmap_from_dataset($rawdata);
 
             // Pseudonomize the gathered data
             $pseudonomizeddata = $evidence->pseudonomize($rawdata, $this->idmaps[$origintablename]);
@@ -358,7 +358,7 @@ class model_version {
 
             // Create idmaps.
             $notanonymizeddata = $evidence->get_raw_data();
-            $this->idmaps[$relatedtablename] = related_data_anonymized::create_idmap($notanonymizeddata);
+            $this->idmaps[$relatedtablename] = related_data_helper::create_idmap_from_related_data($notanonymizeddata);
 
             $evidences[] = $evidence; // Store the evidence for anonymizing it later.
         }

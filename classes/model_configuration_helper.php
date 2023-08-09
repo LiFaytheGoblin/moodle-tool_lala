@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * The model configuration list class.
+ * The model configuration helper class.
  *
  * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
@@ -28,7 +28,7 @@ use stdClass;
 use core_analytics\manager;
 
 /**
- * Class for the list of model configurations.
+ * Class to help the model configuration.
  */
 class model_configuration_helper {
 

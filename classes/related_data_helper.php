@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * The model configuration list class.
+ * The related_data helper class
  *
  * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
@@ -27,7 +27,7 @@ namespace tool_lala;
 use Exception;
 
 /**
- * Class for the list of model configurations.
+ * Class to help the related data.
  */
 class related_data_helper {
 

@@ -39,7 +39,7 @@ require_login();
 require_capability('tool/lala:viewpagecontent', $context);
 
 // Get all model configurations.
-$modelconfigobjs = tool_lala\model_configurations::init_and_get_all_model_config_objs();
+$modelconfigobjs = tool_lala\model_configuration_helper::init_and_get_all_model_config_objs();
 
 // Output the page.
 $output = $PAGE->get_renderer('tool_lala');

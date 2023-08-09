@@ -132,12 +132,12 @@
                         <dd class="mb-0 px-1 col-sm">
                             {{firstindicator}}
                             {{#indicators}}
-                                <a class="collapse multi-collapse{{id}} show text-dark bg-secondary rounded-right px-1" data-toggle="collapse" href=".multi-collapse{{id}}" role="button" aria-expanded="false" aria-controls="indicators{{id}} more{{id}}" id="more{{id}}">
+                                <a class="collapse multi-collapseindicators{{id}} show text-dark bg-secondary rounded-right px-1 ml-2" data-toggle="collapse" href=".multi-collapseindicators{{id}}" role="button" aria-expanded="false" aria-controls="indicators{{id}} moreindicators{{id}}" id="moreindicators{{id}}">
                                     display more
                                 </a>
-                                <span class="collapse multi-collapse{{id}}" id="indicators{{id}}">
+                                <span class="collapse multi-collapseindicators{{id}}" id="indicators{{id}}">
                                     {{indicators}}
-                                    <a class="border border-primary border-1 text-dark bg-secondary rounded-left px-1" data-toggle="collapse" href=".multi-collapse{{id}}" role="button" aria-expanded="true" aria-controls="indicators{{id}} more{{id}}">
+                                    <a class="text-dark bg-secondary rounded-left px-1 ml-2" data-toggle="collapse" href=".multi-collapseindicators{{id}}" role="button" aria-expanded="true" aria-controls="indicators{{id}} moreindicators{{id}}">
                                         display less
                                     </a>
                                 </span>

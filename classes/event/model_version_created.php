@@ -54,8 +54,8 @@ class model_version_created extends base {
      * @return string
      */
     public function get_description(): string {
-        return 'The user with id '. $this->userid . ' has created a new version '. $this->contextinstanceid . ' of model configuration
-         '. $this->other['configid'] . 'associated with model '. $this->other['modelid']. '.';
+        return 'The user with id '. $this->userid . ' has created a new version '. $this->contextinstanceid .
+                ' of model configuration'. $this->other['configid'] . 'associated with model '. $this->other['modelid']. '.';
     }
 
     /**

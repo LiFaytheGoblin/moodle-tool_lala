@@ -76,7 +76,7 @@ class related_data_helper {
      * @throws Exception
      */
     public static function create_idmap_from_related_data(array $relateddata): idmap {
-        $originalids = related_data_helper::get_ids_used_in_related_data($relateddata);
+        $originalids = self::get_ids_used_in_related_data($relateddata);
         return idmap::create_from_ids($originalids);
     }
 }

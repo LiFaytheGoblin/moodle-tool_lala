@@ -25,7 +25,6 @@
 namespace tool_lala;
 
 use Exception;
-require_once(__DIR__ . '/idmap.php');
 
 /**
  * Class for the anonymized complete dataset evidence item.

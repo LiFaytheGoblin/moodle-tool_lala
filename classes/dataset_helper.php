@@ -117,7 +117,9 @@ class dataset_helper {
     }
 
     /**
-     * Build a dataset in the correct structure from analysisintervalkey, header, sampleids, x values and y values (will be joined for rows)
+     * Build a dataset in the correct structure from analysisintervalkey, header, sampleids, x values and y values
+     * (will be joined for rows)
+     *
      * @param string $analysisintervalkey
      * @param array $header
      * @param array $sampleids
@@ -226,7 +228,7 @@ class dataset_helper {
      * @throws Exception
      */
     public static function create_idmap_from_dataset(array $dataset): idmap {
-        $originalids = dataset_helper::get_ids_used_in_dataset($dataset);
+        $originalids = self::get_ids_used_in_dataset($dataset);
         return idmap::create_from_ids($originalids);
     }
 }

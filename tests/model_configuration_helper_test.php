@@ -24,6 +24,7 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->dirroot . '/admin/tool/lala/classes/model_configuration_helper.php');
 require_once(__DIR__ . '/fixtures/test_model.php');
+require_once(__DIR__ . '/fixtures/test_config.php');
 
 /**
  * Model configuration helper test

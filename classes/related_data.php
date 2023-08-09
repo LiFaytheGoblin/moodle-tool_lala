@@ -59,10 +59,10 @@ class related_data extends dataset {
     /**
      * Validate the options of this evidence.
      *
-     * @param $options
+     * @param array $options
      * @return void
      */
-    public function validate($options) : void {
+    public function validate(array $options) : void {
         if (!isset($options['tablename'])) {
             throw new InvalidArgumentException('Options is missing the name of the related table.');
         }

@@ -69,7 +69,7 @@ class model_configuration {
         $this->id = $modelconfig->id;
         $this->modelid = $modelconfig->modelid;
         $this->target = $modelconfig->target;
-        $this->name = $modelconfig->name ?? 'model' . $this->modelid;
+        $this->name = $modelconfig->name;
         $this->predictionsprocessor = $modelconfig->predictionsprocessor;
         $this->analysisinterval = $modelconfig->analysisinterval;
         $this->defaultcontextids = $modelconfig->defaultcontextids;
@@ -82,13 +82,6 @@ class model_configuration {
         $this->modelanalysabletype = $targetinstance->get_analyser_class();
 
         $this->versions = $this->get_versions_from_db();
-    }
-
-    /** Getter for the config's target.
-     * @return string
-     */
-    public function get_target(): string {
-        return $this->target;
     }
 
     /**
@@ -109,65 +102,6 @@ class model_configuration {
             $versions[] = $version->get_model_version_obj();
         }
         return $versions;
-    }
-
-    /**
-     * Create a new model configuration for a model id.
-     * Failing gracefully: If config for this model already exists, just return it.
-     * The accompanying db table is needed to preserve a record of the model configuration
-     * even if the model has been deleted.
-     *
-     * @param int $modelid of an analytics model
-     * @return int id of created or retrieved object
-     */
-    public static function create_and_get_for_model(int $modelid) : int {
-        global $DB;
-
-        $modelobj = $DB->get_record('analytics_models', ['id' => $modelid], '*', MUST_EXIST);
-
-        $obj = new stdClass();
-        $obj->modelid = $modelid;
-        $obj->name = $modelobj->name;
-        if (!isset($obj->name)) {
-            $modelidcount = $DB->count_records('tool_lala_model_configs', ['modelid' => $modelid]);
-            $obj->name = 'config' . $modelid . '/' . $modelidcount;
-        }
-        $obj->target = $modelobj->target;
-
-        if (self::valid_exists($modelobj->predictionsprocessor)) {
-            $obj->predictionsprocessor = $modelobj->predictionsprocessor;
-        } else {
-            $default = manager::default_mlbackend();
-            $obj->predictionsprocessor = $default;
-        }
-
-        if (self::valid_exists($modelobj->timesplitting)) {
-            $obj->analysisinterval = $modelobj->timesplitting;
-        } else {
-            $analysisintervals = manager::get_time_splitting_methods_for_evaluation();
-            $firstanalysisinterval = array_keys($analysisintervals)[0];
-            $obj->analysisinterval = $firstanalysisinterval;
-        }
-
-        if (self::valid_exists($modelobj->contextids)) {
-            $obj->defaultcontextids = $modelobj->contextids;
-        }
-
-        $obj->indicators = $modelobj->indicators;
-
-        $obj->timecreated = time();
-
-        return $DB->insert_record('tool_lala_model_configs', $obj);
-    }
-
-    /**
-     * Helper method: Short check to verify whether the provided value is valid, and thus a valid list exists.
-     *
-     * @param string|null $value to check
-     * @return boolean
-     */
-    private static function valid_exists(?string $value): bool {
-        return isset($value) && $value != "" && $value != "[]";
     }
 
     /**
@@ -212,5 +146,12 @@ class model_configuration {
      */
     public function get_name(): string {
         return $this->name;
+    }
+
+    /** Getter for the config's target.
+     * @return string
+     */
+    public function get_target(): string {
+        return $this->target;
     }
 }

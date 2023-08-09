@@ -36,18 +36,6 @@ class related_data_anonymized extends related_data {
     'firstnamephonetic', 'lastnamephonetic', 'alternatename', 'email', 'phone1', 'phone2', 'address', 'lastip', 'secret',
     'middlename', 'imagealt', 'moodlenetprofile', 'picture', 'ip'];
 
-    /** Create an idmap for a set of related data.
-     *
-     * @param array $relateddata
-     * @return idmap
-     * @throws Exception
-     * @throws Exception
-     */
-    public static function create_idmap(array $relateddata): idmap {
-        $originalids = related_data::get_ids_used($relateddata);
-        return idmap::create_from_ids($originalids);
-    }
-
     /**
      * Retrieve all relevant data related to the analysable samples.
      * Make sure to only return allowed columns and only if enough data exists.

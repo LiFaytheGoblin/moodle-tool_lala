@@ -142,7 +142,8 @@ class related_data_anonymized_test extends related_data_test {
         $this->assertEquals(3, count($pseudonomizeddata));
 
         // All needed new ids made it to the pseudonomized dataset & structure is ok.
-        $missingpseudonyms = array_diff($idmapmain->get_pseudonyms(), related_data::get_ids_used($pseudonomizeddata));
+        $missingpseudonyms = array_diff($idmapmain->get_pseudonyms(),
+                related_data_helper::get_ids_used_in_related_data($pseudonomizeddata));
         $this->assertEquals(0, count($missingpseudonyms));
 
         $secondarypseudonyms = $idmapsecondary->get_pseudonyms();

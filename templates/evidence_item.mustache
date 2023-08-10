@@ -31,41 +31,39 @@
         "serializedfilelocation": "/evidencecollections/1"
       }
 }}
-<li>
-    <div class="border p-2 rounded small m-1 bg-white">
-    <ul class="list-unstyled">
-        <li class="col-sm">
-            <a href="{{serializedfilelocation}}" title="Download from {{serializedfilelocation}}">
+<li class="col-sm-4 py-2 px-2">
+        <ul class="border rounded small bg-white h-100 list-unstyled p-2">
+            <li>
+                <a href="{{serializedfilelocation}}" title="Download from {{serializedfilelocation}}">
+                    <dl class="row mb-0">
+                        <dt  class="mb-0 col-1">
+                            <i class="icon fa fa-download" aria-hidden="true" title="{{#str}}serializedfilelocation, tool_lala{{/str}}"></i>
+                        </dt>
+                        <dd  class="m-0 col">
+                            {{name}} {{#tablename}}({{tablename}}){{/tablename}}
+                        </dd>
+                    </dl>
+                </a>
+            </li>
+            <li>
                 <dl class="row mb-0">
-                    <dt  class="mb-0 col-sm-0">
-                        <i class="icon fa fa-download" aria-hidden="true" title="{{#str}}serializedfilelocation, tool_lala{{/str}}"></i>
+                    <dt  class="mb-0 col-1">
+                        <i class="icon fa fa-hourglass-start" title="{{#str}}started, tool_lala{{/str}}"></i>
                     </dt>
-                    <dd  class="m-0 p-0 col-sm">
-                        {{name}} {{#tablename}}({{tablename}}){{/tablename}}
+                    <dd  class="m-0 col">
+                        {{timecollectionstarted}}
                     </dd>
                 </dl>
-            </a>
-        </li>
-        <li class="col-sm">
-            <dl class="row mb-0">
-                <dt  class="mb-0 col-sm-0">
-                    <i class="icon fa fa-hourglass-start" title="{{#str}}started, tool_lala{{/str}}"></i>
-                </dt>
-                <dd  class="m-0 p-0 col-sm">
-                    {{timecollectionstarted}}
-                </dd>
-            </dl>
-        </li>
-        <li class="col-sm">
-            <dl class="row mb-0">
-                <dt  class="mb-0 col-sm-0">
-                    <i class="icon fa fa-hourglass-end" title="{{#str}}finished, tool_lala{{/str}}"></i>
-                </dt>
-                <dd  class="mb-0 p-0 col-sm">
-                    {{timecollectionfinished}}
-                </dd>
-            </dl>
-        </li>
-    </ul>
-    </div>
+            </li>
+            <li>
+                <dl class="row mb-0">
+                    <dt  class="mb-0 col-1">
+                        <i class="icon fa fa-hourglass-end" title="{{#str}}finished, tool_lala{{/str}}"></i>
+                    </dt>
+                    <dd  class="mb-0 col">
+                        {{timecollectionfinished}}
+                    </dd>
+                </dl>
+            </li>
+        </ul>
 </li>

@@ -55,39 +55,22 @@
         {{> tool_lala/model_version_description}}
     {{/description}}
 
-    <div class="w-100 text-dark bg-secondary rounded-bottom px-1 text-center position-relative mb-2">
-        <a class="collapse multi-collapse show multi-collapseevidence{{id}} stretched-link" data-toggle="collapse" data-target=".multi-collapseevidence{{id}}" role="button" aria-expanded="false" aria-controls="evidence{{id}} moreevidence{{id}} lessevidence{{id}}" id="moreevidence{{id}}">
+    <div class="w-100 text-dark bg-secondary rounded-bottom px-1 text-center position-relative mb-1">
+        <a class="collapse multi-collapse show multi-collapseevidence{{id}} stretched-link text-dark" data-toggle="collapse" data-target=".multi-collapseevidence{{id}}" role="button" aria-expanded="false" aria-controls="evidence{{id}} moreevidence{{id}} lessevidence{{id}}" id="moreevidence{{id}}">
             display evidence
         </a>
     </div>
-    <div class="w-100 text-dark bg-secondary rounded-top px-1 text-center position-relative mb-2">
-        <a class="collapse multi-collapse hide multi-collapseevidence{{id}} stretched-link" data-toggle="collapse" data-target=".multi-collapseevidence{{id}}" role="button" aria-expanded="true" aria-controls="evidence{{id}} moreevidence{{id}} lessevidence{{id}}" id="lessevidence{{id}}">
-            hide evidence
-        </a>
-    </div>
 
-    <div class="container mx-0 mb-3 collapse multi-collapse multi-collapseevidence{{id}}" id="evidence{{id}}">
+    <div class="container rounded-top mx-0 collapse multi-collapse bg-light multi-collapseevidence{{id}} pb-3 mb-n3" id="evidence{{id}}">
         <ul class="row row-cols-3 list-unstyled">
             {{#evidence}}
                 {{> tool_lala/evidence_item}}
             {{/evidence}}
         </ul>
     </div>
-
-    <!--
-    <a class="collapse multi-collapseevidence{{id}} text-dark bg-secondary rounded-bottom px-1 text-center show" data-toggle="collapse" href=".multi-collapseevidence{{id}}" role="button" aria-expanded="false" aria-controls="evidence{{id}} moreevidence{{id}}" id="moreevidence{{id}}">
-        display evidence
-    </a>
-    <div class="container mx-0 mb-3 collapse multi-collapseevidence{{id}}" id="evidence{{id}}">
-            <ul class="row row-cols-3 list-unstyled">
-                {{#evidence}}
-                    {{> tool_lala/evidence_item}}
-                {{/evidence}}
-            </ul>
-        <a class="border border-primary border-1 text-dark bg-secondary rounded-top px-1 text-center" data-toggle="collapse" href=".multi-collapseevidence{{id}}" role="button" aria-expanded="true" aria-controls="evidence{{id}} moreevidence{{id}}">
+    <div class="w-100 text-dark bg-secondary rounded-top px-1 text-center position-relative mb-3">
+        <a class="collapse multi-collapse hide multi-collapseevidence{{id}} stretched-link text-dark" data-toggle="collapse" data-target=".multi-collapseevidence{{id}}" role="button" aria-expanded="true" aria-controls="evidence{{id}} moreevidence{{id}} lessevidence{{id}}" id="lessevidence{{id}}">
             hide evidence
         </a>
     </div>
-    -->
-
 </section>

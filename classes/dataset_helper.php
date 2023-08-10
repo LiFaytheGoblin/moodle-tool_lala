@@ -28,6 +28,7 @@ use core_analytics\local\analysis\result_array;
 use core_analytics\analysis;
 use core_php_time_limit;
 use DomainException;
+use Exception;
 
 /**
  * Class for the complete dataset evidence item.
@@ -116,7 +117,9 @@ class dataset_helper {
     }
 
     /**
-     * Build a dataset in the correct structure from analysisintervalkey, header, sampleids, x values and y values (will be joined for rows)
+     * Build a dataset in the correct structure from analysisintervalkey, header, sampleids, x values and y values
+     * (will be joined for rows)
+     *
      * @param string $analysisintervalkey
      * @param array $header
      * @param array $sampleids
@@ -215,5 +218,17 @@ class dataset_helper {
         } else {
             return null;
         }
+    }
+
+    /** Create idmap from a dataset of a specific type.
+     *
+     * @param array $dataset
+     * @return idmap
+     * @throws Exception
+     * @throws Exception
+     */
+    public static function create_idmap_from_dataset(array $dataset): idmap {
+        $originalids = self::get_ids_used_in_dataset($dataset);
+        return idmap::create_from_ids($originalids);
     }
 }

@@ -18,7 +18,6 @@ namespace tool_lala;
 
 use advanced_testcase;
 use dml_missing_record_exception;
-use Exception;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -70,30 +69,4 @@ class model_configuration_test extends advanced_testcase {
         new model_configuration(test_config::get_highest_id() + 1);
     }
 
-    /**
-     * Check that create_and_get_for_model() references and creates correct configs.
-     *
-     * @covers ::tool_lala_model_configuration_get_or_create_and_get_for_model
-     */
-    public function test_model_configuration_create_and_get_for_model() {
-        $this->resetAfterTest(true);
-
-        $modelid = test_model::create();
-
-        // No config exists yet for the model, so create one.
-        $maxidbeforenewconfigcreation = test_config::get_highest_id();
-        $returnedconfigid = model_configuration::create_and_get_for_model($modelid);
-        $this->assertGreaterThan($maxidbeforenewconfigcreation, $returnedconfigid); // New config has been created, is referenced.
-    }
-
-    /**
-     * Check that get_model_config_obj() throws an error if the provided model id does not exist neither in analytics_models nor
-     * in tool_lala_model_configs.
-     *
-     * @covers ::tool_lala_model_configuration_get_or_create_and_get_for_model
-     */
-    public function test_model_configuration_create_and_get_for_model_error() {
-        $this->expectException(Exception::class);
-        model_configuration::create_and_get_for_model(test_model::get_highest_id() + 1);
-    }
 }

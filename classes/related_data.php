@@ -37,37 +37,6 @@ class related_data extends dataset {
     protected ?string $tablename;
 
     /**
-     * Extracts the tablename from a serializedfilelocation.
-     *
-     * @param array $relateddata an array of objects that each have an id.
-     * @return array ids
-     */
-    public static function get_ids_used(array $relateddata): array {
-        return array_column($relateddata, 'id');
-    }
-
-    public static function get_tablename_from_evidenceid($evidenceid): string|bool {
-        global $DB;
-        $record = $DB->get_record('tool_lala_evidence', ['id' => $evidenceid], '*', MUST_EXIST);
-        return self::get_tablename_from_serializedfilelocation($record->serializedfilelocation);
-    }
-
-    /**
-     * Extracts the tablename from a serializedfilelocation.
-     *
-     * @param string $serializedfilelocation a path with file name and type
-     * @return string|bool tablename
-     */
-    public static function get_tablename_from_serializedfilelocation(string $serializedfilelocation): string|bool {
-        $pattern = "/(?<=\d-)([a-zA-Z_]+)(?=\.)/";
-        $hastablename = preg_match($pattern, $serializedfilelocation, $regexresults);
-        if ($hastablename) {
-            return $regexresults[0];
-        }
-        return false;
-    }
-
-    /**
      * Retrieve all relevant data related to the analysable samples.
      *
      * @param array $options = [string $tablename, array $ids]
@@ -90,10 +59,10 @@ class related_data extends dataset {
     /**
      * Validate the options of this evidence.
      *
-     * @param $options
+     * @param array $options
      * @return void
      */
-    public function validate($options) : void {
+    public function validate(array $options) : void {
         if (!isset($options['tablename'])) {
             throw new InvalidArgumentException('Options is missing the name of the related table.');
         }

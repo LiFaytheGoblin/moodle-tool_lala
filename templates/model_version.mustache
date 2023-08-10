@@ -55,14 +55,13 @@
         {{> tool_lala/model_version_description}}
     {{/description}}
 
-    <div class="w-100 text-dark bg-secondary rounded-bottom px-1 text-center position-relative mb-1">
+    <div class="w-100 text-dark bg-secondary rounded-bottom px-1 text-center position-relative">
         <a class="collapse multi-collapse show multi-collapseevidence{{id}} stretched-link text-dark" data-toggle="collapse" data-target=".multi-collapseevidence{{id}}" role="button" aria-expanded="false" aria-controls="evidence{{id}} moreevidence{{id}} lessevidence{{id}}" id="moreevidence{{id}}">
             display evidence
         </a>
     </div>
-
     <div class="container rounded-top mx-0 collapse multi-collapse bg-light multi-collapseevidence{{id}} pb-3 mb-n3" id="evidence{{id}}">
-        <ul class="row list-unstyled p-2">
+        <ul class="row list-unstyled px-2">
             {{#evidence}}
                 {{> tool_lala/evidence_item}}
             {{/evidence}}

@@ -92,16 +92,8 @@ class model_configuration implements templatable, renderable {
             $data['firstindicator'] = $indicators;
         }
 
-        // Add buttons.
-        $buttons = [];
-        $buttons[] = new single_button(new moodle_url('modelversion.php', ['configid' => $this->modelconfig->id,
-                'sesskey' => sesskey()]), get_string('automatically', 'tool_lala'), 'post');
-        $buttons[] = new single_button(new moodle_url('modelversion.php', ['configid' => $this->modelconfig->id, 'auto' => false,
-                'sesskey' => sesskey()]), get_string('manually', 'tool_lala'), 'post');
-        foreach ($buttons as $key => $button) {
-            $buttons[$key] = $button->export_for_template($output);
-        }
-        $data['buttons'] = $buttons;
+        // Add session key for create model version button.
+        $data['sesskey'] = sesskey();
 
         // Add started evidence sets.
         $versions = []; // Todo: Differentiate started and finished evidence sets? Sort?

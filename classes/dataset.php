@@ -63,7 +63,8 @@ class dataset extends evidence {
         $allresults = $resultarray->get();
 
         if (count($allresults) < 1) {
-            throw new LengthException('No data was gathered from the site. Probably, no fitting data is available.');
+            $logs = implode(". ", $options['analyser']->get_logs());
+            throw new LengthException('No data was gathered from the site. Probably, no fitting data was available. Here are the details: '.$logs);
         }
 
         $this->data = $allresults;

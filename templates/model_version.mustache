@@ -19,6 +19,7 @@
     - name
     - description: [{}]
     - evidence: [{}]
+    - hasevidence
     Example context (json):
     {
         "id": 1,
@@ -40,7 +41,8 @@
             "timecreationstarted": "1679987403",
             "timecreationfinished": "1679987953",
             "serializedfilelocation": "/evidencecollections/1"
-        }]
+        }],
+        "hasevidence": true
       }
 }}
 <section aria-label="version{{id}}">
@@ -55,12 +57,23 @@
         {{> tool_lala/model_version_description}}
     {{/description}}
 
-    <div class="container mx-0 mb-3">
-        <ul class="row row-cols-3 list-unstyled">
+    {{#hasevidence}}
+    <div class="w-100 text-dark bg-secondary rounded-bottom px-1 text-center position-relative">
+        <a class="collapse multi-collapse show multi-collapseevidence{{id}} stretched-link text-dark" data-toggle="collapse" data-target=".multi-collapseevidence{{id}}" role="button" aria-expanded="false" aria-controls="evidence{{id}} moreevidence{{id}} lessevidence{{id}}" id="moreevidence{{id}}">
+            display evidence
+        </a>
+    </div>
+    <div class="container rounded-top mx-0 collapse multi-collapse bg-light multi-collapseevidence{{id}} pb-3 mb-n3" id="evidence{{id}}">
+        <ul class="row list-unstyled px-2">
             {{#evidence}}
                 {{> tool_lala/evidence_item}}
             {{/evidence}}
         </ul>
     </div>
-
+    <div class="w-100 text-dark bg-secondary rounded-top px-1 text-center position-relative mb-3">
+        <a class="collapse multi-collapse hide multi-collapseevidence{{id}} stretched-link text-dark" data-toggle="collapse" data-target=".multi-collapseevidence{{id}}" role="button" aria-expanded="true" aria-controls="evidence{{id}} moreevidence{{id}} lessevidence{{id}}" id="lessevidence{{id}}">
+            hide evidence
+        </a>
+    </div>
+    {{/hasevidence}}
 </section>

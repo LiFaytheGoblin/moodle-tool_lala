@@ -26,6 +26,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Let(\')s audit Learning Analytics';
+$string['plugindescription'] = "\"Let(')s audit Learning Analytics\" (LaLA) enables the retrieval of <a href='https://github.com/LiFaytheGoblin/moodle-tool_lala/wiki/Evidence' target='_blank'>evidence</a> for your <a href='https://github.com/LiFaytheGoblin/moodle-tool_lala/wiki/Auditing' target='_blank'>audit</a> of a <a href='https://github.com/LiFaytheGoblin/moodle-tool_lala/wiki/Moodle-Learning-Analytics' target='_blank'>Moodle Learning Analytics</a> model.";
+$string['moodleanalyticsnote'] = "Model configurations continue to be managed by Moodle administrators on the <a href='../analytics/index.php' target='_blank'>Learning Analytics page</a>.";
+$string['learnmore'] = "Learn more about using LaLA in the <a href='https://github.com/LiFaytheGoblin/moodle-tool_lala/wiki/Quick-Start' target='_blank'>Quick Start guide</a>.";
 $string['nomodelconfigurations'] = 'No model configurations found. Create some models using the Learning Analytics functionality, before you can train them and collect evidence for auditing them.';
 $string['nomodelversions'] = 'You have not created any models for this configuration yet. Thus, no evidence for auditing is available.';
 $string['learnaboutauditing'] = 'Learn about model auditing';

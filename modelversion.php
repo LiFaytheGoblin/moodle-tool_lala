@@ -26,13 +26,14 @@ require(__DIR__ . '/../../../config.php');
 
 use tool_lala\model_version;
 
-$configid = optional_param('configid', 0, PARAM_INT);
+$configid = optional_param('configid', 0, PARAM_INT); // For which config id to create a version?
+$auto = optional_param('auto', true, PARAM_BOOL); // Should version be created automatically with default settings?
 
 // Routes
 // POST /admin/tool/lala/modelversion.php?configid=<configid>
 
 // Set some page parameters.
-$pageurl = new moodle_url('/admin/tool/lala/modelversion.php', ['configid' => $configid]);
+$pageurl = new moodle_url('/admin/tool/lala/modelversion.php', ['configid' => $configid, 'auto' => $auto]);
 $context = context_system::instance();
 
 $PAGE->set_url($pageurl);
@@ -46,22 +47,31 @@ $versionid = null;
 
 if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $versionid = model_version::create_scaffold_and_get_for_config($configid);
-
     $version = new model_version($versionid);
 
-    // If route contains auto param, do it automatically.
-    try {
-        $version->gather_dataset();
-        $version->split_training_test_data();
-        $version->train();
-        $version->predict();
-        $version->gather_related_data();
-    } finally {
-        $version->finish();
+    if ($auto) {
+        try {
+            $version->gather_dataset();
+            $version->split_training_test_data();
+            $version->train();
+            $version->predict();
+            $version->gather_related_data();
+        } finally {
+            $version->finish();
+        }
+    } else {
+        $output = $PAGE->get_renderer('tool_lala');
+
+        echo $output->header();
+
+        $modelversionrenderable = new tool_lala\output\model_version($version->get_model_version_obj());
+        echo $output->render($modelversionrenderable);
+
+        echo $output->footer();
     }
 }
 
-$versionaddendum = (isset($versionid) ? '#version'.$versionid : '');
+$versionaddendum = isset($versionid) ? '#version'.$versionid : '';
 $priorurl = new moodle_url('/admin/tool/lala/index.php'.$versionaddendum);
 redirect($priorurl);
 

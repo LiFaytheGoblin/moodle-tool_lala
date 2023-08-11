@@ -32,7 +32,9 @@ $string['learnmore'] = "Learn more about using LaLA in the <a href='https://gith
 $string['nomodelconfigurations'] = 'No model configurations found. Create some models using the Learning Analytics functionality, before you can train them and collect evidence for auditing them.';
 $string['nomodelversions'] = 'You have not created any models for this configuration yet. Thus, no evidence for auditing is available.';
 $string['learnaboutauditing'] = 'Learn about model auditing';
-$string['automaticallycreateversion'] = '+ automatically create new version';
+$string['createversion'] = 'create new version';
+$string['automatically'] = 'automatically';
+$string['manually'] = 'manually';
 $string['configid'] = 'config-id';
 $string['modelid'] = 'model-id';
 $string['target'] = 'target';

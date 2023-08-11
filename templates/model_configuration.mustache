@@ -66,7 +66,10 @@
             <h3 class="activity-instance activity-title">
                 <span title="{{#str}}model, tool_lala{{/str}}" id="config{{id}}">{{name}}</span>
             </h3>
-            <div class="activity-info mt-1 mt-md-0">{{#buttons}}{{> core/single_button}}{{/buttons}}</div>
+            <div class="activity-info mt-1 mt-md-0">
+                {{#str}}createversion, tool_lala{{/str}}
+                {{#buttons}}{{> core/single_button}}{{/buttons}}
+            </div>
         </div>
         <div class="bg-light p-3 rounded small mb-3">
             <ul class="p-0 list-unstyled row mb-0">

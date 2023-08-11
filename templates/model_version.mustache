@@ -19,6 +19,7 @@
     - name
     - description: [{}]
     - evidence: [{}]
+    - hasevidence
     Example context (json):
     {
         "id": 1,
@@ -40,7 +41,8 @@
             "timecreationstarted": "1679987403",
             "timecreationfinished": "1679987953",
             "serializedfilelocation": "/evidencecollections/1"
-        }]
+        }],
+        "hasevidence": true
       }
 }}
 <section aria-label="version{{id}}">
@@ -55,6 +57,7 @@
         {{> tool_lala/model_version_description}}
     {{/description}}
 
+    {{#hasevidence}}
     <div class="w-100 text-dark bg-secondary rounded-bottom px-1 text-center position-relative">
         <a class="collapse multi-collapse show multi-collapseevidence{{id}} stretched-link text-dark" data-toggle="collapse" data-target=".multi-collapseevidence{{id}}" role="button" aria-expanded="false" aria-controls="evidence{{id}} moreevidence{{id}} lessevidence{{id}}" id="moreevidence{{id}}">
             display evidence
@@ -72,4 +75,5 @@
             hide evidence
         </a>
     </div>
+    {{/hasevidence}}
 </section>

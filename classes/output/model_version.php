@@ -66,6 +66,7 @@ class model_version implements templatable, renderable {
             $evidenceitems[] = $evidencerenderer->export_for_template($output);
         }
         $data['evidence'] = $evidenceitems;
+        $data['hasevidence'] = count($evidenceitems) > 0;
 
         return $data;
     }

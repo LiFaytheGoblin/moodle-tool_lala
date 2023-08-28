@@ -233,6 +233,7 @@ class model_version {
                 $this->idmaps = [];
             }
             $rawdata = $evidence->get_raw_data();
+
             $origintablename = $this->analyser->get_samples_origin();
             $this->idmaps[$origintablename] = dataset_helper::create_idmap_from_dataset($rawdata);
 
@@ -277,7 +278,6 @@ class model_version {
 
             return $evidence;
         } catch (moodle_exception | Exception $e) {
-            print("ERROR". $e->getMessage());
             $this->register_error($e); // Todo: Do this for any exceptions in the model version - find better place than here.
             throw $e;
         }

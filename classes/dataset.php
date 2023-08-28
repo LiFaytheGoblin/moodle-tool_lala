@@ -65,7 +65,7 @@ class dataset extends evidence {
         if (count($allresults) < 1) {
             $logstext = '';
             $logs = implode(". ", $options['analyser']->get_logs());
-            if (count($logs) > 0) {
+            if (strlen($logs) > 0) {
                 $logstext = ' Here are the details: ' . $logs;
             }
             throw new LengthException('No data was gathered from the site. Probably, no fitting data was available.' . $logstext);

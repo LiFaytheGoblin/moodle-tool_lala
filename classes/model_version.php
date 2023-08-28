@@ -120,7 +120,7 @@ class model_version {
      * Loads php objects instead of just ids or names for some of the model properties,
      * so they can be reused later.
      * Objects that are being loaded for later use:
-     * $contexts, $predictor, $analyser
+     * $predictor, $contexts, $analyser
      * Other loaded objects ($targetinstance, $indicatorinstances, $analysisintervalinstances) are only needed temporarily.
      *
      * @return void
@@ -130,16 +130,7 @@ class model_version {
     private function load_objects(): void {
         $this->predictor = manager::get_predictions_processor($this->predictionsprocessor, true);
 
-        $this->contexts = [];
-        if (isset($this->contextids)) {
-            foreach ($this->contextids as $contextid) {
-                $this->contexts[] = context::instance_by_id($contextid, IGNORE_MISSING);
-            }
-        }
-
-        // Convert analysisintervals from string[] to instances.
-        $analysisintervalinstanceinstance = manager::get_time_splitting($this->analysisinterval);
-        $analysisintervalinstances = [$analysisintervalinstanceinstance];
+        $this->load_context_objects();
 
         // Convert indicators from string[] to instances.
         $fullclassnames = json_decode($this->indicators);
@@ -156,6 +147,10 @@ class model_version {
             throw new Exception('No indicator instances could be created from indicator string '.$this->indicators);
         }
 
+        // Convert analysisintervals from string[] to instances.
+        $analysisintervalinstanceinstance = manager::get_time_splitting($this->analysisinterval);
+        $analysisintervalinstances = [$analysisintervalinstanceinstance];
+
         // Create an analyser.
         $options = ['evaluation' => true, 'mode' => 'configuration'];
         $targetinstance = manager::get_target($this->target);
@@ -165,6 +160,23 @@ class model_version {
         $analyzerclassname = $targetinstance->get_analyser_class();
         $this->analyser = new $analyzerclassname($this->modelid, $targetinstance, $indicatorinstances,
                 $analysisintervalinstances, $options);
+    }
+
+    /**
+     * Update the contextids to be used, if no data has been collected yet.
+     *
+     * @param int[] $contextids
+     * @return void
+     */
+    public function set_contextids(array $contextids) {
+        if (isset($this->evidence['dataset']) || isset($this->evidence['dataset_anonymized'])) {
+            throw new LogicException('Dataset has already been gathered. Contexts can only be set before gathering the dataset.');
+        }
+        global $DB;
+        $this->contextids = $contextids;
+        $DB->set_field('tool_lala_model_versions', 'contextids', $this->contextids,
+                ['id' => $this->id]);
+        $this->load_context_objects();
     }
 
     /**
@@ -501,5 +513,17 @@ class model_version {
      */
     public function get_array_of_evidences(string $evidencetype): array {
         return $this->evidence[$evidencetype];
+    }
+
+    /**
+     * @return void
+     */
+    public function load_context_objects(): void {
+        $this->contexts = [];
+        if (isset($this->contextids) && count($this->contextids) > 0) {
+            foreach ($this->contextids as $contextid) {
+                $this->contexts[] = context::instance_by_id($contextid, IGNORE_MISSING);
+            }
+        }
     }
 }

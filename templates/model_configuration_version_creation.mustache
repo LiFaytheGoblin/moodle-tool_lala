@@ -40,14 +40,7 @@
             }],
             "sesskey": 'somesessionkey',
             "versions": [{
-                "description": {
-                    "id": 1,
-                    "name": "AutoSet",
-                    "timecreationstarted": "1679987403",
-                    "contextids": [1, 2, 3],
-                    "timecreationfinished": null,
-                    "timecreationfinishedicon": "half"
-                },
+                "description": {},
                 "evidence": [{
                     "id": 1,
                     "name": "training data",
@@ -75,5 +68,20 @@
                 {{/versions}}
             </ul>
         </div>
+        <section>
+            <h4>{{#str}}datagatheringtitle, tool_lala{{/str}}</h4>
+            <p>{{#str}}datagatheringexplanation, tool_lala{{/str}}</p>
+            <section>
+                <h5>{{#str}}datagatheringfromthisinstance, tool_lala{{/str}}</h5>
+
+            </section>
+            <section>
+                <h5>{{#str}}datagatheringowndata, tool_lala{{/str}}</h5>
+                <div class="alert alert-info alert-block">
+                    <p><i class="fa fa-info-circle" aria-hidden="true"></i> {{#str}}datagatheringdonthavedataset, tool_lala{{/str}}</p>
+                    <p>{{#str}}datagatheringinforestorebackup, tool_lala{{/str}}</p>
+                </div>
+            </section>
+        </section>
     </div>
 </section>

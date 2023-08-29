@@ -39,4 +39,8 @@ class model_version_creation extends model_version {
     protected function get_description(renderer_base $output): array {
         return [];
     }
+
+    protected function get_evidence_items(renderer_base $output): array {
+        return [];
+    }
 }

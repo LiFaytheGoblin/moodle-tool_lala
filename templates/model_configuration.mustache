@@ -63,18 +63,7 @@
                 <span title="{{#str}}model, tool_lala{{/str}}" id="config{{id}}">{{name}}</span>
             </h3>
             <div class="col"></div>
-            <form class="input-group mb-3 form-row col" action="modelversion.php" method="POST">
-                <div class="input-group-prepend">
-                    <button class="btn btn-outline-secondary" type="submit">{{#str}}createversion, tool_lala{{/str}}</button>
-                </div>
-                <input type="hidden" name="configid" value="{{id}}" />
-                <input type="hidden" name="sesskey" value="{{sesskey}}" />
-                <label for="auto" class="sr-only">create version automatically or manually</label>
-                <select class="custom-select" id="auto" name="auto">
-                    <option selected value=true>automatically</option>
-                    <option value=false>manually</option>
-                </select>
-            </form>
+            {{> tool_lala/create_model_version_button}}
         </div>
         {{#description}}
             {{> tool_lala/model_configuration_description}}

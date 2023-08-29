@@ -54,8 +54,18 @@ class model_configuration_version_creation extends model_configuration {
      * @param renderer_base $output
      * @return array
      */
-    public function get_versions(renderer_base $output): array {
+    protected function get_versions(renderer_base $output): array {
         $versionrenderer = new model_version_creation($this->modelversion);
         return [$versionrenderer->export_for_template($output)];
+    }
+
+    protected function get_name(): string {
+        $params = new stdClass();
+        $params->name = parent::get_name();
+        return get_string('createmodelversiontitle', 'tool_lala', $params);
+    }
+
+    protected function get_defaultcontextids(): ?string {
+        return null;
     }
 }

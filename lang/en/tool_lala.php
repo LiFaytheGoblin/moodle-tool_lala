@@ -63,3 +63,4 @@ $string['lala:viewpagecontent'] = 'View the content of the plugin page';
 $string['lala:downloadevidence'] = 'Download the evidence produced for model versions';
 $string['lala:createmodelversion'] = 'Trigger the creation of a new model version';
 $string['privacy:metadata'] = 'This plugin only creates database tables concerning model configuration, version and evidence meta data. Some data is gathered from the Moodle instance during the model version creation, and provided to admins and auditors as evidence. This data is anonymized BEFORE storing it permanently a file.';
+$string['createmodelversiontitle'] = 'Manually create a new version for the model config {$a->name}';

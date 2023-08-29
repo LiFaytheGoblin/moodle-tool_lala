@@ -45,6 +45,17 @@ class model_version implements templatable, renderable {
     }
 
     /**
+     * Get the description for the model version.
+     *
+     * @param renderer_base $output
+     * @return array
+     */
+    protected function get_description(renderer_base $output): array {
+        $descriptionrenderer = new model_version_description($this->version);
+        return [$descriptionrenderer->export_for_template($output)];
+    }
+
+    /**
      * Data for use with a template.
      *
      * @param renderer_base $output Renderer information.
@@ -57,8 +68,7 @@ class model_version implements templatable, renderable {
         $data['name'] = $this->version->name;
 
         // Add info about the model version.
-        $descriptionrenderer = new model_version_description($this->version);
-        $data['description'] = [$descriptionrenderer->export_for_template($output)];
+        $data['description'] = $this->get_description($output);
 
         $evidenceitems = [];
         foreach ($this->version->evidenceobjects as $evidenceobject) {

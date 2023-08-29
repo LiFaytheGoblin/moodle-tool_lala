@@ -30,7 +30,7 @@ use LogicException;
 use moodle_exception;
 use stdClass;
 use core_analytics\manager;
-use core_analytics\context;
+use context;
 use core_analytics\predictor;
 use core_analytics\local\analyser\base;
 use Phpml\Classification\Linear\LogisticRegression;
@@ -173,7 +173,7 @@ class model_version {
             throw new LogicException('Dataset has already been gathered. Contexts can only be set before gathering the dataset.');
         }
         global $DB;
-        $this->contextids = $contextids;
+        $this->contextids = json_encode($contextids);
         $DB->set_field('tool_lala_model_versions', 'contextids', $this->contextids,
                 ['id' => $this->id]);
         $this->load_context_objects();
@@ -506,6 +506,15 @@ class model_version {
     }
 
     /**
+     * Check whether the version finished without error.
+     *
+     * @return bool
+     */
+    public function has_error(): bool {
+        return isset($this->error);
+    }
+
+    /**
      * Get all evidence items of a type.
      *
      * @param string $evidencetype a valid name of an evidence inheriting class
@@ -520,8 +529,9 @@ class model_version {
      */
     public function load_context_objects(): void {
         $this->contexts = [];
-        if (isset($this->contextids) && count($this->contextids) > 0) {
-            foreach ($this->contextids as $contextid) {
+        $contextidarr = json_decode($this->contextids);
+        if (isset($this->contextids) && $contextidarr > 0) {
+            foreach ($contextidarr as $contextid) {
                 $this->contexts[] = context::instance_by_id($contextid, IGNORE_MISSING);
             }
         }

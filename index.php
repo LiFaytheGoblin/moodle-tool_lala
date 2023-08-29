@@ -24,6 +24,9 @@
 
 require(__DIR__ . '/../../../config.php');
 
+use tool_lala\model_configuration_helper;
+use tool_lala\output\model_configurations;
+
 // Set some page parameters.
 $pageurl = new moodle_url('/admin/tool/lala/index.php');
 $heading = get_string('pluginname', 'tool_lala');
@@ -39,14 +42,14 @@ require_login();
 require_capability('tool/lala:viewpagecontent', $context);
 
 // Get all model configurations.
-$modelconfigobjs = tool_lala\model_configuration_helper::init_and_get_all_model_config_objs();
+$modelconfigobjs = model_configuration_helper::init_and_get_all_model_config_objs();
 
 // Output the page.
 $output = $PAGE->get_renderer('tool_lala');
 
 echo $output->header();
 
-$modelconfigsrenderable = new tool_lala\output\model_configurations($modelconfigobjs);
+$modelconfigsrenderable = new model_configurations($modelconfigobjs);
 echo $output->render($modelconfigsrenderable);
 
 echo $output->footer();

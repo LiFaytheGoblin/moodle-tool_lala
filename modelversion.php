@@ -23,9 +23,8 @@
  */
 
 require(__DIR__ . '/../../../config.php');
-require_once($CFG->libdir . '/filelib.php');
-//require_once($CFG->libdir . '/curllib.php');
 
+use tool_lala\model_configuration;
 use tool_lala\model_version;
 
 $configid = optional_param('configid', 0, PARAM_INT);
@@ -36,10 +35,14 @@ $auto = optional_param('auto', true, PARAM_BOOL); // Should version be created a
 
 // Set some page parameters.
 $pageurl = new moodle_url('/admin/tool/lala/modelversion.php', ['configid' => $configid, 'auto' => $auto]);
+$heading = get_string('pluginname', 'tool_lala');
 $context = context_system::instance();
 
-$PAGE->set_url($pageurl);
 $PAGE->set_context($context);
+$PAGE->set_url($pageurl);
+$PAGE->set_pagelayout('standard');
+$PAGE->set_title(format_string($heading));
+$PAGE->set_heading($heading);
 
 require_login();
 require_capability('tool/lala:createmodelversion', $context);
@@ -48,35 +51,43 @@ require_sesskey();
 if (!empty($configid) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $versionid = model_version::create_scaffold_and_get_for_config($configid);
 
+    $version = new model_version($versionid);
+
     // If route contains auto param, do it automatically.
     if ($auto) {
-        // Data you want to send
-        $postData = array(
-                'versionid' => $versionid,
-        );
+        try {
+            if (isset($contextids)) {
+                $version->set_contextids($contextids);
+            }
+            $version->gather_dataset();
+            $version->split_training_test_data();
+            $version->train();
+            $version->predict();
+            $version->gather_related_data();
+        } finally {
+            $version->finish();
+        }
 
-        // Set up POST data
-        $postData = http_build_query($postData);
-
-        // Set up cURL handle
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $CFG->wwwroot . '/admin/tool/lala/dataset.php'); // Replace with the correct path
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-        // Execute cURL request
-        $res = curl_exec($ch);
-
-        // Close cURL handle
-        curl_close($ch);
-
-        if (isset($res)) {
+        if (!$version->has_error()) {
             $priorurl = new moodle_url('/admin/tool/lala/index.php#version'.$versionid);
             redirect($priorurl);
         }
     } else {
         // render a page for the user, from which the nexturl is called.
+        $output = $PAGE->get_renderer('tool_lala');
+
+        echo $output->header();
+
+        $modelversionobj = $version->get_model_version_obj();
+        //$modelversionrenderable = new tool_lala\output\model_configuration_version_creation($modelversionobj);
+        //echo $output->render($modelversionrenderable);
+
+        $modelconfig = new model_configuration($configid);
+        $modelconfigobj = $modelconfig->get_model_config_obj();
+        $modelconfigrenderable = new tool_lala\output\model_configuration_version_creation($modelconfigobj, $modelversionobj);
+        echo $output->render($modelconfigrenderable);
+
+        echo $output->footer();
     }
 } else {
     $priorurl = new moodle_url('/admin/tool/lala/index.php');

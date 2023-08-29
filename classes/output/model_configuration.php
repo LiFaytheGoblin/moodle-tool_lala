@@ -96,13 +96,21 @@ class model_configuration implements templatable, renderable {
         $data['sesskey'] = sesskey();
 
         // Add started evidence sets.
+        $data['versions'] =  $this->get_versions($output);
+
+        return $data;
+    }
+
+    /**
+     * @param renderer_base $output
+     * @return array
+     */
+    public function get_versions(renderer_base $output): array {
         $versions = []; // Todo: Differentiate started and finished evidence sets? Sort?
         foreach ($this->modelconfig->versions as $version) {
             $versionrenderer = new model_version($version);
             $versions[] = $versionrenderer->export_for_template($output);
         }
-        $data['versions'] = $versions;
-
-        return $data;
+        return $versions;
     }
 }

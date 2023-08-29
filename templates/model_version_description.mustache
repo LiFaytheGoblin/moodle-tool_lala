@@ -12,15 +12,14 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template tool_lala/evidence_set
-    Template for evidence_set.
+    @template tool_lala/model_version_description
+    Template for model_version_description.
     Context variables required for this template:
     - timecreationstarted
     - traintestsplit
     - contextids
     - timecreationfinished
     - timecreationfinishedicon
-    - haserror
     - errormessage
     Example context (json):
     {
@@ -29,7 +28,6 @@
             "contextids": [1, 2, 3],
             "timecreationfinished": null,
             "timecreationfinishedicon": 'half',
-            "haserror": false,
             "errormessage": "some error description",
       }
 }}
@@ -75,7 +73,7 @@
                 </dd>
             </dl>
         </li>
-        {{#haserror}}
+        {{#errormessage}}
             <li class="col-12" title="{{#str}}error, tool_lala{{/str}}">
                 <dl class="row mb-0 text-danger">
                     <dt class="mb-0 col-auto pr-0">
@@ -86,7 +84,7 @@
                     </dd>
                 </dl>
             </li>
-        {{/haserror}}
+        {{/errormessage}}
     </ul>
 </div>
 

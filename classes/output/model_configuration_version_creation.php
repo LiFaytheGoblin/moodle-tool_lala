@@ -45,8 +45,7 @@ class model_configuration_version_creation extends model_configuration {
      * @param stdClass $modelversion The model version to be created
      */
     public function __construct(stdClass $modelconfig, stdClass $modelversion) {
-        //parent::__construct($modelconfig);
-        $this->modelconfig = $modelconfig;
+        parent::__construct($modelconfig);
         $this->modelversion = $modelversion;
     }
 

@@ -60,31 +60,36 @@ class model_configuration implements templatable, renderable {
         $data['id'] = $this->modelconfig->id;
         $data['name'] = $this->get_name();
 
+        // Add description.
+        $description = [];
+
         $targetnameparts = explode('\\', $this->modelconfig->target);
-        $data['target'] = end($targetnameparts);
+        $description['target'] = end($targetnameparts);
 
         $modelanalysabletypenameparts = explode('\\', $this->modelconfig->modelanalysabletype);
-        $data['modelanalysabletype'] = end($modelanalysabletypenameparts);
+        $description['modelanalysabletype'] = end($modelanalysabletypenameparts);
 
-        $data['predictionsprocessor'] = explode('\\', $this->modelconfig->predictionsprocessor)[1];
+        $description['predictionsprocessor'] = explode('\\', $this->modelconfig->predictionsprocessor)[1];
 
         $analysisintervalnameparts = explode('\\', $this->modelconfig->analysisinterval);
-        $data['analysisinterval'] = end($analysisintervalnameparts);
+        $description['analysisinterval'] = end($analysisintervalnameparts);
 
-        $data['defaultcontextids'] = $this->get_defaultcontextids();
+        $description['defaultcontextids'] = $this->get_defaultcontextids();
 
-        $data['firstindicator'] = '';
+        $description['firstindicator'] = '';
         $indicators = json_decode($this->modelconfig->indicators);
         if (gettype($indicators) == 'array') {
-            $data['firstindicator'] = $indicators[0];
+            $description['firstindicator'] = $indicators[0];
             if (count($indicators) > 1) {
-                $data['firstindicator'] = $data['firstindicator'] . ', ';
+                $description['firstindicator'] = $description['firstindicator'] . ', ';
                 $remainingindicators = array_slice($indicators, 1);
-                $data['indicators'] = implode(', ', $remainingindicators);
+                $description['indicators'] = implode(', ', $remainingindicators);
             }
         } else if (gettype($indicators) == 'string') {
-            $data['firstindicator'] = $indicators;
+            $description['firstindicator'] = $indicators;
         }
+
+        $data['description'] = $description;
 
         // Add session key for create model version button.
         $data['sesskey'] = sesskey();

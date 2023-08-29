@@ -1,0 +1,112 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template tool_lala/model_configuration_description
+    Template for model configuration description.
+    Context variables required for this template:
+    - target: string - name of the target associated with the model config
+    - modelanalysabletype: string - name of the analysable type associated with the model config
+    - predictionsprocessor: string
+    - analysisinterval: string
+    - defaultcontextids: string
+    - firstindcator: string
+    - indicators: string
+    Example context (json):
+    {
+            "target": "Prevent devs at risk",
+            "modelanalysabletype": "user_enrolments",
+            "predictionsprocessor": "php",
+            "analysisinterval": "quarters",
+            "defaultcontextids": "somecontext, another context, ...",
+            "firstindactor": "someindicator",
+            "indicators": "someindicator, anotherindicator, ...",
+    }
+}}
+<div class="bg-light p-3 rounded small mb-3">
+    <ul class="p-0 list-unstyled row mb-0">
+        <li class="col-12 col-sm-5" title="{{#str}}target, tool_lala{{/str}}">
+            <dl class="row mb-0">
+                <dt  class="mb-0 col-auto pr-0">
+                    <i class="fa fa-bullseye" aria-hidden="true"></i>
+                </dt>
+                <dd  class="mb-0 col pl-2">
+                    {{target}}
+                </dd>
+            </dl>
+        </li>
+        <li class="col col-sm" title="{{#str}}analysable, tool_lala{{/str}}">
+            <dl class="row mb-0">
+                <dt  class="mb-0 col-auto pr-0">
+                    <i class="fa fa-binoculars" aria-hidden="true"></i>
+                </dt>
+                <dd  class="mb-0 col pl-2">
+                    {{modelanalysabletype}}
+                </dd>
+            </dl>
+        </li>
+        <li class="col-12 col-sm-5" title="{{#str}}predictionsprocessor, tool_lala{{/str}}">
+            <dl class="row mb-0">
+                <dt class="mb-0 col-auto pr-0">
+                    <i class="icon fa fa-server" aria-hidden="true"></i>
+                </dt>
+                <dd   class="mb-0 col pl-0">
+                    {{predictionsprocessor}}
+                </dd>
+            </dl>
+        </li>
+        <li class="col-12 col-sm" title="{{#str}}analysisinterval, tool_lala{{/str}}">
+            <dl class="row mb-0">
+                <dt class="mb-0 col-auto pr-0">
+                    <i class="icon fa fa-arrows-h" aria-hidden="true"></i>
+                </dt>
+                <dd  class="mb-0 col pl-0">
+                    {{analysisinterval}}
+                </dd>
+            </dl>
+        </li>
+        {{#defaultcontextids}}
+        <li class="col-12 row mb-0 ml-0" title="{{#str}}defaultcontexts, tool_lala{{/str}}">
+            <dl class="row mb-0">
+                <dt class="mb-0 col-auto pr-0">
+                    <i class="icon fa fa-graduation-cap" aria-hidden="true"></i>
+                </dt>
+                <dd class="mb-0 col pl-0">
+                    {{defaultcontextids}}
+                </dd>
+            </dl>
+        </li>
+        {{/defaultcontextids}}
+        <li class="col-12 row mb-0 ml-0"  title="{{#str}}indicators, tool_lala{{/str}}">
+            <dl class="row mb-0">
+                <dt class="mb-0 col-auto pr-0">
+                    <i class="icon fa fa-bar-chart" aria-hidden="true"></i>
+                </dt>
+                <dd class="mb-0 col pl-0">
+                    {{firstindicator}}
+                    {{#indicators}}
+                        <a class="collapse multi-collapseindicators{{id}} show text-dark bg-secondary rounded-right ml-1 text-nowrap" data-toggle="collapse" href=".multi-collapseindicators{{id}}" role="button" aria-expanded="false" aria-controls="indicators{{id}} moreindicators{{id}}" id="moreindicators{{id}}">
+                            <span class="px-2">display more</span>
+                        </a>
+                        <span class="collapse multi-collapseindicators{{id}}" id="indicators{{id}}">
+                            {{indicators}}
+                            <a class="text-dark bg-secondary rounded-left ml-1 text-nowrap" data-toggle="collapse" href=".multi-collapseindicators{{id}}" role="button" aria-expanded="true" aria-controls="indicators{{id}} moreindicators{{id}}">
+                               <span class="px-2">display less</span>
+                            </a>
+                        </span>
+                    {{/indicators}}
+                </dd>
+            </dl>
+        </li>
+    </ul>
+</div>

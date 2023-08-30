@@ -38,18 +38,36 @@ class model_configuration_version_creation extends model_configuration {
     /** @var stdClass $modelversion of a model config */
     protected stdClass $modelversion;
 
+    /** @var stdClass $forms to be used during manual model version creation */
+    protected stdClass $forms;
+
     /**
      * Constructor for this object.
      *
      * @param stdClass $modelconfig The model config object
      * @param stdClass $modelversion The model version to be created
+     * @param stdClass $forms The forms for the model version creation
      */
-    public function __construct(stdClass $modelconfig, stdClass $modelversion) {
+    public function __construct(stdClass $modelconfig, stdClass $modelversion, stdClass $forms) {
         parent::__construct($modelconfig);
         $this->modelversion = $modelversion;
+        $this->forms = $forms;
     }
 
     /**
+     * Data for use with a template.
+     *
+     * @param renderer_base $output Renderer information.
+     * @return array Said data.
+     */
+    public function export_for_template(renderer_base $output): array {
+        $data = parent::export_for_template($output);
+        $data['selectcontextform'] = $this->forms->selectcontext;
+        return $data;
+    }
+
+    /**
+     *
      * @param renderer_base $output
      * @return array
      */

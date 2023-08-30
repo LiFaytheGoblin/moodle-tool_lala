@@ -48,7 +48,8 @@
                     "timecreationfinished": "1679987953",
                     "serializedfilelocation": "/evidencecollections/1"
                 }]
-            }]
+            }],
+            "selectcontextform": "some html",
     }
 }}
 <section class="activity activity-wrapper my-2" aria-label="config{{id}}">
@@ -59,21 +60,12 @@
         {{#description}}
             {{> tool_lala/model_configuration_description}}
         {{/description}}
-        <div>
-            <ul class="p-0 list-unstyled">
-                {{#versions}}
-                    <li>
-                        {{> tool_lala/model_version}}
-                    </li>
-                {{/versions}}
-            </ul>
-        </div>
         <section>
-            <h4>{{#str}}datagatheringtitle, tool_lala{{/str}}</h4>
+            <h4>1. {{#str}}datagatheringtitle, tool_lala{{/str}}</h4>
             <p>{{#str}}datagatheringexplanation, tool_lala{{/str}}</p>
             <section>
                 <h5>{{#str}}datagatheringfromthisinstance, tool_lala{{/str}}</h5>
-
+                {{{selectcontextform}}}
             </section>
             <section>
                 <h5>{{#str}}datagatheringowndata, tool_lala{{/str}}</h5>

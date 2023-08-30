@@ -525,6 +525,24 @@ class model_version {
     }
 
     /**
+     * Get the name of this model version's target.
+     *
+     * @return string
+     */
+    public function get_target(): string {
+        return $this->target;
+    }
+
+    /**
+     * Get the name of this model version's analyser.
+     *
+     * @return base
+     */
+    public function get_analyser(): base {
+        return $this->analyser;
+    }
+
+    /**
      * @return void
      */
     public function load_context_objects(): void {

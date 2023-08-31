@@ -12,19 +12,15 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template tool_lala/model_configuration
+    @template tool_lala/model_configuration_version_creation
     Template for model configuration item.
     Context variables required for this template:
     - id: int - model config unique identifier
     - name: string - name of the model config
-    - target: string - name of the target associated with the model config
-    - modelanalysabletype: string - name of the analysable type associated with the model config
-    - predictionsprocessor: string
-    - analysisinterval: string
-    - defaultcontextids: string
-    - firstindcator: string
-    - indicators: string
+    - description
     - sesskey: string
+    - selectcontextform: string
+    - uploaddatasetform: string
     Example context (json):
     {
             "id": 1,
@@ -39,17 +35,8 @@
                 "indicators": "someindicator, anotherindicator, ...",
             }],
             "sesskey": 'somesessionkey',
-            "versions": [{
-                "description": {},
-                "evidence": [{
-                    "id": 1,
-                    "name": "training data",
-                    "timecreationstarted": "1679987403",
-                    "timecreationfinished": "1679987953",
-                    "serializedfilelocation": "/evidencecollections/1"
-                }]
-            }],
             "selectcontextform": "some html",
+            "uploaddatasetform": "some html"
     }
 }}
 <section class="activity activity-wrapper my-2" aria-label="config{{id}}">
@@ -69,6 +56,14 @@
             </section>
             <section>
                 <h5>{{#str}}datagatheringowndata, tool_lala{{/str}}</h5>
+                <p>
+                    Instead of gathering data from this Moodle instance, you may upload a CSV file
+                    that will be used for all steps of the model version creation process. The CSV
+                    file needs to be
+                    <a href="https://github.com/LiFaytheGoblin/moodle-tool_lala/wiki/Evidence#dataset" target="_blank">
+                    valid dataset evidence</a>.
+                </p>
+                {{{uploaddatasetform}}}
                 <div class="alert alert-info alert-block">
                     <p><i class="fa fa-info-circle" aria-hidden="true"></i> {{#str}}datagatheringdonthavedataset, tool_lala{{/str}}</p>
                     <p>{{#str}}datagatheringinforestorebackup, tool_lala{{/str}}</p>

@@ -72,3 +72,4 @@ $string['datagatheringdonthavedataset'] = 'Want to use a Moodle course backup fi
 $string['datagatheringinforestorebackup'] = "If you have admin privileges, you may upload a Moodle course using <a href='/backup/restorefile.php?contextid=1' target='_blank'>Moodle's course restore feature</a>. Your data can then be gathered from this Moodle instance. We recommend that you give the restored course a meaningful name, so you can easily select this data to be gathered. Furthermore, adding the course to a new category, e.g. 'lala', can help differentiate it from actual courses on this Moodle instance.";
 $string['saveselection'] = 'Save selection';
 $string['contexts_help'] = 'The gathered data will be limited to this set of contexts. No context restrictions will be applied if no contexts are selected.';
+$string['savefile'] = 'Save file';

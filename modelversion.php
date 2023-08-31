@@ -27,18 +27,20 @@ require(__DIR__ . '/../../../config.php');
 use tool_lala\model_configuration;
 use tool_lala\model_version;
 use tool_lala\output\form\select_context;
+use tool_lala\output\form\upload_dataset;
 
 $configid = optional_param('configid', null, PARAM_INT);
 $auto = optional_param('auto', true, PARAM_BOOL); // Should version be created automatically with default settings?
 $versionid = optional_param('versionid', null, PARAM_INT); // Should version be created automatically with default settings?
-$contextids = optional_param_array('contextids', null, PARAM_INT);
+$contexts = optional_param_array('contexts', null, PARAM_INT);
+$dataset= optional_param('dataset', null, PARAM_FILE);
 
 // Routes
 // POST /admin/tool/lala/modelversion.php?configid=<configid>&auto=<auto>&versionid=<versionid>&contextids=<contextids>
 
 // Set some page parameters.
 $pagepath = '/admin/tool/lala/modelversion.php';
-$pageurl = new moodle_url($pagepath, ['configid' => $configid, 'auto' => $auto, 'versionid' => $versionid, 'contextids' => $contextids]);
+$pageurl = new moodle_url($pagepath, ['configid' => $configid, 'auto' => $auto, 'versionid' => $versionid]);
 $heading = get_string('pluginname', 'tool_lala');
 $context = context_system::instance();
 
@@ -81,14 +83,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Create form to select contexts.
             $customdata = ['versionid' => $versionid];
             $selectcontextform = new select_context(null, $customdata);
-            if ($data = $selectcontextform->get_data()) {
-                $version->set_contextids($data->contexts); // May not be ids!
-            }
             $selectcontextformhtml = $selectcontextform->render();
+
+            // Create form to upload dataset.
+            $uploaddatasetform = new upload_dataset(null, $customdata);
+            $uploaddatasetformhtml = $uploaddatasetform->render();
 
             // Add created forms html to a forms object for passing to the renderer and to the mustache templates.
             $forms = new stdClass();
             $forms->selectcontext = $selectcontextformhtml;
+            $forms->uploaddataset = $uploaddatasetformhtml;
 
             // Render the page
             $output = $PAGE->get_renderer('tool_lala');
@@ -108,14 +112,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!empty($versionid)) {
         $version = new model_version($versionid);
 
-        if (!empty($contextids)) {
-            $version->set_contextids($contextids);
+        if (!empty($contexts)) {
+            $version->set_contextids($contexts);
         }
 
-        // Todo: contextids is NULL! Why?
-        var_dump($contextids);
-        //print_r($_REQUEST);
-        //print($versionid);
+        if (!empty($dataset)) {
+            global $USER;
+
+            $fs = get_file_storage();
+            $context = context_user::instance($USER->id);
+            $draftid = $dataset;
+            $files = $fs->get_area_files($context->id, 'user', 'draft', $draftid, 'id DESC', false);
+
+            $fileinfo = reset($files);
+
+            $file = $fs->get_file(
+                    $fileinfo->contextid,
+                    $fileinfo->component,
+                    $fileinfo->filearea,
+                    $fileinfo->itemid,
+                    $fileinfo->filepath,
+                    $fileinfo->filename
+            );
+
+            echo($dataset);
+            var_dump($file); // returns false! file does not exist :(
+        }
+
+        //var_dump($_REQUEST);
     }
 } else {
     print('No post req');

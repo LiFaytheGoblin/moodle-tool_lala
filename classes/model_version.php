@@ -257,6 +257,33 @@ class model_version {
         $evidence->store();
     }
 
+    public function set_dataset($file): void {
+        $evidencetype = 'dataset';
+        if (isset($this->evidence[$evidencetype]) && count($this->evidence[$evidencetype]) > 0) {
+            throw new LogicException('Can not set a dataset. Dataset evidence has already been collected for this version.');
+        }
+
+        // store as evidence
+        try {
+            $evidence = dataset::create_scaffold_and_get_for_version($this->id);
+
+            // todo: turn file into rawdata to be stored.
+
+            // Add id and raw data to cached field variables.
+            if (!isset($this->evidence[$evidencetype])) {
+                $this->evidence[$evidencetype] = [];
+            }
+            $evidenceid = $evidence->get_id();
+
+            $this->evidence[$evidencetype][$evidenceid] = $evidence->get_raw_data();
+        } catch (moodle_exception | Exception $e) {
+            $this->register_error($e); // Todo: Do this for any exceptions in the model version - find better place than here.
+            throw $e;
+        }
+
+        $evidence->store();
+    }
+
     /**
      * Add a next step and therefore next evidence in the model version creation process.
      * Steps ($evidencetype) can be:

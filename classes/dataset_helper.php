@@ -27,8 +27,10 @@ namespace tool_lala;
 use core_analytics\local\analysis\result_array;
 use core_analytics\analysis;
 use core_php_time_limit;
+use Couchbase\BadInputException;
 use DomainException;
 use Exception;
+use LengthException;
 
 /**
  * Class for the complete dataset evidence item.
@@ -86,7 +88,7 @@ class dataset_helper {
     }
 
     /**
-     * Extract rows from dataset.
+     * Extract rows from dataset, without the header.
      *
      * @param array $dataset
      * @return array rows
@@ -137,6 +139,51 @@ class dataset_helper {
         $res = [];
         $res[$analysisintervalkey] = $mergeddata;
         return $res;
+    }
+
+    /**
+     * Build a dataset in the correct structure from analysisintervalkey, header, sampleids, and values
+     *
+     * @param string $analysisintervalkey
+     * @param array $header
+     * @param array $rows
+     * @return array
+     */
+    public static function build_with_rows(string $analysisintervalkey, array $header, array $rows) : array {
+        $mergeddata = [];
+        $mergeddata['0'] = $header;
+        foreach ($rows as $row) {
+            $sampleid = $row[0];
+            $values = array_slice($row, 1);
+            $mergeddata[$sampleid] = $values;
+        }
+
+        $res = [];
+        $res[$analysisintervalkey] = $mergeddata;
+        return $res;
+    }
+
+    /**
+     * Build a dataset in the correct structure from csv file content (array of arrays).
+     *
+     * @param array $content
+     * @return array
+     */
+    public static function build_from_csv_file_content(array $content) : array {
+        $analysisintervalkey = '\core\analytics\time_splitting\base'; // We don't know which one it is.
+
+        if (count($content) < 1) {
+            throw new LengthException('Dataset is empty. Can not use an empty dataset.');
+        }
+
+        if (count($content) < 2) {
+            throw new LengthException('Dataset needs to contain at least one header row and one additional row.');
+        }
+
+        $header = array_slice($content[0], 1);
+        $remainingrows = array_slice($content, 1);
+
+        return dataset_helper::build_with_rows($analysisintervalkey, $header, $remainingrows);
     }
 
     /**
@@ -220,7 +267,8 @@ class dataset_helper {
         }
     }
 
-    /** Create idmap from a dataset of a specific type.
+    /**
+     * Create idmap from a dataset of a specific type.
      *
      * @param array $dataset
      * @return idmap
@@ -230,5 +278,37 @@ class dataset_helper {
     public static function create_idmap_from_dataset(array $dataset): idmap {
         $originalids = self::get_ids_used_in_dataset($dataset);
         return idmap::create_from_ids($originalids);
+    }
+
+    /**
+     * Validate a dataset array.
+     *
+     * @param array $dataset
+     * @return void
+     * @throws BadInputException
+     */
+    public static function validate(array $dataset) : void {
+        // Check if csv contains at least two rows.
+        $header = self::get_first_row($dataset);
+        if (count($header) < 1) {
+            throw new LengthException('No header found in the data.');
+        }
+
+        $rows = self::get_rows($dataset);
+        if (count($rows) < 1) {
+            throw new LengthException('No rows besides a header found in the data.');
+        }
+
+        // Check if header contains an indicator name and a target name, but not "sampleid".
+        $headerstring = implode(',', $header);
+        if (str_contains($headerstring, 'sampleid')) {
+            throw new BadInputException('Header must not contain a sampleid column. The sampleid is the array index and does not need its own row.');
+        }
+        if (!str_contains($headerstring, 'indicator')) {
+            throw new BadInputException('Header needs to contain an indicator column.');
+        }
+        if (!str_contains($headerstring, 'target')) {
+            throw new BadInputException('Header needs to contain a target column.');
+        }
     }
 }

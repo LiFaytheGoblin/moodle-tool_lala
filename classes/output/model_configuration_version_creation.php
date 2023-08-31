@@ -63,6 +63,7 @@ class model_configuration_version_creation extends model_configuration {
     public function export_for_template(renderer_base $output): array {
         $data = parent::export_for_template($output);
         $data['selectcontextform'] = $this->forms->selectcontext;
+        $data['uploaddatasetform'] = $this->forms->uploaddataset;
         return $data;
     }
 
@@ -72,8 +73,7 @@ class model_configuration_version_creation extends model_configuration {
      * @return array
      */
     protected function get_versions(renderer_base $output): array {
-        $versionrenderer = new model_version_creation($this->modelversion);
-        return [$versionrenderer->export_for_template($output)];
+        return [];
     }
 
     protected function get_name(): string {

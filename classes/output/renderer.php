@@ -63,16 +63,6 @@ class renderer extends plugin_renderer_base {
     /**
      * Defer to template.
      *
-     * @param model_version $page
-     * @return string html for the page
-     */
-    public function render_model_version_creation(model_version_creation $page): string {
-        $data = $page->export_for_template($this);
-        return parent::render_from_template('tool_lala/model_version', $data);
-    }
-    /**
-     * Defer to template.
-     *
      * @param model_configuration $page
      * @return string html for the page
      */

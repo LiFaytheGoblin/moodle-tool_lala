@@ -80,6 +80,10 @@ class select_context extends \moodleform {
             throw new \LogicException('The id of the model version needs to be passed to the form as \'versionid\'');
         }
 
+        if (!isset($this->_customdata['contexts'])) {
+            throw new \LogicException('The id of the model version needs to be passed to the form as \'versionid\'');
+        }
+
         $version = new model_version($this->_customdata['versionid']);
 
         if (!empty($data['contexts'])) {

@@ -62,10 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // If route contains auto param, do it automatically.
         if ($auto) {
-            try {
-                if (isset($contextids)) {
-                    $version->set_contextids($contextids);
-                }
+            try { // possibly replace with a call to the moodle url with the version id?
                 $version->gather_dataset();
                 $version->split_training_test_data();
                 $version->train();
@@ -124,22 +121,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $draftid = $dataset;
             $files = $fs->get_area_files($context->id, 'user', 'draft', $draftid, 'id DESC', false);
 
-            $fileinfo = reset($files);
-
-            $file = $fs->get_file(
-                    $fileinfo->contextid,
-                    $fileinfo->component,
-                    $fileinfo->filearea,
-                    $fileinfo->itemid,
-                    $fileinfo->filepath,
-                    $fileinfo->filename
-            );
-
-            echo($dataset);
-            var_dump($file); // returns false! file does not exist :(
+            $storedfile = reset($files);
+            $version->set_dataset($storedfile);
+        } else {
+            $version->gather_dataset();
         }
 
-        //var_dump($_REQUEST);
+        $version->split_training_test_data();
+        $version->train();
+        $version->predict();
+        $version->gather_related_data();
     }
 } else {
     print('No post req');

@@ -24,11 +24,8 @@
 
 namespace tool_lala\output\form;
 
-use Couchbase\BadInputException;
 use Exception;
-use LengthException;
 use tool_lala\dataset_helper;
-use tool_lala\model_version;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -51,10 +48,11 @@ class upload_dataset extends \moodleform {
 
         // Copied and adapted from https://github.com/moodle/moodle/blob/master/admin/tool/analytics/classes/output/form/edit_model.php
         $options = [
-                'accepted_types' => '.csv',
+                'maxfiles' => 1,
+                'accepted_types' => ['.csv'],
         ];
         $mform->addElement(
-                'filepicker',
+                'filemanager',
                 'dataset',
                 get_string('file'),
                 null,

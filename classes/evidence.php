@@ -236,6 +236,16 @@ abstract class evidence {
     }
 
     /**
+     * Set the raw data for bypassing the collection process of the evidence item.
+     *
+     * @param $data
+     * @return void
+     */
+    public function set_raw_data(mixed $data): void {
+        $this->data = $data;
+    }
+
+    /**
      * Returns the serialized data of the evidence.
      * Useful for testing.
      *

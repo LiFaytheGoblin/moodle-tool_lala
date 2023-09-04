@@ -34,6 +34,7 @@ use context;
 use core_analytics\predictor;
 use core_analytics\local\analyser\base;
 use Phpml\Classification\Linear\LogisticRegression;
+use stored_file;
 use tool_lala\event\model_version_created;
 
 /**
@@ -257,27 +258,36 @@ class model_version {
         $evidence->store();
     }
 
-    public function set_dataset($file): void {
+    /**
+     * Bypass the data gathering step by directly setting the dataset evidence.
+     *
+     * @param stored_file $file
+     * @return void
+     */
+    public function set_dataset(stored_file $file): void {
         $evidencetype = 'dataset';
         if (isset($this->evidence[$evidencetype]) && count($this->evidence[$evidencetype]) > 0) {
             throw new LogicException('Can not set a dataset. Dataset evidence has already been collected for this version.');
         }
 
-        // store as evidence
+        // Store as evidence.
         try {
             $evidence = dataset::create_scaffold_and_get_for_version($this->id);
 
-            // todo: turn file into rawdata to be stored.
+            // Turn CSV file into valid dataset evidence data, and store into the evidence.
+            $filecontent = $file->get_content();
+            $datasetrawdata = dataset_helper::build_from_csv_file_content($filecontent);
+            $evidence->set_raw_data($datasetrawdata);
 
             // Add id and raw data to cached field variables.
             if (!isset($this->evidence[$evidencetype])) {
-                $this->evidence[$evidencetype] = [];
+                $this->evidence[$evidencetype][] = [];
             }
             $evidenceid = $evidence->get_id();
 
             $this->evidence[$evidencetype][$evidenceid] = $evidence->get_raw_data();
         } catch (moodle_exception | Exception $e) {
-            $this->register_error($e); // Todo: Do this for any exceptions in the model version - find better place than here.
+            $this->register_error($e);
             throw $e;
         }
 

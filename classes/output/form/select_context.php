@@ -56,6 +56,9 @@ class select_context extends \moodleform {
         $mform->setType('contexts', PARAM_INT);
         $mform->addHelpButton('contexts', 'contexts', 'tool_lala');
 
+        $mform->addElement('hidden', 'configid', $this->_customdata['configid']);
+        $mform->setType('configid', PARAM_INT);
+
         $mform->addElement('hidden', 'versionid', $this->_customdata['versionid']);
         $mform->setType('versionid', PARAM_INT);
 
@@ -80,8 +83,12 @@ class select_context extends \moodleform {
             throw new \LogicException('The id of the model version needs to be passed to the form as \'versionid\'');
         }
 
+        if (!isset($this->_customdata['configid'])) {
+            throw new \LogicException('The id of the model configuration needs to be passed to the form as \'configid\'');
+        }
+
         if (!isset($this->_customdata['contexts'])) {
-            throw new \LogicException('The id of the model version needs to be passed to the form as \'versionid\'');
+            throw new \LogicException('The contexts of the model version need to be passed to the form as \'contexts\'');
         }
 
         $version = new model_version($this->_customdata['versionid']);

@@ -276,7 +276,7 @@ class model_version {
 
             // Turn CSV file into valid dataset evidence data, and store into the evidence.
             $filehandle = $file->get_content_file_handle();
-            $datasetrawdata = dataset_helper::build_from_csv($filehandle);
+            $datasetrawdata = dataset_helper::build_from_csv($filehandle, $this->analysisinterval);
             $evidence->set_raw_data($datasetrawdata);
 
             // Add id and raw data to cached field variables.
@@ -572,12 +572,21 @@ class model_version {
     }
 
     /**
-     * Get the name of this model version's analyser.
+     * Get this model version's analyser.
      *
      * @return base
      */
     public function get_analyser(): base {
         return $this->analyser;
+    }
+
+    /**
+     * Get the analysis interval.
+     *
+     * @return string
+     */
+    public function get_analysisinterval(): string {
+        return $this->analysisinterval;
     }
 
     /**

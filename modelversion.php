@@ -39,6 +39,8 @@ $dataset= optional_param('dataset', null, PARAM_FILE);
 // POST /admin/tool/lala/modelversion.php?configid=<configid>&auto=<auto>&versionid=<versionid>&contextids=<contextids>
 
 // Set some page parameters.
+$priorpath = '/admin/tool/lala/index.php';
+$priorurl = new moodle_url($priorpath);
 $pagepath = '/admin/tool/lala/modelversion.php';
 $pageurl = new moodle_url($pagepath, ['configid' => $configid, 'auto' => $auto, 'versionid' => $versionid]);
 $heading = get_string('pluginname', 'tool_lala');
@@ -54,9 +56,38 @@ require_login();
 require_capability('tool/lala:createmodelversion', $context);
 require_sesskey();
 
+function render_page(model_version $version, int $configid) {
+    // Create form to select contexts.
+    $customdata = ['versionid' => $version->get_id(), 'configid' => $configid];
+    $selectcontextform = new select_context(null, $customdata);
+    $selectcontextformhtml = $selectcontextform->render();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!empty($configid) && empty($versionid)) {
+    // Create form to upload dataset.
+    $uploaddatasetform = new upload_dataset(null, $customdata);
+    $uploaddatasetformhtml = $uploaddatasetform->render();
+
+    // Add created forms html to a forms object for passing to the renderer and to the mustache templates.
+    $forms = new stdClass();
+    $forms->selectcontext = $selectcontextformhtml;
+    $forms->uploaddataset = $uploaddatasetformhtml;
+
+    // Render the page
+    global $PAGE;
+    $output = $PAGE->get_renderer('tool_lala');
+
+    echo $output->header();
+
+    $modelversionobj = $version->get_model_version_obj();
+    $modelconfig = new model_configuration($configid);
+    $modelconfigobj = $modelconfig->get_model_config_obj();
+    $modelconfigrenderable = new tool_lala\output\model_configuration_version_creation($modelconfigobj, $modelversionobj, $forms);
+    echo $output->render($modelconfigrenderable);
+
+    echo $output->footer();
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($configid)) {
+    if (empty($versionid)) {
         $versionid = model_version::create_scaffold_and_get_for_config($configid);
         $version = new model_version($versionid);
 
@@ -70,71 +101,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $version->gather_related_data();
             } finally {
                 $version->finish();
-            }
-
-            if (!$version->has_error()) {
-                $priorurl = new moodle_url('/admin/tool/lala/index.php#version'.$versionid);
-                redirect($priorurl);
+                redirect(new moodle_url($priorpath.'#version'.$versionid));
             }
         } else {
-            // Create form to select contexts.
-            $customdata = ['versionid' => $versionid];
-            $selectcontextform = new select_context(null, $customdata);
-            $selectcontextformhtml = $selectcontextform->render();
-
-            // Create form to upload dataset.
-            $uploaddatasetform = new upload_dataset(null, $customdata);
-            $uploaddatasetformhtml = $uploaddatasetform->render();
-
-            // Add created forms html to a forms object for passing to the renderer and to the mustache templates.
-            $forms = new stdClass();
-            $forms->selectcontext = $selectcontextformhtml;
-            $forms->uploaddataset = $uploaddatasetformhtml;
-
-            // Render the page
-            $output = $PAGE->get_renderer('tool_lala');
-
-            echo $output->header();
-
-            $modelversionobj = $version->get_model_version_obj();
-            $modelconfig = new model_configuration($configid);
-            $modelconfigobj = $modelconfig->get_model_config_obj();
-            $modelconfigrenderable = new tool_lala\output\model_configuration_version_creation($modelconfigobj, $modelversionobj, $forms);
-            echo $output->render($modelconfigrenderable);
-
-            echo $output->footer();
+            render_page($version, $configid);
         }
-    }
-
-    if (!empty($versionid)) {
+    } else {
         $version = new model_version($versionid);
 
-        if (!empty($contexts)) {
-            $version->set_contextids($contexts);
+        try {
+            if (!empty($contexts)) {
+                $version->set_contextids($contexts);
+                $version->gather_dataset();
+            } else if (!empty($dataset)) {
+                var_dump($_REQUEST);
+                global $USER;
+
+                $fs = get_file_storage();
+                $context = context_user::instance($USER->id);
+                $draftid = $dataset;
+                $files = $fs->get_area_files($context->id, 'user', 'draft', $draftid, 'id DESC', false);
+
+                $storedfile = reset($files);
+                $version->set_dataset($storedfile);
+            } else {
+                $version->gather_dataset();
+            }
+
+            $version->split_training_test_data();
+            $version->train();
+            $version->predict();
+
+            if (empty($dataset)) {
+                $version->gather_related_data(); // We can only gather this data if related data can be found on the site.
+            }
+        } finally {
+            $version->finish();
+            redirect(new moodle_url($priorpath.'#version'.$versionid));
         }
-
-        if (!empty($dataset)) {
-            global $USER;
-
-            $fs = get_file_storage();
-            $context = context_user::instance($USER->id);
-            $draftid = $dataset;
-            $files = $fs->get_area_files($context->id, 'user', 'draft', $draftid, 'id DESC', false);
-
-            $storedfile = reset($files);
-            $version->set_dataset($storedfile);
-        } else {
-            $version->gather_dataset();
-        }
-
-        $version->split_training_test_data();
-        $version->train();
-        $version->predict();
-        $version->gather_related_data();
     }
 } else {
-    print('No post req');
-    print_r($_REQUEST);
-    $priorurl = new moodle_url('/admin/tool/lala/index.php');
     redirect($priorurl);
 }

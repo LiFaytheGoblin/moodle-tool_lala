@@ -140,71 +140,15 @@ class dataset_helper {
     }
 
     /**
-     * Build a dataset in the correct structure from analysisintervalkey, header, sampleids, and values
-     *
-     * @param string $analysisintervalkey
-     * @param array $header
-     * @param array $rows
-     * @return array
-     */
-    public static function build_with_rows(string $analysisintervalkey, array $header, array $rows) : array {
-        $mergeddata = [];
-        $mergeddata['0'] = $header;
-        foreach ($rows as $row) {
-            $sampleid = reset($row);
-            $values = array_slice($row, 1);
-            $mergeddata[$sampleid] = $values;
-        }
-
-        return [$analysisintervalkey => $mergeddata];
-    }
-
-    /**
-     * Build a dataset in the correct structure from csv file content (array of arrays).
-     *
-     * @param array $content
-     * @return array
-     */
-    public static function build_from_csv_file_content(array $content) : array {
-        $analysisintervalkey = '\core\analytics\time_splitting\base'; // We don't know which one it is.
-
-        if (count($content) < 1) {
-            throw new LengthException('Dataset is empty. Can not use an empty dataset.');
-        }
-
-        if (count($content) < 2) {
-            throw new LengthException('Dataset needs to contain at least one header row and one additional row.');
-        }
-
-        $header = array_slice($content[0], 1);
-        $remainingrows = array_slice($content, 1);
-
-        return dataset_helper::build_with_rows($analysisintervalkey, $header, $remainingrows);
-    }
-
-    /**
-     * Parses a CSV file into an array of arrays and sends it to the dataset builder.
+     * Parses a CSV file into a valid dataset.
      *
      * @param false|resource $filehandle
      * @return array
      */
-    public static function parse_csv(mixed $filehandle): array {
+    public static function build_from_csv(mixed &$filehandle, string $analysisintervalkey): array {
         if (!$filehandle) {
-            throw new InvalidArgumentException('Filehandle is not available.');
+            throw new InvalidArgumentException('Filehandle is not available. Need filehandle to parse uploaded CSV into dataset.');
         }
-        $content = [];
-        while ($row = fgetcsv($filehandle)) {
-            $content[] = $row;
-        }
-        fclose($filehandle);
-        return $content;
-    }
-
-    public static function build_from_csv(mixed $filehandle): array {
-        if (!$filehandle) {
-            throw new InvalidArgumentException('Filehandle is not available.');
-        }
-        $analysisintervalkey = '\core\analytics\time_splitting\base'; // We don't know which one it is.
 
         $mergeddata = [];
         while ($row = fgetcsv($filehandle)) {

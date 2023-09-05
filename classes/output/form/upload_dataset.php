@@ -26,6 +26,7 @@ namespace tool_lala\output\form;
 
 use Exception;
 use tool_lala\dataset_helper;
+use tool_lala\model_version;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -62,6 +63,9 @@ class upload_dataset extends \moodleform {
         $mform->addElement('hidden', 'versionid', $this->_customdata['versionid']);
         $mform->setType('versionid', PARAM_INT);
 
+        $mform->addElement('hidden', 'configid', $this->_customdata['configid']);
+        $mform->setType('configid', PARAM_INT);
+
         $mform->addElement('hidden', 'action', 'edit');
         $mform->setType('action', PARAM_ALPHANUMEXT);
 
@@ -83,15 +87,18 @@ class upload_dataset extends \moodleform {
             throw new \LogicException('The id of the model version needs to be passed to the form as \'versionid\'');
         }
 
-        // Load the CSV into a nested array.
-        // Todo: Does this exceed memory?
+        if (!isset($this->_customdata['configid'])) {
+            throw new \LogicException('The id of the model configuration needs to be passed to the form as \'configid\'');
+        }
+
+
         $tmpfilepath = $files['dataset'];
         $filehandle = fopen($tmpfilepath, 'r');
-        $content = dataset_helper::parse_csv($filehandle);
 
         // Validate the content.
         try {
-            $dataset = dataset_helper::build_from_csv_file_content($content);
+            $version = new model_version($this->_customdata['versionid']);
+            $dataset = dataset_helper::build_from_csv($filehandle, $version->get_analysisinterval());
             dataset_helper::validate($dataset);
         } catch (Exception $e) {
             $errors['dataset'] = $e->getMessage();

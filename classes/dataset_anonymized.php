@@ -42,7 +42,7 @@ class dataset_anonymized extends dataset {
     public function collect(array $options): void {
         parent::collect($options);
 
-        if ($options['analyser']->processes_user_data()) {
+        if (true) { //$options['analyser']->processes_user_data()) {
             $n = count(dataset_helper::get_ids_used_in_dataset($this->data));
             if ($n < 3) {
                 $this->abort();

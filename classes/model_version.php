@@ -585,11 +585,12 @@ class model_version {
      */
     public function load_context_objects(): void {
         $this->contexts = [];
+        if (!isset($this->contextids)) {
+            return;
+        }
         $contextidarr = json_decode($this->contextids);
-        if (isset($this->contextids) && $contextidarr > 0) {
-            foreach ($contextidarr as $contextid) {
-                $this->contexts[] = context::instance_by_id($contextid, IGNORE_MISSING);
-            }
+        foreach ($contextidarr as $contextid) {
+            $this->contexts[] = context::instance_by_id($contextid, IGNORE_MISSING);
         }
     }
 }

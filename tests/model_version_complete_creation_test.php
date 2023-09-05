@@ -115,14 +115,14 @@ class model_version_complete_creation_test extends advanced_testcase {
                 $newvalues = $newrows[$newsampleid];
                 $this->assertEquals(json_encode($originalvalues), json_encode($newvalues));
 
-                $originalid = dataset_helper::get_id_part($originasamplelid);
+                $originalid = intval(dataset_helper::get_id_part($originasamplelid));
                 $newid = $idmap->get_pseudonym($originalid);
 
                 if (!in_array($originalid, $originalidsinorder)) {
                     $originalidsinorder[] = $originalid;
                 }
                 if (!in_array($newid, $newidsinorder)) {
-                    $newidsinorder[] = $newsampleid;
+                    $newidsinorder[] = $newid;
                 }
             }
 

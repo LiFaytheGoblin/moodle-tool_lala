@@ -31,14 +31,14 @@ use Exception;
  * Class for the complete dataset evidence item.
  */
 class idmap implements Countable {
-    /** @var int[]|string[] $originalids used for anonymization */
+    /** @var int[] $originalids used for anonymization */
     private array $originalids;
     /** @var int[] $pseudonyms - ids used instead of originalids */
     private array $pseudonyms;
 
     /** Construct the idmap instance.
      *
-     * @param int[]|string[] $originalids
+     * @param int[] $originalids
      * @param int[] $pseudonyms
      * @throws Exception
      */
@@ -59,7 +59,7 @@ class idmap implements Countable {
 
     /** Create an idmap based on an array of ids
      *
-     * @param int[]|string[] $ids
+     * @param int[] $ids
      * @return idmap
      * @throws Exception
      * @throws Exception
@@ -72,7 +72,7 @@ class idmap implements Countable {
 
     /** Create pseudonyms for an array of ids.
      *
-     * @param int[]|string[] $orignalids
+     * @param int[] $orignalids
      * @return int[]
      */
     public static function create_pseudonyms(array $orignalids): array {
@@ -96,7 +96,7 @@ class idmap implements Countable {
      * @throws Exception
      */
     public function get_pseudonym_sampleid(string $originalsampleid) : string {
-        $originalid = dataset_helper::get_id_part($originalsampleid);
+        $originalid = intval(dataset_helper::get_id_part($originalsampleid));
         if (!$this->has_original_id($originalid)) {
             throw new Exception('Idmap is incomplete. No pseudonym found for id.');
         }
@@ -122,10 +122,10 @@ class idmap implements Countable {
 
     /** Return the pseudonym for an id.
      *
-     * @param int|string $originalid
+     * @param int $originalid
      * @return int the pseudonym
      */
-    public function get_pseudonym(int|string $originalid) : int {
+    public function get_pseudonym(int $originalid) : int {
         $index = array_search($originalid, $this->originalids);
         return $this->pseudonyms[$index];
     }
@@ -141,9 +141,9 @@ class idmap implements Countable {
     /** Return the original id for a pseudonym.
      *
      * @param int $pseudonym
-     * @return string|int
+     * @return int
      */
-    public function get_originalid(int $pseudonym) : string|int {
+    public function get_originalid(int $pseudonym) : int {
         $index = array_search($pseudonym, $this->pseudonyms);
         return $this->originalids[$index];
     }

@@ -136,9 +136,7 @@ class dataset_helper {
             $mergeddata[$sampleid] = [$xs[$key], $ys[$key]];
         }
 
-        $res = [];
-        $res[$analysisintervalkey] = $mergeddata;
-        return $res;
+        return [$analysisintervalkey => $mergeddata];
     }
 
     /**
@@ -153,14 +151,12 @@ class dataset_helper {
         $mergeddata = [];
         $mergeddata['0'] = $header;
         foreach ($rows as $row) {
-            $sampleid = $row[0];
+            $sampleid = reset($row);
             $values = array_slice($row, 1);
             $mergeddata[$sampleid] = $values;
         }
 
-        $res = [];
-        $res[$analysisintervalkey] = $mergeddata;
-        return $res;
+        return [$analysisintervalkey => $mergeddata];
     }
 
     /**
@@ -222,9 +218,7 @@ class dataset_helper {
         }
         fclose($filehandle);
 
-        $res = [];
-        $res[$analysisintervalkey] = $mergeddata;
-        return $res;
+        return [$analysisintervalkey => $mergeddata];
     }
 
     /**
@@ -235,11 +229,9 @@ class dataset_helper {
      * @return array
      */
     public static function replace_rows_in_dataset(array $dataset, array $newrows) : array {
-        $res = [];
         $analysisintervalkey = self::get_analysisintervalkey($dataset);
         $header = self::get_first_row($dataset);
-        $res[$analysisintervalkey] = $header + $newrows;
-        return $res;
+        return [$analysisintervalkey => $header + $newrows];
     }
 
     /**
@@ -268,19 +260,23 @@ class dataset_helper {
      * in correct order.
      *
      * @param array $dataset
-     * @return array [id => id]
+     * @return int[]
      */
     public static function get_ids_used_in_dataset(array $dataset) : array {
         $ids = [];
+
         $analysisintervalkey = self::get_analysisintervalkey($dataset);
-        $sampleids = array_keys($dataset[$analysisintervalkey]);
-        unset($sampleids['0']); // Remove the header.
-        foreach ($sampleids as $sampleid) {
-            $id = self::get_id_part($sampleid);
-            $ids[$id] = $id; // Preserve the order, avoid duplicates.
+
+        foreach ($dataset[$analysisintervalkey] as $sampleid => $value) {
+            if ($sampleid == '0') {
+                continue; // Skip the header.
+            }
+
+            $id = intval(self::get_id_part($sampleid));
+            $ids[$id] = $id; // Avoid duplicates while preserving the order.
         }
 
-        return array_keys($ids);
+        return array_values($ids);
     }
 
     /**
@@ -317,8 +313,7 @@ class dataset_helper {
      * @throws Exception
      */
     public static function create_idmap_from_dataset(array $dataset): idmap {
-        $originalids = self::get_ids_used_in_dataset($dataset);
-        return idmap::create_from_ids($originalids);
+        return idmap::create_from_ids(self::get_ids_used_in_dataset($dataset));
     }
 
     /**

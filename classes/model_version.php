@@ -275,13 +275,13 @@ class model_version {
             $evidence = dataset::create_scaffold_and_get_for_version($this->id);
 
             // Turn CSV file into valid dataset evidence data, and store into the evidence.
-            $filecontent = $file->get_content();
-            $datasetrawdata = dataset_helper::build_from_csv_file_content($filecontent);
+            $filehandle = $file->get_content_file_handle();
+            $datasetrawdata = dataset_helper::build_from_csv($filehandle);
             $evidence->set_raw_data($datasetrawdata);
 
             // Add id and raw data to cached field variables.
             if (!isset($this->evidence[$evidencetype])) {
-                $this->evidence[$evidencetype][] = [];
+                $this->evidence[$evidencetype] = [];
             }
             $evidenceid = $evidence->get_id();
 
@@ -450,7 +450,8 @@ class model_version {
         if (!isset($this->evidence[$evidencetype])) {
             return null;
         }
-        return array_values($this->evidence[$evidencetype])[0];
+        $allevidence = array_values($this->evidence[$evidencetype]);
+        return reset($allevidence);
     }
 
     /**

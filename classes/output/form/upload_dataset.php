@@ -84,13 +84,10 @@ class upload_dataset extends \moodleform {
         }
 
         // Load the CSV into a nested array.
+        // Todo: Does this exceed memory?
         $tmpfilepath = $files['dataset'];
         $filehandle = fopen($tmpfilepath, 'r');
-        $content = [];
-        while ($row = fgetcsv($filehandle)) {
-            $content[] = $row;
-        }
-        fclose($filehandle);
+        $content = dataset_helper::parse_csv($filehandle);
 
         // Validate the content.
         try {

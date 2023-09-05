@@ -30,7 +30,9 @@ use core_php_time_limit;
 use Couchbase\BadInputException;
 use DomainException;
 use Exception;
+use InvalidArgumentException;
 use LengthException;
+use stored_file;
 
 /**
  * Class for the complete dataset evidence item.
@@ -49,22 +51,15 @@ class dataset_helper {
 
         $analysisintervalkey = self::get_analysisintervalkey($dataset);
 
-        $arr = $dataset[$analysisintervalkey];
-
-        if (count($arr) == 1) {
+        if (!isset($dataset[$analysisintervalkey]) || count($dataset[$analysisintervalkey]) < 2) {
             throw new DomainException('Data array to be shuffled needs to be at least of size 2.
             The first item is kept as item one, being treated as the header.');
         }
 
-        $header = self::get_first_row($dataset);
-        $remainingdata = self::get_rows($dataset);
+        $data = self::get_rows($dataset); // Without header.
+        $shuffleddata = self::shuffle_array_preserving_keys($data);
 
-        $shuffleddata = self::shuffle_array_preserving_keys($remainingdata);
-
-        $datawithheader = [];
-        $datawithheader[$analysisintervalkey] = $header + $shuffleddata;
-
-        return $datawithheader;
+        return [$analysisintervalkey => self::get_first_row($dataset) + $shuffleddata];
     }
 
     /**
@@ -107,11 +102,16 @@ class dataset_helper {
     public static function get_separate_x_y_from_rows(array $rows) : array {
         $testx = [];
         $testy = [];
+
         foreach ($rows as $row) {
             $len = count($row);
-            $testx[] = array_slice($row, 0, $len - 1, true);
-            $testy[] = $row[$len - 1];
+            $xs = array_slice($row, 0, $len - 1, true);
+            $y = $row[$len - 1];
+
+            $testx[] = $xs;
+            $testy[] = $y;
         }
+
         return [
                 'x' => $testx,
                 'y' => $testy
@@ -184,6 +184,47 @@ class dataset_helper {
         $remainingrows = array_slice($content, 1);
 
         return dataset_helper::build_with_rows($analysisintervalkey, $header, $remainingrows);
+    }
+
+    /**
+     * Parses a CSV file into an array of arrays and sends it to the dataset builder.
+     *
+     * @param false|resource $filehandle
+     * @return array
+     */
+    public static function parse_csv(mixed $filehandle): array {
+        if (!$filehandle) {
+            throw new InvalidArgumentException('Filehandle is not available.');
+        }
+        $content = [];
+        while ($row = fgetcsv($filehandle)) {
+            $content[] = $row;
+        }
+        fclose($filehandle);
+        return $content;
+    }
+
+    public static function build_from_csv(mixed $filehandle): array {
+        if (!$filehandle) {
+            throw new InvalidArgumentException('Filehandle is not available.');
+        }
+        $analysisintervalkey = '\core\analytics\time_splitting\base'; // We don't know which one it is.
+
+        $mergeddata = [];
+        while ($row = fgetcsv($filehandle)) {
+            $sampleid = $row[0];
+            $values = array_slice($row, 1);
+            if ($sampleid == 'sampleid') { // We have the header!
+                $mergeddata['0'] = $values;
+                continue;
+            }
+            $mergeddata[$sampleid] = $values;
+        }
+        fclose($filehandle);
+
+        $res = [];
+        $res[$analysisintervalkey] = $mergeddata;
+        return $res;
     }
 
     /**
@@ -311,4 +352,7 @@ class dataset_helper {
             throw new BadInputException('Header needs to contain a target column.');
         }
     }
+
+
+
 }

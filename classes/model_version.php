@@ -32,6 +32,7 @@ use moodle_exception;
 use stdClass;
 use core_analytics\manager;
 use context;
+use context_user;
 use core_analytics\predictor;
 use core_analytics\local\analyser\base;
 use Phpml\Classification\Linear\LogisticRegression;
@@ -223,7 +224,7 @@ class model_version {
      * @return model_version
      * @throws Exception
      */
-    public static function create(int $versionid, array $contexts = null, string $dataset = null): model_version {
+    public static function create(int $versionid, ?array $contexts = null, ?string $dataset = null): model_version {
         $version = new model_version($versionid);
 
         try {

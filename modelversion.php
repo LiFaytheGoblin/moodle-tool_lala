@@ -29,9 +29,6 @@ use tool_lala\model_version;
 use tool_lala\output\form\select_context;
 use tool_lala\output\form\upload_dataset;
 
-use core\http_client;
-use GuzzleHttp\Client;
-
 $configid = required_param('configid', PARAM_INT);
 $auto = optional_param('auto', true, PARAM_BOOL); // Should version be created automatically with default settings?
 $versionid = optional_param('versionid', null, PARAM_INT); // Should version be created automatically with default settings?

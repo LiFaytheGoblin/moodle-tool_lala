@@ -53,7 +53,6 @@ abstract class evidence {
      * Constructor. Deserialize DB object.
      *
      * @param int $id of the evidence
-     * @return void
      */
     public function __construct(int $id) {
         global $DB;
@@ -73,7 +72,6 @@ abstract class evidence {
      *
      * @param int $versionid of the version
      * @return evidence of the created evidence
-     * @throws Exception
      * @throws Exception
      */
     public static function create_scaffold_and_get_for_version(int $versionid): evidence {
@@ -101,7 +99,6 @@ abstract class evidence {
      * Collects the raw data.
      *
      * @param array $options depending on the implementation
-     * @return void
      */
     abstract public function collect(array $options): void;
 
@@ -109,13 +106,11 @@ abstract class evidence {
      * Validates the $options array.
      *
      * @param array $options depending on the implementation
-     * @return void
      */
     abstract public function validate(array $options): void;
 
     /**
      * Stores a serialized data string in a file. Sets the serializedfilelocation property of the class.
-     * @return void
      */
     public function store(): void {
         if (!isset($this->data)) {
@@ -141,8 +136,6 @@ abstract class evidence {
     /**
      * Serializes the raw data.
      * Store the serialization string in the filestring field.
-     *
-     * @return void
      */
     abstract public function serialize(): void;
 
@@ -170,8 +163,6 @@ abstract class evidence {
 
     /**
      * Sets the path where the serialized data is located as a file on the server, for later download.
-     *
-     * @return void
      */
     protected function set_serializedfilelocation(): void {
         $fileinfo = $this->get_file_info();
@@ -194,7 +185,6 @@ abstract class evidence {
 
     /**
      * Mark this evidence collection as finished in the database.
-     * @return void
      */
     public function finish(): void {
         global $DB;
@@ -236,6 +226,15 @@ abstract class evidence {
     }
 
     /**
+     * Set the raw data for bypassing the collection process of the evidence item.
+     *
+     * @param mixed $data
+     */
+    public function set_raw_data(mixed $data): void {
+        $this->data = $data;
+    }
+
+    /**
      * Returns the serialized data of the evidence.
      * Useful for testing.
      *
@@ -255,7 +254,6 @@ abstract class evidence {
 
     /**
      * Abort this evidence collection, e.g. if an error occurs, by deleting the evidence from the database.
-     * @return void
      */
     public function abort(): void {
         global $DB;

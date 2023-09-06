@@ -55,7 +55,6 @@ class test_evidence extends evidence {
      * Collects the raw data. Example implementation.
      *
      * @param array $options = []
-     * @return void
      */
     public function collect(array $options): void {
         $this->validate($options);
@@ -65,8 +64,6 @@ class test_evidence extends evidence {
     /**
      * Serializes the raw data. Example implementation.
      * Store the serialization string in the filestring field.
-     *
-     * @return void
      */
     public function serialize(): void {
         $this->filestring = self::DATASTRING;
@@ -82,7 +79,6 @@ class test_evidence extends evidence {
 
     /** Validate the $options -
      * @param array $options
-     * @return void
      */
     public function validate(array $options): void {
         if (isset($this->data)) throw new Exception('Already collected.');

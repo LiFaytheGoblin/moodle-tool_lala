@@ -28,7 +28,7 @@ use renderer_base;
 use templatable;
 use renderable;
 use stdClass;
-use tool_lala\related_data;
+use tool_lala\related_data_helper;
 
 /**
  * Class for the output for a single model version.
@@ -60,11 +60,14 @@ class evidence_item implements templatable, renderable {
         $name = end($nameparts);
         $data['name'] = $name;
 
-        $data['timecollectionstarted'] = userdate((int) $this->item->timecollectionstarted);
-        $data['timecollectionfinished'] = userdate((int) $this->item->timecollectionfinished);
+        $data['timecollectionstarted'] = userdate((int) $this->item->timecollectionstarted, "%a, %e %b %y, %H:%M:%S");
+        $data['timecollectionfinished'] = userdate((int) $this->item->timecollectionfinished, "%a, %e %b %y, %H:%M:%S");
         $data['serializedfilelocation'] = $this->item->serializedfilelocation;
 
-        $tablename = related_data::get_tablename_from_serializedfilelocation($this->item->serializedfilelocation);
+        $tablename = false;
+        if (isset($data['serializedfilelocation'])) {
+            $tablename = related_data_helper::get_tablename_from_serializedfilelocation($this->item->serializedfilelocation);
+        }
         if ($tablename !== false) {
             $data['tablename'] = $tablename;
         }

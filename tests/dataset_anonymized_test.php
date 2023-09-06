@@ -73,7 +73,7 @@ class dataset_anonymized_test extends dataset_test {
     public function test_evidence_pseudonomize(): void {
         $nsamples = 5;
         $data = test_dataset_evidence::create($nsamples);
-        $idmap = dataset_anonymized::create_idmap($data);
+        $idmap = dataset_helper::create_idmap_from_dataset($data);
 
         $pseudonomizeddata = $this->evidence->pseudonomize($data, $idmap);
         $this->assertTrue(isset($pseudonomizeddata));

@@ -28,6 +28,10 @@ use core_analytics\local\analysis\result_array;
 use core_analytics\analysis;
 use core_php_time_limit;
 use DomainException;
+use Exception;
+use InvalidArgumentException;
+use LengthException;
+use stored_file;
 
 /**
  * Class for the complete dataset evidence item.
@@ -46,22 +50,15 @@ class dataset_helper {
 
         $analysisintervalkey = self::get_analysisintervalkey($dataset);
 
-        $arr = $dataset[$analysisintervalkey];
-
-        if (count($arr) == 1) {
+        if (!isset($dataset[$analysisintervalkey]) || count($dataset[$analysisintervalkey]) < 2) {
             throw new DomainException('Data array to be shuffled needs to be at least of size 2.
             The first item is kept as item one, being treated as the header.');
         }
 
-        $header = self::get_first_row($dataset);
-        $remainingdata = self::get_rows($dataset);
+        $data = self::get_rows($dataset); // Without header.
+        $shuffleddata = self::shuffle_array_preserving_keys($data);
 
-        $shuffleddata = self::shuffle_array_preserving_keys($remainingdata);
-
-        $datawithheader = [];
-        $datawithheader[$analysisintervalkey] = $header + $shuffleddata;
-
-        return $datawithheader;
+        return [$analysisintervalkey => self::get_first_row($dataset) + $shuffleddata];
     }
 
     /**
@@ -85,7 +82,7 @@ class dataset_helper {
     }
 
     /**
-     * Extract rows from dataset.
+     * Extract rows from dataset, without the header.
      *
      * @param array $dataset
      * @return array rows
@@ -104,11 +101,16 @@ class dataset_helper {
     public static function get_separate_x_y_from_rows(array $rows) : array {
         $testx = [];
         $testy = [];
+
         foreach ($rows as $row) {
             $len = count($row);
-            $testx[] = array_slice($row, 0, $len - 1, true);
-            $testy[] = $row[$len - 1];
+            $xs = array_slice($row, 0, $len - 1, true);
+            $y = $row[$len - 1];
+
+            $testx[] = $xs;
+            $testy[] = $y;
         }
+
         return [
                 'x' => $testx,
                 'y' => $testy
@@ -116,7 +118,9 @@ class dataset_helper {
     }
 
     /**
-     * Build a dataset in the correct structure from analysisintervalkey, header, sampleids, x values and y values (will be joined for rows)
+     * Build a dataset in the correct structure from analysisintervalkey, header, sampleids, x values and y values
+     * (will be joined for rows)
+     *
      * @param string $analysisintervalkey
      * @param array $header
      * @param array $sampleids
@@ -131,9 +135,34 @@ class dataset_helper {
             $mergeddata[$sampleid] = [$xs[$key], $ys[$key]];
         }
 
-        $res = [];
-        $res[$analysisintervalkey] = $mergeddata;
-        return $res;
+        return [$analysisintervalkey => $mergeddata];
+    }
+
+    /**
+     * Parses a CSV file into a valid dataset.
+     *
+     * @param false|resource $filehandle
+     * @param string $analysisintervalkey
+     * @return array
+     */
+    public static function build_from_csv(mixed $filehandle, string $analysisintervalkey): array {
+        if (!$filehandle) {
+            throw new InvalidArgumentException('Filehandle is not available. Need filehandle to parse uploaded CSV into dataset.');
+        }
+
+        $mergeddata = [];
+        while ($row = fgetcsv($filehandle)) {
+            $sampleid = $row[0];
+            $values = array_slice($row, 1);
+            if ($sampleid == 'sampleid') { // We have the header!
+                $mergeddata['0'] = $values;
+                continue;
+            }
+            $mergeddata[$sampleid] = $values;
+        }
+        fclose($filehandle);
+
+        return [$analysisintervalkey => $mergeddata];
     }
 
     /**
@@ -144,11 +173,9 @@ class dataset_helper {
      * @return array
      */
     public static function replace_rows_in_dataset(array $dataset, array $newrows) : array {
-        $res = [];
         $analysisintervalkey = self::get_analysisintervalkey($dataset);
         $header = self::get_first_row($dataset);
-        $res[$analysisintervalkey] = $header + $newrows;
-        return $res;
+        return [$analysisintervalkey => $header + $newrows];
     }
 
     /**
@@ -177,19 +204,23 @@ class dataset_helper {
      * in correct order.
      *
      * @param array $dataset
-     * @return array [id => id]
+     * @return int[]
      */
     public static function get_ids_used_in_dataset(array $dataset) : array {
         $ids = [];
+
         $analysisintervalkey = self::get_analysisintervalkey($dataset);
-        $sampleids = array_keys($dataset[$analysisintervalkey]);
-        unset($sampleids['0']); // Remove the header.
-        foreach ($sampleids as $sampleid) {
-            $id = self::get_id_part($sampleid);
-            $ids[$id] = $id; // Preserve the order, avoid duplicates.
+
+        foreach ($dataset[$analysisintervalkey] as $sampleid => $value) {
+            if ($sampleid == '0') {
+                continue; // Skip the header.
+            }
+
+            $id = intval(self::get_id_part($sampleid));
+            $ids[$id] = $id; // Avoid duplicates while preserving the order.
         }
 
-        return array_keys($ids);
+        return array_values($ids);
     }
 
     /**
@@ -214,6 +245,50 @@ class dataset_helper {
             return $sampleidparts[1];
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Create idmap from a dataset of a specific type.
+     *
+     * @param array $dataset
+     * @return idmap
+     * @throws Exception
+     * @throws Exception
+     */
+    public static function create_idmap_from_dataset(array $dataset): idmap {
+        return idmap::create_from_ids(self::get_ids_used_in_dataset($dataset));
+    }
+
+    /**
+     * Validate a dataset array.
+     *
+     * @param array $dataset
+     */
+    public static function validate(array $dataset) : void {
+        // Check if csv contains at least two rows.
+        $header = self::get_first_row($dataset);
+        if (count($header) < 1) {
+            throw new LengthException('No header found in the data.');
+        }
+
+        $rows = self::get_rows($dataset);
+        if (count($rows) < 1) {
+            throw new LengthException('No rows besides a header found in the data.');
+        }
+
+        // Check if header contains an indicator name and a target name, but not "sampleid".
+        $headerstring = implode(',', reset($header));
+        var_dump($headerstring);
+        if (str_contains($headerstring, 'sampleid')) {
+            throw new InvalidArgumentException('Header must not contain a sampleid column.
+             The sampleid is the array index and does not need its own row.');
+        }
+        if (!str_contains($headerstring, 'indicator')) {
+            throw new InvalidArgumentException('Header needs to contain an indicator column but does not: '.$headerstring);
+        }
+        if (!str_contains($headerstring, 'target')) {
+            throw new InvalidArgumentException('Header needs to contain a target column but does not: '.$headerstring);
         }
     }
 }

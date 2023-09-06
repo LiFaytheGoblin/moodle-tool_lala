@@ -78,7 +78,6 @@ class model_version_description implements templatable, renderable {
             $data['contextids'] = $contextids;
         }
 
-        $data['haserror'] = isset($this->version->error);
         $data['errormessage'] = $this->version->error;
 
         return $data;

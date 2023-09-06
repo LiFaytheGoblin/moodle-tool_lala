@@ -45,6 +45,32 @@ class model_version implements templatable, renderable {
     }
 
     /**
+     * Get the description for the model version.
+     *
+     * @param renderer_base $output
+     * @return array
+     */
+    protected function get_description(renderer_base $output): array {
+        $descriptionrenderer = new model_version_description($this->version);
+        return [$descriptionrenderer->export_for_template($output)];
+    }
+
+    /**
+     * Get evidence items of this model.
+     *
+     * @param renderer_base $output
+     * @return array
+     */
+    protected function get_evidence_items(renderer_base $output): array {
+        $evidenceitems = [];
+        foreach ($this->version->evidenceobjects as $evidenceobject) {
+            $evidencerenderer = new evidence_item($evidenceobject);
+            $evidenceitems[] = $evidencerenderer->export_for_template($output);
+        }
+        return $evidenceitems;
+    }
+
+    /**
      * Data for use with a template.
      *
      * @param renderer_base $output Renderer information.
@@ -57,15 +83,9 @@ class model_version implements templatable, renderable {
         $data['name'] = $this->version->name;
 
         // Add info about the model version.
-        $descriptionrenderer = new model_version_description($this->version);
-        $data['description'] = [$descriptionrenderer->export_for_template($output)];
-
-        $evidenceitems = [];
-        foreach ($this->version->evidenceobjects as $evidenceobject) {
-            $evidencerenderer = new evidence_item($evidenceobject);
-            $evidenceitems[] = $evidencerenderer->export_for_template($output);
-        }
-        $data['evidence'] = $evidenceitems;
+        $data['description'] = $this->get_description($output);
+        $data['evidence'] = $this->get_evidence_items($output);
+        $data['hasevidence'] = count($data['evidence']) > 0;
 
         return $data;
     }

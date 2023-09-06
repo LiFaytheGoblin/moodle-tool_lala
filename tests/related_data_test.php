@@ -127,7 +127,7 @@ class related_data_test extends evidence_testcase {
         $this->assertEquals($nrowsexpected, count($rawdata));
 
         // Check that all ids are there.
-        $ids = related_data::get_ids_used($rawdata);
+        $ids = related_data_helper::get_ids_used_in_related_data($rawdata);
         $expectedids = test_course_with_students::get_ids($tablename);
         $missingids = array_diff($expectedids, $ids);
         $this->assertEquals(0, count($missingids));
@@ -200,7 +200,7 @@ class related_data_test extends evidence_testcase {
 
         // Quickly verify rawdata.
         $expectedids = test_course_with_students::get_ids('user');
-        $ids = related_data::get_ids_used($rawdata);
+        $ids = related_data_helper::get_ids_used_in_related_data($rawdata);
         $missingids = array_diff($expectedids, $ids);
         $this->assertEquals(0, count($missingids));
 

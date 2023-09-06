@@ -16,6 +16,9 @@
 
 namespace tool_lala;
 
+require_once(__DIR__ . '/test_model.php');
+
+
 defined('MOODLE_INTERNAL') || die();
 
 /**

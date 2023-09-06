@@ -60,7 +60,6 @@ class renderer extends plugin_renderer_base {
         $data = $page->export_for_template($this);
         return parent::render_from_template('tool_lala/model_version', $data);
     }
-
     /**
      * Defer to template.
      *
@@ -75,11 +74,21 @@ class renderer extends plugin_renderer_base {
     /**
      * Defer to template.
      *
+     * @param model_configuration_version_creation $page
+     * @return string html for the page
+     */
+    public function render_model_configuration_version_creation(model_configuration_version_creation $page): string {
+        $data = $page->export_for_template($this);
+        return parent::render_from_template('tool_lala/model_configuration_version_creation', $data);
+    }
+    /**
+     * Defer to template.
+     *
      * @param model_configurations $page
      * @return string html for the page
      */
-    public function render_model_configurations(model_configurations $page): string {
+    public function render_model_configuration_helper(model_configurations $page): string {
         $data = $page->export_for_template($this);
-        return parent::render_from_template('tool_lala/model_configurations', $data);
+        return parent::render_from_template('tool_lala/model_configuration_helper', $data);
     }
 }

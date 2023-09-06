@@ -58,57 +58,85 @@ class model_configuration implements templatable, renderable {
 
         // Add info about the model configuration.
         $data['id'] = $this->modelconfig->id;
-        $data['name'] = $this->modelconfig->name;
+        $data['name'] = $this->get_name();
+
+        // Add description.
+        $description = [];
 
         $targetnameparts = explode('\\', $this->modelconfig->target);
-        $data['target'] = end($targetnameparts);
+        $description['target'] = end($targetnameparts);
 
         $modelanalysabletypenameparts = explode('\\', $this->modelconfig->modelanalysabletype);
-        $data['modelanalysabletype'] = end($modelanalysabletypenameparts);
+        $description['modelanalysabletype'] = end($modelanalysabletypenameparts);
 
-        $data['predictionsprocessor'] = explode('\\', $this->modelconfig->predictionsprocessor)[1];
+        $description['predictionsprocessor'] = explode('\\', $this->modelconfig->predictionsprocessor)[1];
 
         $analysisintervalnameparts = explode('\\', $this->modelconfig->analysisinterval);
-        $data['analysisinterval'] = end($analysisintervalnameparts);
+        $description['analysisinterval'] = end($analysisintervalnameparts);
 
-        $data['defaultcontextids'] = get_string('allcontexts', 'tool_lala');
-        $contextids = json_decode($this->modelconfig->defaultcontextids);
-        if (gettype($contextids) == 'array') {
-            $data['defaultcontextids'] = implode(', ', $contextids);
-        } else if (gettype($contextids) == 'string') {
-            $data['defaultcontextids'] = $contextids;
-        }
+        $description['defaultcontextids'] = $this->get_defaultcontextids();
 
-        $data['firstindicator'] = '';
+        $description['firstindicator'] = '';
         $indicators = json_decode($this->modelconfig->indicators);
         if (gettype($indicators) == 'array') {
-            $data['firstindicator'] = $indicators[0];
+            $description['firstindicator'] = $indicators[0];
             if (count($indicators) > 1) {
-                $data['firstindicator'] = $data['firstindicator'] . ', ';
+                $description['firstindicator'] = $description['firstindicator'] . ', ';
                 $remainingindicators = array_slice($indicators, 1);
-                $data['indicators'] = implode(', ', $remainingindicators);
+                $description['indicators'] = implode(', ', $remainingindicators);
             }
         } else if (gettype($indicators) == 'string') {
-            $data['firstindicator'] = $indicators;
+            $description['firstindicator'] = $indicators;
         }
 
-        // Add buttons.
-        $buttons = [];
-        $buttons[] = new single_button(new moodle_url('modelversion.php', ['configid' => $this->modelconfig->id,
-                'sesskey' => sesskey()]), get_string('automaticallycreateversion', 'tool_lala'), 'post');
-        foreach ($buttons as $key => $button) {
-            $buttons[$key] = $button->export_for_template($output);
-        }
-        $data['buttons'] = $buttons;
+        $data['description'] = $description;
+
+        // Add session key for create model version button.
+        $data['sesskey'] = sesskey();
 
         // Add started evidence sets.
+        $data['versions'] = $this->get_versions($output);
+
+        return $data;
+    }
+
+    /**
+     * Get the model versions to show.
+     *
+     * @param renderer_base $output
+     * @return array
+     */
+    protected function get_versions(renderer_base $output): array {
         $versions = []; // Todo: Differentiate started and finished evidence sets? Sort?
         foreach ($this->modelconfig->versions as $version) {
             $versionrenderer = new model_version($version);
             $versions[] = $versionrenderer->export_for_template($output);
         }
-        $data['versions'] = $versions;
+        return $versions;
+    }
 
-        return $data;
+    /**
+     * Get the name for this config.
+     *
+     * @return string
+     */
+    protected function get_name(): string {
+        return $this->modelconfig->name;
+    }
+
+    /**
+     * Get the default contextids for this config.
+     *
+     * @return string|null
+     */
+    protected function get_defaultcontextids(): ?string {
+        $defaultcontextids = get_string('allcontexts', 'tool_lala');
+        $contextids = json_decode($this->modelconfig->defaultcontextids);
+        if (gettype($contextids) == 'array') {
+            $defaultcontextids = implode(', ', $contextids);
+        } else if (gettype($contextids) == 'string') {
+            $defaultcontextids = $contextids;
+        }
+        return $defaultcontextids;
     }
 }

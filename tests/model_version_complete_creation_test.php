@@ -115,14 +115,14 @@ class model_version_complete_creation_test extends advanced_testcase {
                 $newvalues = $newrows[$newsampleid];
                 $this->assertEquals(json_encode($originalvalues), json_encode($newvalues));
 
-                $originalid = dataset_helper::get_id_part($originasamplelid);
+                $originalid = intval(dataset_helper::get_id_part($originasamplelid));
                 $newid = $idmap->get_pseudonym($originalid);
 
                 if (!in_array($originalid, $originalidsinorder)) {
                     $originalidsinorder[] = $originalid;
                 }
                 if (!in_array($newid, $newidsinorder)) {
-                    $newidsinorder[] = $newsampleid;
+                    $newidsinorder[] = $newid;
                 }
             }
 
@@ -191,7 +191,7 @@ class model_version_complete_creation_test extends advanced_testcase {
                 }
 
                 // Check that the original primary id is not used.
-                $tablename = related_data::get_tablename_from_evidenceid($evidenceid);
+                $tablename = related_data_helper::get_tablename_from_evidenceid($evidenceid);
 
                 $identicalids = array_intersect($originalids[$tablename], $newids);
                 $this->assertEquals(0, count($identicalids));

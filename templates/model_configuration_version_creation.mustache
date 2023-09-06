@@ -1,0 +1,74 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template tool_lala/model_configuration_version_creation
+    Template for model configuration item.
+    Context variables required for this template:
+    - id: int - model config unique identifier
+    - name: string - name of the model config
+    - description
+    - sesskey: string
+    - selectcontextform: string
+    - uploaddatasetform: string
+    Example context (json):
+    {
+            "id": 1,
+            "name": "model4",
+            "description": [{
+                "target": "Prevent devs at risk",
+                "modelanalysabletype": "user_enrolments",
+                "predictionsprocessor": "php",
+                "analysisinterval": "quarters",
+                "defaultcontextids": "somecontext, another context, ...",
+                "firstindactor": "someindicator",
+                "indicators": "someindicator, anotherindicator, ...",
+            }],
+            "sesskey": 'somesessionkey',
+            "selectcontextform": "some html",
+            "uploaddatasetform": "some html"
+    }
+}}
+<section class="activity activity-wrapper my-2" aria-label="config{{id}}">
+    <div class="activity-item">
+        <h3>
+            <span title="{{#str}}model, tool_lala{{/str}}" id="config{{id}}">{{name}}</span>
+        </h3>
+        {{#description}}
+            {{> tool_lala/model_configuration_description}}
+        {{/description}}
+        <section>
+            <h4>1. {{#str}}datagatheringtitle, tool_lala{{/str}}</h4>
+            <p>{{#str}}datagatheringexplanation, tool_lala{{/str}}</p>
+            <section>
+                <h5>{{#str}}datagatheringfromthisinstance, tool_lala{{/str}}</h5>
+                {{{selectcontextform}}}
+            </section>
+            <section>
+                <h5>{{#str}}datagatheringowndata, tool_lala{{/str}}</h5>
+                <p>
+                    Instead of gathering data from this Moodle instance, you may upload a CSV file
+                    that will be used for all steps of the model version creation process. The CSV
+                    file needs to be
+                    <a href="https://github.com/LiFaytheGoblin/moodle-tool_lala/wiki/Evidence#dataset" target="_blank">
+                    valid dataset evidence</a>.
+                </p>
+                {{{uploaddatasetform}}}
+                <div class="alert alert-info alert-block">
+                    <p><i class="fa fa-info-circle" aria-hidden="true"></i> {{#str}}datagatheringdonthavedataset, tool_lala{{/str}}</p>
+                    <p>{{#str}}datagatheringinforestorebackup, tool_lala{{/str}}</p>
+                </div>
+            </section>
+        </section>
+    </div>
+</section>

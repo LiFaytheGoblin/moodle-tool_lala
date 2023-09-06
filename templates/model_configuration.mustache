@@ -19,12 +19,12 @@
     - name: string - name of the model config
     - target: string - name of the target associated with the model config
     - modelanalysabletype: string - name of the analysable type associated with the model config
-    - predictionsprocessor
-    - analysisinterval
-    - defaultcontextids
-    - indicators
-    - buttons: [{}]
-    - versions: [{}]
+    - predictionsprocessor: string
+    - analysisinterval: string
+    - defaultcontextids: string
+    - firstindcator: string
+    - indicators: string
+    - sesskey: string
     Example context (json):
     {
             "id": 1,
@@ -33,14 +33,10 @@
             "modelanalysabletype": "user_enrolments",
             "predictionsprocessor": "php",
             "analysisinterval": "quarters",
-            "defaultcontextids": [1, 2, 3],
+            "defaultcontextids": "somecontext, another context, ...",
             "firstindactor": "someindicator",
-            "indicators": ["someindicator"],
-            "buttons": [{
-                "method" : "post",
-                "url" : "/config/1/version",
-                "label" : "automatically create new evidence collection"
-            }],
+            "indicators": "someindicator, anotherindicator, ...",
+            "sesskey": 'somesessionkey',
             "versions": [{
                 "description": {
                     "id": 1,
@@ -60,93 +56,18 @@
             }]
     }
 }}
-<section class="activity activity-wrapper" aria-label="config{{id}}">
+<section class="activity activity-wrapper my-2" aria-label="config{{id}}">
     <div class="activity-item">
-        <div class="activity-basis d-flex w-100 align-items-center flex-column flex-md-row align-self-start">
-            <h3 class="activity-instance activity-title">
+        <div class="row">
+            <h3 class="col-auto">
                 <span title="{{#str}}model, tool_lala{{/str}}" id="config{{id}}">{{name}}</span>
             </h3>
-            <div class="activity-info mt-1 mt-md-0">{{#buttons}}{{> core/single_button}}{{/buttons}}</div>
+            <div class="col"></div>
+            {{> tool_lala/create_model_version_button}}
         </div>
-        <div class="bg-light p-3 rounded small mb-3">
-            <ul class="p-0 list-unstyled list-group list-group-horizontal">
-                <li class="col-sm-5" title="{{#str}}target, tool_lala{{/str}}">
-                    <dl class="row mb-0">
-                        <dt  class="mb-0 mr-2 col-sm-0">
-                            <i class="fa fa-bullseye" aria-hidden="true"></i>
-                        </dt>
-                        <dd  class="mb-0 px-1 col-sm">
-                            {{target}}
-                        </dd>
-                    </dl>
-                </li>
-                <li class="col-sm" title="{{#str}}analysable, tool_lala{{/str}}">
-                    <dl class="row mb-0">
-                        <dt  class="mb-0 mr-2 col-sm-0">
-                            <i class="fa fa-binoculars" aria-hidden="true"></i>
-                        </dt>
-                        <dd  class="mb-0 px-1 col-sm">
-                            {{modelanalysabletype}}
-                        </dd>
-                    </dl>
-                </li>
-            </ul>
-            <ul class="p-0 list-unstyled list-group list-group-horizontal">
-                <li class="col-sm-5" title="{{#str}}predictionsprocessor, tool_lala{{/str}}">
-                    <dl class="row mb-0">
-                        <dt   class="mb-0 col-sm-0">
-                            <i class="icon fa fa-server" aria-hidden="true"></i>
-                        </dt>
-                        <dd   class="mb-0 px-1 col-sm">
-                            {{predictionsprocessor}}
-                        </dd>
-                    </dl>
-                </li>
-                <li class="col-sm" title="{{#str}}analysisinterval, tool_lala{{/str}}">
-                    <dl class="row  mb-0">
-                        <dt  class="mb-0 col-sm-0">
-                            <i class="icon fa fa-arrows-h" aria-hidden="true"></i>
-                        </dt>
-                        <dd  class="mb-0 px-1 col-sm">
-                            {{analysisinterval}}
-                        </dd>
-                    </dl>
-                </li>
-            </ul>
-            <ul class="pl-3">
-                <li class="row mb-0 ml-0" title="{{#str}}defaultcontexts, tool_lala{{/str}}">
-                    <dl class="row mb-0">
-                        <dt class="mb-0 col-sm-0">
-                            <i class="icon fa fa-graduation-cap" aria-hidden="true"></i>
-                        </dt>
-                        <dd class="mb-0 px-1 col-sm">
-                            {{defaultcontextids}}
-                        </dd>
-                    </dl>
-                </li>
-                <li class="row mb-0 ml-0"  title="{{#str}}indicators, tool_lala{{/str}}">
-                    <dl class="row  mb-0">
-                        <dt class="mb-0 col-sm-0">
-                            <i class="icon fa fa-bar-chart" aria-hidden="true"></i>
-                        </dt>
-                        <dd class="mb-0 px-1 col-sm">
-                            {{firstindicator}}
-                            {{#indicators}}
-                                <a class="collapse multi-collapse{{id}} show text-dark bg-secondary rounded-right px-1" data-toggle="collapse" href=".multi-collapse{{id}}" role="button" aria-expanded="false" aria-controls="indicators{{id}} more{{id}}" id="more{{id}}">
-                                    display more
-                                </a>
-                                <span class="collapse multi-collapse{{id}}" id="indicators{{id}}">
-                                    {{indicators}}
-                                    <a class="border border-primary border-1 text-dark bg-secondary rounded-left px-1" data-toggle="collapse" href=".multi-collapse{{id}}" role="button" aria-expanded="true" aria-controls="indicators{{id}} more{{id}}">
-                                        display less
-                                    </a>
-                                </span>
-                            {{/indicators}}
-                        </dd>
-                    </dl>
-                </li>
-            </ul>
-        </div>
+        {{#description}}
+            {{> tool_lala/model_configuration_description}}
+        {{/description}}
         <div>
             <ul class="p-0 list-unstyled">
                 {{#versions}}

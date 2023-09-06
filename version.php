@@ -26,6 +26,6 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'tool_lala';
 $plugin->release = '3.0.0';
-$plugin->version = 2023082800;
+$plugin->version = 2023090600;
 $plugin->requires = 2022041900;
 $plugin->maturity = MATURITY_BETA;

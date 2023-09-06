@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Output for a single model configuration.
+ * Output for creating a new version of a single model configuration.
  *
  * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
@@ -32,7 +32,7 @@ use single_button;
 use stdClass;
 
 /**
- * Class for the output for a single model configuration.
+ * Class for the output for creating a new version of a single model configuration.
  */
 class model_configuration_version_creation extends model_configuration {
     /** @var stdClass $modelversion of a model config */
@@ -68,6 +68,7 @@ class model_configuration_version_creation extends model_configuration {
     }
 
     /**
+     * No versions should be shown when creating a version of a config.
      *
      * @param renderer_base $output
      * @return array
@@ -76,12 +77,21 @@ class model_configuration_version_creation extends model_configuration {
         return [];
     }
 
+    /**
+     * Append a string to the config name as a page title.
+     *
+     * @return string
+     */
     protected function get_name(): string {
         $params = new stdClass();
         $params->name = parent::get_name();
         return get_string('createmodelversiontitle', 'tool_lala', $params);
     }
 
+    /**
+     * The default context ids should always be null.
+     * @return string|null
+     */
     protected function get_defaultcontextids(): ?string {
         return null;
     }

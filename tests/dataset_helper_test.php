@@ -18,12 +18,8 @@ namespace tool_lala;
 
 use advanced_testcase;
 
-require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
-
-defined('MOODLE_INTERNAL') || die();
-
 /**
- * Dataset test.
+ * Dataset helper test.
  *
  * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>

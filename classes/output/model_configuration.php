@@ -95,12 +95,14 @@ class model_configuration implements templatable, renderable {
         $data['sesskey'] = sesskey();
 
         // Add started evidence sets.
-        $data['versions'] =  $this->get_versions($output);
+        $data['versions'] = $this->get_versions($output);
 
         return $data;
     }
 
     /**
+     * Get the model versions to show.
+     *
      * @param renderer_base $output
      * @return array
      */
@@ -114,6 +116,8 @@ class model_configuration implements templatable, renderable {
     }
 
     /**
+     * Get the name for this config.
+     *
      * @return string
      */
     protected function get_name(): string {
@@ -121,6 +125,8 @@ class model_configuration implements templatable, renderable {
     }
 
     /**
+     * Get the default contextids for this config.
+     *
      * @return string|null
      */
     protected function get_defaultcontextids(): ?string {

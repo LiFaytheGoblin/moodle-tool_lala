@@ -14,36 +14,31 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_lala\output\form;
+
+defined('MOODLE_INTERNAL') || die();
+
+use moodleform;
+
+require_once($CFG->dirroot.'/lib/formslib.php');
+
 /**
- * Select context(s) form.
+ * Upload dataset evidence form.
  *
  * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace tool_lala\output\form;
-
-defined('MOODLE_INTERNAL') || die();
-
-require_once($CFG->dirroot.'/lib/formslib.php');
-
-/**
- * Model edit form.
- *
- * @package   tool_analytics
- * @copyright 2017 David Monllao {@link http://www.davidmonllao.com}
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class upload_dataset extends \moodleform {
+class upload_dataset extends moodleform {
 
     /**
      * Form definition
+     *
+     * @return void
      */
     public function definition() {
         $mform = $this->_form;
 
-        // Copied and adapted from https://github.com/moodle/moodle/blob/master/admin/tool/analytics/classes/output/form/edit_model.php
         $options = [
                 'maxfiles' => 1,
                 'accepted_types' => ['.csv'],
@@ -73,7 +68,6 @@ class upload_dataset extends \moodleform {
      *
      * @param array $data data from the form.
      * @param array $files files uploaded.
-     *
      * @return array of errors.
      */
     public function validation($data, $files) {

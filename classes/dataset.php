@@ -40,7 +40,6 @@ class dataset extends evidence {
      * Store resulting data (sampleid, features, label) in the data field.
      *
      * @param array $options = [$modelid, $analyser, $contexts]
-     * @return void
      */
     public function collect(array $options): void {
         $this->validate($options);
@@ -68,7 +67,8 @@ class dataset extends evidence {
             if (strlen($logs) > 0) {
                 $logstext = ' Here are the details: ' . $logs;
             }
-            throw new LengthException('No data was gathered from the site. Probably, no fitting data was available.' . $logstext);
+            throw new LengthException('No data was gathered from the site.
+             Probably, no fitting data was available in the selected contexts.' . $logstext);
         }
 
         $this->data = $allresults;
@@ -76,7 +76,6 @@ class dataset extends evidence {
 
     /** Validate the evidence's options.
      * @param array $options
-     * @return void
      */
     public function validate(array $options) : void {
         if (!isset($options['contexts'])) {
@@ -95,8 +94,6 @@ class dataset extends evidence {
 
     /**
      * Increases system memory and time limits.
-     *
-     * @return void
      */
     private function heavy_duty_mode(): void {
         if (ini_get('memory_limit') != -1) {
@@ -108,8 +105,6 @@ class dataset extends evidence {
     /**
      * Serialize the contents of the data field.
      * Store the serialization string in the filestring field.
-     *
-     * @return void
      */
     public function serialize(): void {
         $str = '';

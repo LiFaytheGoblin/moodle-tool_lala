@@ -36,13 +36,12 @@ class dataset_anonymized extends dataset {
      * Store resulting data (sampleid, features, label) in the data field.
      *
      * @param array $options = [$modelid, $analyser, $contexts]
-     * @return void
      * @throws Exception
      */
     public function collect(array $options): void {
         parent::collect($options);
 
-        if (true) { //$options['analyser']->processes_user_data()) {
+        if ($options['analyser']->processes_user_data()) {
             $n = count(dataset_helper::get_ids_used_in_dataset($this->data));
             if ($n < 3) {
                 $this->abort();

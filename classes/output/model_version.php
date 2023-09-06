@@ -55,6 +55,12 @@ class model_version implements templatable, renderable {
         return [$descriptionrenderer->export_for_template($output)];
     }
 
+    /**
+     * Get evidence items of this model.
+     *
+     * @param renderer_base $output
+     * @return array
+     */
     protected function get_evidence_items(renderer_base $output): array {
         $evidenceitems = [];
         foreach ($this->version->evidenceobjects as $evidenceobject) {

@@ -57,8 +57,6 @@ class model_configuration {
      * Constructor. Import from DB.
      *
      * @param number $id
-     * @return void
-     * @throws Exception
      * @throws Exception
      */
     public function __construct($id) {

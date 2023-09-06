@@ -29,14 +29,15 @@ use tool_lala\model_version;
 use tool_lala\output\form\select_context;
 use tool_lala\output\form\upload_dataset;
 
-$configid = optional_param('configid', null, PARAM_INT);
+use core\http_client;
+use GuzzleHttp\Client;
+
+$configid = required_param('configid', PARAM_INT);
 $auto = optional_param('auto', true, PARAM_BOOL); // Should version be created automatically with default settings?
 $versionid = optional_param('versionid', null, PARAM_INT); // Should version be created automatically with default settings?
 $contexts = optional_param_array('contexts', null, PARAM_INT);
-$dataset= optional_param('dataset', null, PARAM_FILE);
-
-// Routes
-// POST /admin/tool/lala/modelversion.php?configid=<configid>&auto=<auto>&versionid=<versionid>&contextids=<contextids>
+$dataset = optional_param('dataset', null, PARAM_FILE);
+$sesskey = optional_param('sesskey', null, PARAM_ALPHANUMEXT);
 
 // Set some page parameters.
 $priorpath = '/admin/tool/lala/index.php';
@@ -52,13 +53,47 @@ $PAGE->set_pagelayout('standard');
 $PAGE->set_title(format_string($heading));
 $PAGE->set_heading($heading);
 
+// Security verification.
 require_login();
 require_capability('tool/lala:createmodelversion', $context);
 require_sesskey();
 
-function render_page(model_version $version, int $configid) {
+// Router.
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (empty($versionid)) {
+        // We do not have a version scaffold yet - first, create one.
+        $versionid = model_version::create_scaffold_and_get_for_config($configid);
+
+        if ($auto) {
+            // For the automatic creation, directly set the versionid and redirect to the same page.
+            model_version::create($versionid);
+            redirect(new moodle_url($priorpath, null, 'version'.$versionid));
+        } else {
+            // For manual creation, display a form. If anything is input to the form, it will redirect.
+            render_page($versionid, $configid);
+        }
+    } else {
+        // Now we have a version scaffold and possibly some creation parameters,
+        // and need to create the version according to the set parameters.
+        model_version::create($versionid, $contexts, $dataset);
+        redirect(new moodle_url($priorpath, null, 'version'.$versionid));
+    }
+} else {
+    http_response_code(405);
+}
+
+/**
+ * Renders the manual version creation settings page.
+ *
+ * @param int $versionid
+ * @param int $configid
+ * @throws Exception
+ */
+function render_page(int $versionid, int $configid): void {
+    $version = new model_version($versionid);
+
     // Create form to select contexts.
-    $customdata = ['versionid' => $version->get_id(), 'configid' => $configid];
+    $customdata = ['versionid' => $versionid, 'configid' => $configid];
     $selectcontextform = new select_context(null, $customdata);
     $selectcontextformhtml = $selectcontextform->render();
 
@@ -71,7 +106,7 @@ function render_page(model_version $version, int $configid) {
     $forms->selectcontext = $selectcontextformhtml;
     $forms->uploaddataset = $uploaddatasetformhtml;
 
-    // Render the page
+    // Render the page.
     global $PAGE;
     $output = $PAGE->get_renderer('tool_lala');
 
@@ -84,61 +119,4 @@ function render_page(model_version $version, int $configid) {
     echo $output->render($modelconfigrenderable);
 
     echo $output->footer();
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($configid)) {
-    if (empty($versionid)) {
-        $versionid = model_version::create_scaffold_and_get_for_config($configid);
-        $version = new model_version($versionid);
-
-        // If route contains auto param, do it automatically.
-        if ($auto) {
-            try { // possibly replace with a call to the moodle url with the version id?
-                $version->gather_dataset();
-                $version->split_training_test_data();
-                $version->train();
-                $version->predict();
-                $version->gather_related_data();
-            } finally {
-                $version->finish();
-                redirect(new moodle_url($priorpath.'#version'.$versionid));
-            }
-        } else {
-            render_page($version, $configid);
-        }
-    } else {
-        $version = new model_version($versionid);
-
-        try {
-            if (!empty($contexts)) {
-                $version->set_contextids($contexts);
-                $version->gather_dataset();
-            } else if (!empty($dataset)) {
-                global $USER;
-
-                $fs = get_file_storage();
-                $context = context_user::instance($USER->id);
-                $draftid = $dataset;
-                $files = $fs->get_area_files($context->id, 'user', 'draft', $draftid, 'id DESC', false);
-
-                $storedfile = reset($files);
-                $version->set_dataset($storedfile);
-            } else {
-                $version->gather_dataset();
-            }
-
-            $version->split_training_test_data();
-            $version->train();
-            $version->predict();
-
-            if (empty($dataset)) {
-                $version->gather_related_data(); // We can only gather this data if related data can be found on the site.
-            }
-        } finally {
-            $version->finish();
-            redirect(new moodle_url($priorpath.'#version'.$versionid));
-        }
-    }
-} else {
-    redirect($priorurl);
 }

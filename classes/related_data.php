@@ -40,7 +40,6 @@ class related_data extends dataset {
      * Retrieve all relevant data related to the analysable samples.
      *
      * @param array $options = [string $tablename, array $ids]
-     * @return void
      */
     public function collect(array $options): void {
         $this->validate($options);
@@ -60,7 +59,6 @@ class related_data extends dataset {
      * Validate the options of this evidence.
      *
      * @param array $options
-     * @return void
      */
     public function validate(array $options) : void {
         if (!isset($options['tablename'])) {
@@ -77,8 +75,6 @@ class related_data extends dataset {
     /**
      * Serialize the contents of the data field.
      * Store the serialization string in the filestring field.
-     *
-     * @return void
      */
     public function serialize(): void {
         $str = '';

@@ -14,6 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_lala\output\form;
+
+use LogicException;
+use moodleform;
+
+defined('MOODLE_INTERNAL') || die();
+
+require_once($CFG->dirroot.'/lib/formslib.php');
+
 /**
  * Select context(s) form.
  *
@@ -21,29 +30,16 @@
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace tool_lala\output\form;
-
-defined('MOODLE_INTERNAL') || die();
-
-require_once($CFG->dirroot.'/lib/formslib.php');
-
-/**
- * Model edit form.
- *
- * @package   tool_analytics
- * @copyright 2017 David Monllao {@link http://www.davidmonllao.com}
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class select_context extends \moodleform {
+class select_context extends moodleform {
 
     /**
      * Form definition
+     *
+     * @return void
      */
     public function definition() {
         $mform = $this->_form;
 
-        // Copied and adapted from https://github.com/moodle/moodle/blob/master/admin/tool/analytics/classes/output/form/edit_model.php
         $options = [
                 'ajax' => 'tool_analytics/potential-contexts',
                 'multiple' => true,
@@ -71,22 +67,21 @@ class select_context extends \moodleform {
      *
      * @param array $data data from the form.
      * @param array $files files uploaded.
-     *
      * @return array of errors.
      */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
         if (!isset($this->_customdata['versionid'])) {
-            throw new \LogicException('The id of the model version needs to be passed to the form as \'versionid\'');
+            throw new LogicException('The id of the model version needs to be passed to the form as \'versionid\'');
         }
 
         if (!isset($this->_customdata['configid'])) {
-            throw new \LogicException('The id of the model configuration needs to be passed to the form as \'configid\'');
+            throw new LogicException('The id of the model configuration needs to be passed to the form as \'configid\'');
         }
 
         if (!isset($this->_customdata['contexts'])) {
-            throw new \LogicException('The contexts of the model version need to be passed to the form as \'contexts\'');
+            throw new LogicException('The contexts of the model version need to be passed to the form as \'contexts\'');
         }
 
         return $errors;

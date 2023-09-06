@@ -68,8 +68,6 @@ class model_version_created extends base {
 
     /**
      * Validates that the "other" event property has been set correctly.
-     *
-     * @return void
      */
     protected function validate_data(): void {
         parent::validate_data();

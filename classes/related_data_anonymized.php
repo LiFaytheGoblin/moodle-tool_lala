@@ -41,7 +41,6 @@ class related_data_anonymized extends related_data {
      * Make sure to only return allowed columns and only if enough data exists.
      *
      * @param array $options depending on the implementation
-     * @return void
      * @throws Exception
      * @throws Exception
      */

@@ -37,7 +37,6 @@ class test_dataset extends dataset {
      * Store resulting data (sampleid, features, label) in the data field.
      *
      * @param array $options = [$data, $testsize]
-     * @return void
      */
     public function collect(array $options): void {
         $this->validate($options);
@@ -61,7 +60,6 @@ class test_dataset extends dataset {
      * Validates this evidence's options.
      *
      * @param array $options
-     * @return void
      */
     public function validate(array $options): void {
         if (!isset($options['data'])) {

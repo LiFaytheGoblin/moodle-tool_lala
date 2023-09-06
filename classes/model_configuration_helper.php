@@ -24,6 +24,7 @@
 
 namespace tool_lala;
 
+use Exception;
 use stdClass;
 use core_analytics\manager;
 
@@ -36,8 +37,7 @@ class model_configuration_helper {
      * Collect all model configuration objects.
      *
      * @return stdClass[] of model config objects
-     * @throws \Exception
-     * @throws \Exception
+     * @throws Exception
      */
     public static function init_and_get_all_model_config_objs(): array {
         global $DB;

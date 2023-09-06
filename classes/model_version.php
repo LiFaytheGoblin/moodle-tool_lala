@@ -87,8 +87,6 @@ class model_version {
      * Constructor. Deserialize DB object.
      *
      * @param int $id of the version
-     * @return void
-     * @throws Exception
      * @throws Exception
      */
     public function __construct(int $id) {
@@ -125,8 +123,6 @@ class model_version {
      * $predictor, $contexts, $analyser
      * Other loaded objects ($targetinstance, $indicatorinstances, $analysisintervalinstances) are only needed temporarily.
      *
-     * @return void
-     * @throws Exception
      * @throws Exception
      */
     private function load_objects(): void {
@@ -168,24 +164,21 @@ class model_version {
      * Update the contextids to be used, if no data has been collected yet.
      *
      * @param int[] $contextids
-     * @return void
      */
     public function set_contextids(array $contextids): void {
         if (isset($this->evidence['dataset']) || isset($this->evidence['dataset_anonymized'])) {
             throw new LogicException('Dataset has already been gathered. Contexts can only be set before gathering the dataset.');
         }
 
-        // Copied and adapted from https://github.com/moodle/moodle/blob/master/admin/tool/analytics/classes/output/form/edit_model.php
         $analyserclass = get_class($this->analyser);
         $potentialcontexts = $analyserclass::potential_context_restrictions();
         if (!$potentialcontexts) {
             throw new LogicException(get_string('errornocontextrestrictions', 'analytics'));
         } else {
-            // Flip the contexts array so we can just diff by key.
             $selectedcontexts = array_flip($contextids);
             $invalidcontexts = array_diff_key($selectedcontexts, $potentialcontexts);
             if (!empty($invalidcontexts)) {
-               throw new InvalidArgumentException(get_string('errorinvalidcontexts', 'analytics'));
+                throw new InvalidArgumentException(get_string('errorinvalidcontexts', 'analytics'));
             }
         }
 
@@ -222,6 +215,42 @@ class model_version {
     }
 
     /**
+     * Execute the model version creation process with parameters.
+     *
+     * @param int $versionid
+     * @param array|null $contexts
+     * @param string|null $dataset
+     * @return model_version
+     * @throws Exception
+     */
+    public static function create(int $versionid, array $contexts = null, string $dataset = null): model_version {
+        $version = new model_version($versionid);
+
+        try {
+            if (!empty($contexts)) { // If contexts are provided, set those to limit the data gathering scope.
+                $version->set_contextids($contexts);
+            }
+
+            if (!empty($dataset)) { // If a dataset is provided, use that one.
+                $version->set_dataset($dataset);
+            } else { // Otherwise, gather data.
+                $version->gather_dataset();
+            }
+
+            $version->split_training_test_data();
+            $version->train();
+            $version->predict();
+
+            if (empty($dataset)) { // Only if gathering data on site can we find related data.
+                $version->gather_related_data();
+            }
+        } finally {
+            $version->finish();
+            return $version;
+        }
+    }
+
+    /**
      * Returns a plain stdClass with the model version data.
      *
      * @return stdClass
@@ -246,8 +275,6 @@ class model_version {
      * Call next step: Gather the data that can be used for training and testing this model version.
      *
      * @param bool $anonymous whether to gather the dataset and anonymize it.
-     * @return void
-     * @throws Exception
      * @throws Exception
      */
     public function gather_dataset(bool $anonymous = true): void {
@@ -277,11 +304,19 @@ class model_version {
 
     /**
      * Bypass the data gathering step by directly setting the dataset evidence.
+     * Fetches a submitted CSV file from the draft area and registers it as dataset for the model version creation.
      *
-     * @param stored_file $file
-     * @return void
+     * @param string $csvfileid
      */
-    public function set_dataset(stored_file $file): void {
+    public function set_dataset(string $csvfileid): void {
+        global $USER;
+
+        $fs = get_file_storage();
+        $context = context_user::instance($USER->id);
+        $files = $fs->get_area_files($context->id, 'user', 'draft', $csvfileid, 'id DESC', false);
+
+        $file = reset($files);
+
         $evidencetype = 'dataset';
         if (isset($this->evidence[$evidencetype]) && count($this->evidence[$evidencetype]) > 0) {
             throw new LogicException('Can not set a dataset. Dataset evidence has already been collected for this version.');
@@ -292,9 +327,14 @@ class model_version {
             $evidence = dataset::create_scaffold_and_get_for_version($this->id);
 
             // Turn CSV file into valid dataset evidence data, and store into the evidence.
-            $filehandle = $file->get_content_file_handle();
-            $datasetrawdata = dataset_helper::build_from_csv($filehandle, $this->analysisinterval);
-            dataset_helper::validate($datasetrawdata);
+            try {
+                $filehandle = $file->get_content_file_handle();
+                $datasetrawdata = dataset_helper::build_from_csv($filehandle, $this->analysisinterval);
+                dataset_helper::validate($datasetrawdata);
+            } catch (Exception $e) {
+                $evidence->abort();
+                throw $e;
+            }
             $evidence->set_raw_data($datasetrawdata);
 
             // Add id and raw data to cached field variables.
@@ -363,7 +403,6 @@ class model_version {
      * Register a thrown error in the error column of the model version table.
      *
      * @param moodle_exception|Exception $e the thrown exception
-     * @return void
      */
     private function register_error(moodle_exception|Exception $e): void {
         global $DB;
@@ -375,8 +414,6 @@ class model_version {
      * Call next step: Gather the related data.
      *
      * @param bool $anonymous whether to anonymize the related data
-     * @return void
-     * @throws Exception
      * @throws Exception
      */
     public function gather_related_data(bool $anonymous = true): void {
@@ -398,8 +435,6 @@ class model_version {
      * Gather the related data with anonymizing it.
      *
      * @param string $origintablename
-     * @return void
-     * @throws Exception
      * @throws Exception
      */
     public function gather_related_data_anonymized(string $origintablename) : void {
@@ -441,7 +476,6 @@ class model_version {
      * Gather the related data without anonymizing it.
      *
      * @param string $origintablename
-     * @return void
      */
     public function gather_related_data_unanonymized(string $origintablename) : void {
         $data = $this->get_single_evidence('dataset');
@@ -474,8 +508,6 @@ class model_version {
 
     /**
      * Call next step: Split the data into training and testing data.
-     *
-     * @return void
      */
     public function split_training_test_data(): void {
         if (isset($this->evidence['dataset_anonymized'])) {
@@ -499,8 +531,6 @@ class model_version {
 
     /**
      * Call next step: Train a model.
-     *
-     * @return void
      */
     public function train(): void {
         if (!isset($this->evidence['training_dataset'])) {
@@ -515,8 +545,6 @@ class model_version {
 
     /**
      * Call next step: Request predictions from a trained model.
-     *
-     * @return void
      */
     public function predict(): void {
         if (!isset($this->evidence['test_dataset'])) {
@@ -536,8 +564,6 @@ class model_version {
 
     /**
      * Mark the model version as finished.
-     *
-     * @return void
      */
     public function finish(): void {
         global $DB;
@@ -608,7 +634,7 @@ class model_version {
     }
 
     /**
-     * @return void
+     * Loads the contexts as objects from ids.
      */
     public function load_context_objects(): void {
         $this->contexts = [];

@@ -142,9 +142,10 @@ class dataset_helper {
      * Parses a CSV file into a valid dataset.
      *
      * @param false|resource $filehandle
+     * @param string $analysisintervalkey
      * @return array
      */
-    public static function build_from_csv(mixed &$filehandle, string $analysisintervalkey): array {
+    public static function build_from_csv(mixed $filehandle, string $analysisintervalkey): array {
         if (!$filehandle) {
             throw new InvalidArgumentException('Filehandle is not available. Need filehandle to parse uploaded CSV into dataset.');
         }
@@ -263,8 +264,6 @@ class dataset_helper {
      * Validate a dataset array.
      *
      * @param array $dataset
-     * @return void
-     * @throws BadInputException
      */
     public static function validate(array $dataset) : void {
         // Check if csv contains at least two rows.
@@ -282,7 +281,8 @@ class dataset_helper {
         $headerstring = implode(',', reset($header));
         var_dump($headerstring);
         if (str_contains($headerstring, 'sampleid')) {
-            throw new InvalidArgumentException('Header must not contain a sampleid column. The sampleid is the array index and does not need its own row.');
+            throw new InvalidArgumentException('Header must not contain a sampleid column.
+             The sampleid is the array index and does not need its own row.');
         }
         if (!str_contains($headerstring, 'indicator')) {
             throw new InvalidArgumentException('Header needs to contain an indicator column but does not: '.$headerstring);

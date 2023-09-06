@@ -36,7 +36,6 @@ class predictions_dataset extends dataset {
      * Store resulting data (sampleid, target, prediction) in the data field.
      *
      * @param array $options = [$model, $data]
-     * @return void
      */
     public function collect(array $options): void {
         $this->validate($options);
@@ -59,7 +58,6 @@ class predictions_dataset extends dataset {
 
     /** Validate the evidence's options.
      * @param array $options
-     * @return void
      */
     public function validate(array $options): void {
         if (!isset($options['model'])) {

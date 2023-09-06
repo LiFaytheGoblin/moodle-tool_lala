@@ -40,7 +40,6 @@ class model extends evidence {
      * Store the trained LogisticRegression model as the raw $data of this evidence item.
      *
      * @param array $options = [$data, $predictor]
-     * @return void
      */
     public function collect(array $options): void {
         $this->validate($options);
@@ -66,7 +65,6 @@ class model extends evidence {
 
     /** Validate the options.
      * @param array $options
-     * @return void
      */
     public function validate(array $options): void {
         if (!isset($options['predictor'])) {
@@ -86,8 +84,6 @@ class model extends evidence {
     /**
      * Serializes the model.
      * Store the serialization string in the filestring field.
-     *
-     * @return void
      */
     public function serialize(): void {
         $str = serialize($this->data);

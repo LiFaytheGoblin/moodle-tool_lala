@@ -27,7 +27,6 @@ namespace tool_lala;
 use core_analytics\local\analysis\result_array;
 use core_analytics\analysis;
 use core_php_time_limit;
-use Couchbase\BadInputException;
 use DomainException;
 use Exception;
 use InvalidArgumentException;
@@ -280,18 +279,16 @@ class dataset_helper {
         }
 
         // Check if header contains an indicator name and a target name, but not "sampleid".
-        $headerstring = implode(',', $header);
+        $headerstring = implode(',', reset($header));
+        var_dump($headerstring);
         if (str_contains($headerstring, 'sampleid')) {
-            throw new BadInputException('Header must not contain a sampleid column. The sampleid is the array index and does not need its own row.');
+            throw new InvalidArgumentException('Header must not contain a sampleid column. The sampleid is the array index and does not need its own row.');
         }
         if (!str_contains($headerstring, 'indicator')) {
-            throw new BadInputException('Header needs to contain an indicator column.');
+            throw new InvalidArgumentException('Header needs to contain an indicator column but does not: '.$headerstring);
         }
         if (!str_contains($headerstring, 'target')) {
-            throw new BadInputException('Header needs to contain a target column.');
+            throw new InvalidArgumentException('Header needs to contain a target column but does not: '.$headerstring);
         }
     }
-
-
-
 }

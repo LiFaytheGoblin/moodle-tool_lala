@@ -24,8 +24,6 @@
 
 namespace tool_lala\output\form;
 
-use tool_lala\model_version;
-
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/lib/formslib.php');
@@ -69,7 +67,7 @@ class select_context extends \moodleform {
     }
 
     /**
-     * Form validation
+     * Form validation. This does not appear to be executed, therefore the content validation happens in model_version.
      *
      * @param array $data data from the form.
      * @param array $files files uploaded.
@@ -89,22 +87,6 @@ class select_context extends \moodleform {
 
         if (!isset($this->_customdata['contexts'])) {
             throw new \LogicException('The contexts of the model version need to be passed to the form as \'contexts\'');
-        }
-
-        $version = new model_version($this->_customdata['versionid']);
-
-        if (!empty($data['contexts'])) {
-            $analyserclass = get_class($version->get_analyser());
-            if (!$potentialcontexts = $analyserclass::potential_context_restrictions()) {
-                $errors['contexts'] = get_string('errornocontextrestrictions', 'analytics');
-            } else {
-                // Flip the contexts array so we can just diff by key.
-                $selectedcontexts = array_flip($data['contexts']);
-                $invalidcontexts = array_diff_key($selectedcontexts, $potentialcontexts);
-                if (!empty($invalidcontexts)) {
-                    $errors['contexts'] = get_string('errorinvalidcontexts', 'analytics');
-                }
-            }
         }
 
         return $errors;

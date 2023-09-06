@@ -24,10 +24,6 @@
 
 namespace tool_lala\output\form;
 
-use Exception;
-use tool_lala\dataset_helper;
-use tool_lala\model_version;
-
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/lib/formslib.php');
@@ -73,7 +69,7 @@ class upload_dataset extends \moodleform {
     }
 
     /**
-     * Form validation
+     * Form validation. This does not appear to be executed, therefore the content validation happens in model_version.
      *
      * @param array $data data from the form.
      * @param array $files files uploaded.
@@ -89,19 +85,6 @@ class upload_dataset extends \moodleform {
 
         if (!isset($this->_customdata['configid'])) {
             throw new \LogicException('The id of the model configuration needs to be passed to the form as \'configid\'');
-        }
-
-
-        $tmpfilepath = $files['dataset'];
-        $filehandle = fopen($tmpfilepath, 'r');
-
-        // Validate the content.
-        try {
-            $version = new model_version($this->_customdata['versionid']);
-            $dataset = dataset_helper::build_from_csv($filehandle, $version->get_analysisinterval());
-            dataset_helper::validate($dataset);
-        } catch (Exception $e) {
-            $errors['dataset'] = $e->getMessage();
         }
 
         return $errors;

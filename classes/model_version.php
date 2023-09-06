@@ -26,6 +26,7 @@
 namespace tool_lala;
 
 use Exception;
+use InvalidArgumentException;
 use LogicException;
 use moodle_exception;
 use stdClass;
@@ -169,12 +170,28 @@ class model_version {
      * @param int[] $contextids
      * @return void
      */
-    public function set_contextids(array $contextids) {
+    public function set_contextids(array $contextids): void {
         if (isset($this->evidence['dataset']) || isset($this->evidence['dataset_anonymized'])) {
             throw new LogicException('Dataset has already been gathered. Contexts can only be set before gathering the dataset.');
         }
+
+        // Copied and adapted from https://github.com/moodle/moodle/blob/master/admin/tool/analytics/classes/output/form/edit_model.php
+        $analyserclass = get_class($this->analyser);
+        $potentialcontexts = $analyserclass::potential_context_restrictions();
+        if (!$potentialcontexts) {
+            throw new LogicException(get_string('errornocontextrestrictions', 'analytics'));
+        } else {
+            // Flip the contexts array so we can just diff by key.
+            $selectedcontexts = array_flip($contextids);
+            $invalidcontexts = array_diff_key($selectedcontexts, $potentialcontexts);
+            if (!empty($invalidcontexts)) {
+               throw new InvalidArgumentException(get_string('errorinvalidcontexts', 'analytics'));
+            }
+        }
+
         global $DB;
         $this->contextids = json_encode($contextids);
+
         $DB->set_field('tool_lala_model_versions', 'contextids', $this->contextids,
                 ['id' => $this->id]);
         $this->load_context_objects();
@@ -277,6 +294,7 @@ class model_version {
             // Turn CSV file into valid dataset evidence data, and store into the evidence.
             $filehandle = $file->get_content_file_handle();
             $datasetrawdata = dataset_helper::build_from_csv($filehandle, $this->analysisinterval);
+            dataset_helper::validate($datasetrawdata);
             $evidence->set_raw_data($datasetrawdata);
 
             // Add id and raw data to cached field variables.

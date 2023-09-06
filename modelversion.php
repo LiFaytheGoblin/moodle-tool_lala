@@ -114,7 +114,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($configid)) {
                 $version->set_contextids($contexts);
                 $version->gather_dataset();
             } else if (!empty($dataset)) {
-                var_dump($_REQUEST);
                 global $USER;
 
                 $fs = get_file_storage();

@@ -245,6 +245,8 @@ class model_version {
             if (empty($dataset)) { // Only if gathering data on site can we find related data.
                 $version->gather_related_data();
             }
+        } catch(Exception $e) {
+            $version->register_error($e);
         } finally {
             $version->finish();
             return $version;
@@ -458,11 +460,13 @@ class model_version {
 
             $evidence = $this->add('related_data_anonymized', $options);
 
+            $evidences[] = $evidence; // Store the evidence for anonymizing it later.
+
             // Create idmaps.
             $notanonymizeddata = $evidence->get_raw_data();
-            $this->idmaps[$relatedtablename] = related_data_helper::create_idmap_from_related_data($notanonymizeddata);
-
-            $evidences[] = $evidence; // Store the evidence for anonymizing it later.
+            if (!isset($this->idmaps[$relatedtablename])) {
+                $this->idmaps[$relatedtablename] = related_data_helper::create_idmap_from_related_data($notanonymizeddata);
+            }
         }
 
         // Anonymize the related data. We need ALL idmaps for that.

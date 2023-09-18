@@ -113,10 +113,10 @@ class idmap implements Countable {
 
     /** Verify whether the provided id can be found in the ids of the idmap.
      *
-     * @param int|string $originalid
+     * @param int $originalid
      * @return bool whether the original id exists
      */
-    public function has_original_id(int|string $originalid): bool {
+    public function has_original_id(int $originalid): bool {
         return in_array($originalid, $this->originalids);
     }
 
@@ -170,7 +170,7 @@ class idmap implements Countable {
     /**
      * Getter for original ids
      *
-     * @return int[]|string[] originalids
+     * @return int[] originalids
      */
     public function get_originalids() : array {
         return $this->originalids;

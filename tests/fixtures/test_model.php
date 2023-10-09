@@ -63,6 +63,7 @@ class test_model {
                 'target' => self::TARGET,
                 'indicators' => self::INDICATORS,
                 'timesplitting' => self::ANALYSISINTERVAL,
+                'predictionsprocessor' => self::PREDICTIONSPROCESSOR,
                 'version' => time(),
                 'timemodified' => time(),
                 'usermodified' => 1,
@@ -83,13 +84,17 @@ class test_model {
      * Updates a model column.
      *
      * @param int $modelid
-     * @param string $column name
+     * @param string|null $column name
+     * @param mixed $value
      */
-    public static function update(int $modelid, string $column)  : void {
+    public static function update(int $modelid, ?string $column = null, mixed $value = null)  : void {
         global $DB;
         $newobj = self::get_modelobj();
         $newobj['id'] = $modelid;
-        $newobj[$column] = 'changed'.time();
+        if ($column) {
+            $nevval = $value ?? 'changed' . time();
+            $newobj[$column] = $nevval;
+        }
         $newobj['timemodified'] = time();
         $DB->update_record('analytics_models', $newobj);
     }

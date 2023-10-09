@@ -40,7 +40,8 @@ class test_config {
                 'timecreated' => time(),
                 'name' => test_model::NAME,
                 'analysisinterval' => test_model::ANALYSISINTERVAL,
-                'indicators' => test_model::INDICATORS
+                'indicators' => test_model::INDICATORS,
+                'predictionsprocessor' => test_model::PREDICTIONSPROCESSOR
         ];
         return $DB->insert_record('tool_lala_model_configs', $valididconfigobject);
     }

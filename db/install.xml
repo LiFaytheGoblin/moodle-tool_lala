@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="admin/tool/lala/db" VERSION="2023100911" COMMENT="XMLDB file for Moodle admin/tool/lala"
+<XMLDB PATH="admin/tool/lala/db" VERSION="2023101008" COMMENT="XMLDB file for Moodle admin/tool/lala"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
 >

@@ -24,10 +24,12 @@
 
 require(__DIR__ . '/../../../config.php');
 
+use core\task\manager;
 use tool_lala\model_configuration;
 use tool_lala\model_version;
 use tool_lala\output\form\select_context;
 use tool_lala\output\form\upload_dataset;
+use tool_lala\task\version_create;
 
 $configid = required_param('configid', PARAM_INT);
 $auto = optional_param('auto', true, PARAM_BOOL); // Should version be created automatically with default settings?
@@ -63,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($auto) {
             // For the automatic creation, directly set the versionid and redirect to the same page.
-            model_version::create($versionid);
+            trigger_adhoc_model_version_creation($versionid);
             redirect(new moodle_url($priorpath, null, 'version'.$versionid));
         } else {
             // For manual creation, display a form. If anything is input to the form, it will redirect.
@@ -72,11 +74,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         // Now we have a version scaffold and possibly some creation parameters,
         // and need to create the version according to the set parameters.
-        model_version::create($versionid, $contexts, $dataset);
+        trigger_adhoc_model_version_creation($versionid, $contexts, $dataset);
         redirect(new moodle_url($priorpath, null, 'version'.$versionid));
     }
 } else {
     http_response_code(405);
+}
+
+/**
+ * Creates and queues a new adhoc task for creating a model version.
+ *
+ * @param int $versionid
+ * @param array|null $contexts
+ * @param string|null $dataset
+ * @return void
+ */
+function trigger_adhoc_model_version_creation(int $versionid, ?array $contexts = null, ?string $dataset = null): void {
+    global $USER;
+    $asynctask = version_create::instance($versionid, $contexts, $dataset);
+    $asynctask->set_userid($USER->id);
+    manager::queue_adhoc_task($asynctask, true);
 }
 
 /**

@@ -32,9 +32,10 @@ use core_analytics\manager;
  * Class to help the model configuration.
  */
 class model_configuration_helper {
-
+    /** @var string[] Lists all columns in analytics_models that can be null */
     const CANBENULL = ['predictionsprocessor', 'timesplitting'];
 
+    /** @var string[] Maps the column names of analytics_models to tool_lala_model_configs */
     const CORRESPONDINGSETTINGS = [
         'id' => 'modelid',
         'predictionsprocessor' => 'predictionsprocessor',
@@ -166,7 +167,7 @@ class model_configuration_helper {
      * @param int $modelid
      * @return array
      */
-    public static function get_related_configs(mixed $modelid): array {
+    public static function get_related_configs(int $modelid): array {
         global $DB;
 
         $analyticsmodelsettings = $DB->get_record('analytics_models', ['id' => $modelid],
@@ -187,7 +188,7 @@ class model_configuration_helper {
         $wherestring = implode(' AND ', $where);
 
         // Try to get a config with the same (relevant) settings.
-        $query = "SELECT id 
+        $query = "SELECT id
                     FROM {tool_lala_model_configs}
                    WHERE " . $wherestring;
         return $DB->get_records_sql($query, $params);

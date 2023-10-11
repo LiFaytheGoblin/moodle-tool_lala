@@ -13,6 +13,13 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+/**
+ * The adhoc task class for creating a model version.
+ *
+ * @package     tool_lala
+ * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 namespace tool_lala\task;
 
@@ -20,8 +27,8 @@ use core\task\adhoc_task;
 use tool_lala\model_version;
 
 /**
-* Adhoc task for creating a model version.
-*/
+ * Adhoc task for creating a model version.
+ */
 class version_create extends adhoc_task {
     /**
      * Creator.
@@ -31,7 +38,7 @@ class version_create extends adhoc_task {
      * @param string|null $dataset
      * @return version_create
      */
-    public static function instance(int $versionid, ?array $contexts = null, ?string $dataset = null): version_create {
+    public static function instance(int $versionid, ?array $contexts = null, ?string $dataset = null): self {
         $task = new self();
         $task->set_custom_data((object) [
                 'versionid' => $versionid,
@@ -40,9 +47,10 @@ class version_create extends adhoc_task {
         ]);
         return $task;
     }
+
     /**
-    * Execute the task.
-    */
+     * Execute the task.
+     */
     public function execute() {
         $data = $this->get_custom_data();
         mtrace('Creating version ' . $data->versionid . '...');

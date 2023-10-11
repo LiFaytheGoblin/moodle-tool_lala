@@ -245,7 +245,7 @@ class model_version {
             if (empty($dataset)) { // Only if gathering data on site can we find related data.
                 $version->gather_related_data();
             }
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             $version->register_error($e);
         } finally {
             $version->finish();
@@ -593,15 +593,6 @@ class model_version {
     }
 
     /**
-     * Check whether the version finished without error.
-     *
-     * @return bool
-     */
-    public function has_error(): bool {
-        return isset($this->error);
-    }
-
-    /**
      * Get all evidence items of a type.
      *
      * @param string $evidencetype a valid name of an evidence inheriting class
@@ -609,33 +600,6 @@ class model_version {
      */
     public function get_array_of_evidences(string $evidencetype): array {
         return $this->evidence[$evidencetype];
-    }
-
-    /**
-     * Get the name of this model version's target.
-     *
-     * @return string
-     */
-    public function get_target(): string {
-        return $this->target;
-    }
-
-    /**
-     * Get this model version's analyser.
-     *
-     * @return base
-     */
-    public function get_analyser(): base {
-        return $this->analyser;
-    }
-
-    /**
-     * Get the analysis interval.
-     *
-     * @return string
-     */
-    public function get_analysisinterval(): string {
-        return $this->analysisinterval;
     }
 
     /**

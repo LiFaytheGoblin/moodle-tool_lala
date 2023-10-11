@@ -64,7 +64,7 @@ class idmap implements Countable {
      * @throws Exception
      * @throws Exception
      */
-    public static function create_from_ids(array $ids) : idmap {
+    public static function create_from_ids(array $ids) : self {
         $pseudonyms = self::create_pseudonyms($ids);
 
         return new static($ids, $pseudonyms);

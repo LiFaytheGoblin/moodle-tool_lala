@@ -235,11 +235,21 @@ class model_version {
             if (!empty($dataset)) { // If a dataset is provided, use that one.
                 $version->set_dataset($dataset);
             } else { // Otherwise, gather data.
+                // todo: check if a dataset has already been gathered.
+                // if so: retrieve and use set_dataset() instead of gather_dataset()
                 $version->gather_dataset();
             }
 
+            // todo: check if training and test datasets have already been set.
+            // if so: retrieve and use set_training_test_data()
             $version->split_training_test_data();
+
+            // todo: check if model was already trained.
+            // if so: import model from evidence file
             $version->train();
+
+            // todo: check if model predictions have already been retrieved.
+            // if so: use set_predictions()
             $version->predict();
 
             if (empty($dataset)) { // Only if gathering data on site can we find related data.

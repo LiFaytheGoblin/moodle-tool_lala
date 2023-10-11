@@ -12,10 +12,10 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template tool_lala/create_model_version_button
-    Template for model version create button.
+    @template tool_lala/continue_model_version_button
+    Template for model version continue button.
     Context variables required for this template:
-    - id: int - model config unique identifier
+    - id: int - model version unique identifier
     - sesskey: string
     Example context (json):
     {
@@ -25,11 +25,11 @@
 }}
 <form class="input-group mb-3 form-row col" action="modelversion.php" method="POST">
     <div class="input-group-prepend">
-        <button class="btn btn-outline-secondary" type="submit">{{#str}}createversion, tool_lala{{/str}}</button>
+        <button class="btn btn-outline-secondary" type="submit">{{#str}}continueversion, tool_lala{{/str}}</button>
     </div>
-    <input type="hidden" name="configid" value="{{id}}" />
+    <input type="hidden" name="versionid" value="{{id}}" />
     <input type="hidden" name="sesskey" value="{{sesskey}}" />
-    <label for="auto" class="sr-only">{{#str}}createversionlabel, tool_lala{{/str}}</label>
+    <label for="auto" class="sr-only">{{#str}}continueversionlabel, tool_lala{{/str}}</label>
     <select class="custom-select" id="auto" name="auto">
         <option selected value=true>{{#str}}automatically, tool_lala{{/str}}</option>
         <option value=false>{{#str}}manually, tool_lala{{/str}}</option>

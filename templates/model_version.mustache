@@ -17,6 +17,7 @@
     Context variables required for this template:
     - id
     - name
+    - sesskey
     - description: [{}]
     - evidence: [{}]
     - hasevidence
@@ -24,6 +25,7 @@
     {
         "id": 1,
         "name": "default",
+        "sesskey": 'somesessionkey',
         "description": [{
             "id": 1,
             "name": "default",
@@ -46,12 +48,16 @@
       }
 }}
 <section aria-label="version{{id}}">
-    <h4>
-        <span title="{{#str}}version, tool_lala{{/str}}" id="version{{id}}">{{name}}</span>
-        <span class="badge rounded-pill bg-light ml-2 position-absolute start-0" title="{{#str}}versionid, tool_lala{{/str}}">
-           <i class="icon fa fa-key" aria-hidden="true"></i>{{id}}
-        </span>
-    </h4>
+    <div class="row">
+        <h4 class="col-auto">
+            <span title="{{#str}}version, tool_lala{{/str}}" id="version{{id}}">{{name}}</span>
+            <span class="badge rounded-pill bg-light ml-2 position-absolute start-0" title="{{#str}}versionid, tool_lala{{/str}}">
+               <i class="icon fa fa-key" aria-hidden="true"></i>{{id}}
+            </span>
+        </h4>
+        <div class="col"></div>
+        {{> tool_lala/continue_model_version_button}}
+    </div>
 
     {{#description}}
         {{> tool_lala/model_version_description}}

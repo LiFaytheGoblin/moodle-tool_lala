@@ -74,7 +74,7 @@ abstract class evidence {
      * @return evidence of the created evidence
      * @throws Exception
      */
-    public static function create_scaffold_and_get_for_version(int $versionid): evidence {
+    public static function create_scaffold_and_get_for_version(int $versionid): self {
         global $DB;
 
         $obj = new stdClass();

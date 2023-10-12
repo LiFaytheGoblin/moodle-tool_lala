@@ -235,6 +235,11 @@ abstract class evidence {
     }
 
     /**
+     * Restore the raw data from a serialized file for bypassing the collection process of the evidence item.
+     */
+    public abstract function restore_raw_data(): void;
+
+    /**
      * Returns the serialized data of the evidence.
      * Useful for testing.
      *

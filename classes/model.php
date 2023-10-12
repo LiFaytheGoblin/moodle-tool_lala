@@ -98,5 +98,10 @@ class model extends evidence {
         return 'ser';
     }
 
-
+    /**
+     * @return void
+     */
+    public function restore_raw_data(): void {
+        // TODO: Implement restore_raw_data() method.
+    }
 }

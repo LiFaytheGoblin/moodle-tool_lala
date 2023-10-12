@@ -179,6 +179,48 @@ class dataset_helper {
     }
 
     /**
+     * Marges two datasets of equal structure.
+     *
+     * @param array $dataseta
+     * @param array $datasetb
+     * @return array[]
+     */
+    public static function merge(array $dataseta, array $datasetb) : array {
+        $analysisintervalkeya = self::get_analysisintervalkey($dataseta);
+        $analysisintervalkeyb = self::get_analysisintervalkey($datasetb);
+        if ($analysisintervalkeya == $analysisintervalkeyb) {
+            $headera = self::get_first_row($dataseta);
+            $headerb = self::get_first_row($datasetb);
+            if ($headera == $headerb) {
+                $rowsa = self::get_rows($dataseta);
+                $rowsb = self::get_rows($datasetb);
+                return [$analysisintervalkeya => $headera + $rowsa + $rowsb];
+            }
+        }
+        throw new \InvalidArgumentException('Datasets are not equal in structure.');
+    }
+
+    /**
+     * Get dataset of those elements in a that are not in b - decided by sampleid.
+     *
+     * @param array $dataseta
+     * @param array $datasetb
+     * @return array
+     */
+    public static function diff(array $dataseta, array $datasetb) : array {
+        $sampleidsb = self::get_sampleids_used_in_dataset($datasetb);
+        $rowsa = self::get_rows($dataseta);
+
+        $datasetrowsdiff = [];
+        foreach ($rowsa as $sampleid => $row) {
+            if (!in_array($sampleid, $sampleidsb)) {
+                $datasetrowsdiff[$sampleid] = $row;
+            }
+        }
+        return self::replace_rows_in_dataset($dataseta, $datasetrowsdiff);
+    }
+
+    /**
      * Get the first row of the dataset, usually this will be the header.
      *
      * @param array $dataset
@@ -221,6 +263,28 @@ class dataset_helper {
         }
 
         return array_values($ids);
+    }
+
+    /**
+     * Get the sampleids that have been used in a dataset (excluding the id used for the header),
+     * in correct order.
+     *
+     * @param array $dataset
+     * @return string[]
+     */
+    public static function get_sampleids_used_in_dataset(array $dataset) : array {
+        $sampleids = [];
+
+        $analysisintervalkey = self::get_analysisintervalkey($dataset);
+
+        foreach ($dataset[$analysisintervalkey] as $sampleid => $value) {
+            if ($sampleid == '0') {
+                continue; // Skip the header.
+            }
+            $sampleids[$sampleid] = $sampleid; // Avoid duplicates while preserving the order.
+        }
+
+        return array_values($sampleids);
     }
 
     /**

@@ -135,4 +135,11 @@ class dataset extends evidence {
     public function get_file_type(): string {
         return 'csv';
     }
+
+    /**
+     * @return void
+     */
+    public function restore_raw_data(): void {
+        // TODO: Implement restore_raw_data() method.
+    }
 }

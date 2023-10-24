@@ -216,7 +216,8 @@ class model_version {
     }
 
     /**
-     * Execute the model version creation process with parameters.
+     * Execute the model version creation process with parameters. A new model
+     * version object is created, and the cache from a prior model version is lost.
      *
      * @param int $versionid
      * @param array|null $contexts
@@ -235,21 +236,13 @@ class model_version {
             if (!empty($dataset)) { // If a dataset is provided, use that one.
                 $version->set_dataset($dataset);
             } else { // Otherwise, gather data.
-                // todo: check if a dataset has already been gathered.
-                // if so: retrieve and use set_dataset() instead of gather_dataset()
                 $version->gather_dataset();
             }
 
-            // todo: check if training and test datasets have already been set.
-            // if so: retrieve and use set_training_test_data()
             $version->split_training_test_data();
 
-            // todo: check if model was already trained.
-            // if so: import model from evidence file
             $version->train();
 
-            // todo: check if model predictions have already been retrieved.
-            // if so: use set_predictions()
             $version->predict();
 
             if (empty($dataset)) { // Only if gathering data on site can we find related data.
@@ -297,10 +290,8 @@ class model_version {
 
         // If this evidence already exists, skip it.
         // Retrieve data in later step if necessary.
-        global $DB;
-        $existingevidence = $DB->get_records('tool_lala_evidence', ['versionid' => $this->id, 'name' => $evidencetype], '', 'id');
-        if (count($existingevidence) == 1) {
-            return; // The evidence has already been gathered.
+        if ($this->has_evidence($evidencetype)) {
+            return;
         }
 
         $evidence = $this->add($evidencetype, $options);
@@ -339,7 +330,8 @@ class model_version {
         $file = reset($files);
 
         $evidencetype = 'dataset';
-        if (isset($this->evidence[$evidencetype]) && count($this->evidence[$evidencetype]) > 0) {
+        if ((isset($this->evidence[$evidencetype]) && count($this->evidence[$evidencetype]) > 0)
+                || $this->has_evidence($evidencetype)) {
             throw new LogicException('Can not set a dataset. Dataset evidence has already been collected for this version.');
         }
 
@@ -438,11 +430,6 @@ class model_version {
      * @throws Exception
      */
     public function gather_related_data(bool $anonymous = true): void {
-        $source = $anonymous ? 'dataset_anonymized' : 'dataset';
-        if (!isset($this->evidence[$source])) {
-            throw new LogicException('No data available for which to get related data. Have you gathered data?');
-        }
-
         $origintablename = $this->analyser->get_samples_origin(); // The main tables to which related data should be gathered.
 
         if ($anonymous) {
@@ -459,6 +446,9 @@ class model_version {
      * @throws Exception
      */
     public function gather_related_data_anonymized(string $origintablename) : void {
+        if (!isset($this->evidence['dataset_anonymized'])) { // Only data from the cache can be used, so don't check the DB.
+            throw new LogicException('No data available for which to get related data. Have you gathered data?');
+        }
         if (!isset($this->idmaps)) {
             throw new LogicException('No idmaps available.');
         }
@@ -501,6 +491,9 @@ class model_version {
      * @param string $origintablename
      */
     public function gather_related_data_unanonymized(string $origintablename) : void {
+        if (!$this->has_evidence('dataset')) {
+            throw new LogicException('No data available for which to get related data. Have you gathered data?');
+        }
         $data = $this->get_single_evidence('dataset');
         $originids = dataset_helper::get_ids_used_in_dataset($data);
 
@@ -523,20 +516,27 @@ class model_version {
      */
     public function get_single_evidence(string $evidencetype): mixed {
         // Try to retrieve the data from the cache.
-        if (isset($this->evidence[$evidencetype])) {
+        if ($this->evidence_in_cache($evidencetype)) {
             $allevidence = array_values($this->evidence[$evidencetype]);
             return reset($allevidence);
         }
         // Try to retrieve the data from the server.
-        $evidenceid = $this->evidence_in_db($evidencetype);
-        if ($evidenceid !== false) {
-            if (count($evidenceid) > 1) {
-                $evidenceid = reset($evidenceid);
+        if ($this->evidence_in_db($evidencetype)) {
+            // Find the id of the evidence.
+            global $DB;
+            $evidencerecords = $DB->get_records('tool_lala_evidence', ['versionid' => $this->id, 'name' => $evidencetype]);
+            if (!isset($evidencerecords) || count($evidencerecords) < 1) {
+                throw new LogicException('Evidence ' . $evidencetype . ' should be in DB but is not');
             }
+            $firstevidence = reset($evidencerecords);
+            $evidenceid = $firstevidence->id;
+
+            // Restore the evidence with this id.
             $class = '\tool_lala\\'.$evidencetype;
             $evidence = new $class($evidenceid);
             $evidence->restore_raw_data();
-            return $evidence->get_raw_data();
+
+            return $evidence->get_raw_data(); // Return the evidence data.
         }
         return null; // No data available!
     }
@@ -545,10 +545,9 @@ class model_version {
      * Call next step: Split the data into training and testing data.
      */
     public function split_training_test_data(): void {
-        // Check if the evidence has already been gathered.
-        $existingtrainingdataset = $this->evidence_in_db('training_dataset');
-        $existingtestdataset = $this->evidence_in_db('test_dataset');
-        if ($existingtrainingdataset !== false && $existingtestdataset !== false) {
+        $existingtrainingdataset = $this->get_single_evidence('training_dataset');
+        $existingtestdataset = $this->get_single_evidence('test_dataset');
+        if (isset($existingtrainingdataset) && isset($existingtestdataset)) {
             return; // The evidence has already been gathered completely - return.
         }
 
@@ -577,11 +576,11 @@ class model_version {
      * @return array
      */
     public function get_shuffled_data(mixed $existingtrainingdataset, mixed $existingtestdataset): array {
-        if ($this->evidence_in_db('dataset_anonymized')) { // The dataset exists and is already shuffled.
+        if ($this->has_evidence('dataset_anonymized')) { // The dataset exists and is already shuffled.
             return $this->get_single_evidence('dataset_anonymized');
         }
 
-        if ($this->evidence_in_db('dataset')) { // The dataset exists but is not shuffled yet.
+        if ($this->has_evidence('dataset')) { // The dataset exists but is not shuffled yet.
             $data = $this->get_single_evidence('dataset');
 
             // If a training dataset exists already, we can not simply shuffle the dataset again.
@@ -607,9 +606,9 @@ class model_version {
      */
     public function train(): void {
         // Check if the evidence has already been gathered.
-        $existingtrainedmodel = $this->evidence_in_db('model');
-        if ($existingtrainedmodel !== false) {
-            return; // The evidence has already been gathered completely - return.
+        $evidencetype = 'model';
+        if ($this->has_evidence($evidencetype)) {
+            return;
         }
 
         $trainingdataset = $this->get_single_evidence('training_dataset');
@@ -627,9 +626,9 @@ class model_version {
      * Call next step: Request predictions from a trained model.
      */
     public function predict(): void {
-        if (!isset($this->evidence['test_dataset'])) {
-            throw new LogicException('No test data is available for getting predictions. Have you gathered data and split
-            it into training and testing data?');
+        $evidencetype = 'predictions_dataset';
+        if ($this->has_evidence($evidencetype)) {
+            return;
         }
 
         $model = $this->get_single_evidence('model');
@@ -643,7 +642,7 @@ class model_version {
         }
         $options = ['model' => $model, 'data' => $testdataset];
 
-        $evidence = $this->add('predictions_dataset', $options);
+        $evidence = $this->add($evidencetype, $options);
         $evidence->store();
     }
 
@@ -673,21 +672,39 @@ class model_version {
     }
 
     /**
-     * Check if evidence of said type already exists. If so, return the evidenceid(s), else return false.
+     * Check if evidence of said type already exists in db.
      *
      * @param string $evidencetype
-     * @return mixed false if not existing, else the id(s)
+     * @return bool
      */
-    public function evidence_in_db(string $evidencetype): mixed {
+    public function evidence_in_db(string $evidencetype): bool {
         global $DB;
         $evidence = $DB->get_records('tool_lala_evidence', ['versionid' => $this->id, 'name' => $evidencetype], '', 'id');
         if (count($evidence) < 1) {
             return false;
-        } else if (count($evidence) == 1) {
-            return reset($evidence)->id;
         } else {
-            return $evidence;
+            return true;
         }
+    }
+
+    /**
+     * Check if evidence of said type already exists in cache.
+     *
+     * @param string $evidencetype
+     * @return bool
+     */
+    public function evidence_in_cache(string $evidencetype): bool {
+        return isset($this->evidence[$evidencetype]) && count($this->evidence[$evidencetype]) > 0;
+    }
+
+    /**
+     * Check if evidence of said type already exists in cache or db.
+     *
+     * @param string $evidencetype
+     * @return bool
+     */
+    public function has_evidence(string $evidencetype): bool {
+        return $this->evidence_in_cache($evidencetype) || $this->evidence_in_db($evidencetype);
     }
 
     /**

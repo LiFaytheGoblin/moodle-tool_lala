@@ -231,27 +231,118 @@ class model_version_complete_creation_test extends advanced_testcase {
 
         // Data is available for gathering.
         $this->version->gather_dataset(false);
-        $dataset = $this->version->get_single_evidence('dataset');
-        $this->assertTrue(isset($dataset));
+        $dataset = $this->version->evidence_in_cache('dataset');
+        $this->assertTrue(isset($dataset) && $dataset !== false);
 
         // Now get split data.
         $this->version->split_training_test_data();
-        $testdataset = $this->version->get_single_evidence('test_dataset');
-        $this->assertTrue(isset($testdataset));
-        $trainingdataset = $this->version->get_single_evidence('training_dataset');
-        $this->assertTrue(isset($trainingdataset));
+        $testdataset = $this->version->evidence_in_cache('test_dataset');
+        $this->assertTrue(isset($testdataset) && $testdataset !== false);
+        $trainingdataset = $this->version->evidence_in_cache('training_dataset');
+        $this->assertTrue(isset($trainingdataset) && $trainingdataset !== false);
 
         // Train the model.
         $this->version->train();
-        $model = $this->version->get_single_evidence('model');
-        $this->assertTrue(isset($model));
+        $model = $this->version->evidence_in_cache('model');
+        $this->assertTrue(isset($model) && $model !== false);
 
         // Get predictions.
         $this->version->predict();
-        $predictionsdataset = $this->version->get_single_evidence('predictions_dataset');
-        $this->assertTrue(isset($predictionsdataset));
+        $predictionsdataset = $this->version->evidence_in_cache('predictions_dataset');
+        $this->assertTrue(isset($predictionsdataset)  && $predictionsdataset !== false);
 
         $error = test_version::haserror($this->versionid);
         $this->assertFalse($error); // An error has not been registered.
+    }
+
+    /**
+     * Check that a model version can be completed automatically after data gathering was done.
+     *
+     * @covers ::tool_lala_model_version
+     */
+    public function test_model_version_complete_creation_resume_after_data_gathering(): void {
+        // Generate test data.
+        test_course_with_students::create($this->getDataGenerator());
+
+        // Data is available for gathering.
+        $this->version->gather_dataset(false);
+        $dataset = $this->version->evidence_in_cache('dataset');
+        $this->assertTrue(isset($dataset) && $dataset !== false);
+
+        // Finish the model version automatically.
+        model_version::create($this->versionid);
+
+        // An error has not been registered.
+        $error = test_version::geterror($this->versionid);
+        $this->assertEquals(null, $error);
+
+        // The data is all there.
+        $testdataset = $this->version->evidence_in_db('test_dataset');
+        $this->assertTrue(isset($testdataset) && $testdataset !== false);
+        $trainingdataset = $this->version->evidence_in_db('training_dataset');
+        $this->assertTrue(isset($trainingdataset) && $trainingdataset !== false);
+        $model = $this->version->evidence_in_db('model');
+        $this->assertTrue(isset($model) && $model !== false);
+        $predictionsdataset = $this->version->evidence_in_db('predictions_dataset');
+        $this->assertTrue(isset($predictionsdataset) && $predictionsdataset !== false);
+    }
+
+    /**
+     * Check that a model version can be completed automatically after training data was split.
+     *
+     * @covers ::tool_lala_model_version
+     */
+    public function test_model_version_complete_creation_resume_after_data_split(): void {
+        // Generate test data.
+        test_course_with_students::create($this->getDataGenerator());
+
+        // Data is available for gathering.
+        $this->version->gather_dataset(false);
+        $this->version->split_training_test_data();
+        $trainingdataset = $this->version->evidence_in_cache('training_dataset');
+        $this->assertTrue(isset($trainingdataset) && $trainingdataset !== false);
+        $testdataset = $this->version->evidence_in_cache('test_dataset');
+        $this->assertTrue(isset($testdataset) && $testdataset !== false);
+
+        // Finish the model version automatically.
+        $this->version = model_version::create($this->versionid);
+
+        // An error has not been registered.
+        $error = test_version::geterror($this->versionid);
+        $this->assertEquals(null, $error);
+
+        // The data is all there.
+        $model = $this->version->evidence_in_db('model');
+        $this->assertTrue(isset($model) && $model !== false);
+        $predictionsdataset = $this->version->evidence_in_db('predictions_dataset');
+        $this->assertTrue(isset($predictionsdataset) && $predictionsdataset !== false);
+    }
+
+    /**
+     * Check that a model version can be completed automatically after model was trained.
+     *
+     * @covers ::tool_lala_model_version
+     */
+    public function test_model_version_complete_creation_resume_after_training(): void {
+        // Generate test data.
+        test_course_with_students::create($this->getDataGenerator());
+
+        // Data is available for gathering.
+        $this->version->gather_dataset(false);
+        $this->version->split_training_test_data();
+        $this->version->train();
+        $model = $this->version->evidence_in_db('model');
+        $this->assertTrue(isset($model) && $model !== false);
+
+        // Finish the model version automatically.
+        model_version::create($this->versionid);
+
+        // An error has not been registered.
+        $error = test_version::geterror($this->versionid);
+        $this->assertEquals(null, $error);
+
+        // The data is all there.
+        $predictionsdataset = $this->version->evidence_in_db('predictions_dataset');
+        $this->assertTrue(isset($predictionsdataset) && $predictionsdataset !== false);
     }
 }

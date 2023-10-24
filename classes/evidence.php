@@ -222,6 +222,9 @@ abstract class evidence {
      * @return array|mixed|null raw data
      */
     public function get_raw_data(): mixed {
+        if (!isset($this->data)) {
+            return null;
+        }
         return $this->data;
     }
 

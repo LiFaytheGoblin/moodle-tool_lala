@@ -83,4 +83,8 @@ class test_evidence extends evidence {
     public function validate(array $options): void {
         if (isset($this->data)) throw new Exception('Already collected.');
     }
+
+    public function restore_raw_data(): void {
+        // TODO: Implement restore_raw_data() method.
+    }
 }

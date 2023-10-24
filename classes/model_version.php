@@ -684,7 +684,7 @@ class model_version {
         if (count($evidence) < 1) {
             return false;
         } else if (count($evidence) == 1) {
-            return $evidence[0]->id;
+            return reset($evidence)->id;
         } else {
             return $evidence;
         }

@@ -186,6 +186,9 @@ class dataset_helper {
      * @return array[]
      */
     public static function merge(array $dataseta, array $datasetb) : array {
+        if (count($dataseta) < 1) return $datasetb;
+        if (count($datasetb) < 1) return $dataseta;
+        
         $analysisintervalkeya = self::get_analysisintervalkey($dataseta);
         $analysisintervalkeyb = self::get_analysisintervalkey($datasetb);
         if ($analysisintervalkeya == $analysisintervalkeyb) {
@@ -208,6 +211,9 @@ class dataset_helper {
      * @return array
      */
     public static function diff(array $dataseta, array $datasetb) : array {
+        if (count($dataseta) < 1) return $datasetb;
+        if (count($datasetb) < 1) return $dataseta;
+
         $sampleidsb = self::get_sampleids_used_in_dataset($datasetb);
         $rowsa = self::get_rows($dataseta);
 

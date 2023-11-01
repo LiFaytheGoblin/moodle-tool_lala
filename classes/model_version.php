@@ -590,9 +590,10 @@ class model_version {
             // So the second part needs to be the remaining data, but shuffled.
             if ($existingtrainingdataset !== false && !$existingtestdataset) {
                 $trainingdata = $this->get_single_evidence('training_dataset'); // First part of reconstructed data.
-                $testdata = dataset_helper::diff($data, $trainingdata); // Second part of reconstructed data.
-                $testdatashuffled = dataset_helper::get_shuffled($testdata);
-                return dataset_helper::merge($trainingdata, $testdatashuffled);
+                if (!isset($trainingdata)) $trainingdata = [];
+                $remainingdata = dataset_helper::diff($data, $trainingdata); // Second part of reconstructed data.
+                $remainingdatashuffled = dataset_helper::get_shuffled($remainingdata);
+                return dataset_helper::merge($trainingdata, $remainingdatashuffled);
             } else {
                 return dataset_helper::get_shuffled($data);
             }

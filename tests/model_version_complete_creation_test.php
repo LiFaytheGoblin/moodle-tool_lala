@@ -99,6 +99,7 @@ class model_version_complete_creation_test extends advanced_testcase {
             // Check that datasets allocate the correct values to the correct users.
             $this->version->gather_dataset(false);
             $originaldataset = $this->version->get_single_evidence('dataset');
+            $this->assertTrue(isset($originaldataset));
 
             $originalrows = $originaldataset[test_model::ANALYSISINTERVAL];
             $newrows = $dataset[test_model::ANALYSISINTERVAL];

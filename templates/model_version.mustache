@@ -20,6 +20,7 @@
     - sesskey
     - description: [{}]
     - evidence: [{}]
+    - model_version_interrupted
     - hasevidence
     Example context (json):
     {
@@ -44,6 +45,7 @@
             "timecreationfinished": "1679987953",
             "serializedfilelocation": "/evidencecollections/1"
         }],
+        "model_version_interrupted": false,
         "hasevidence": true
       }
 }}
@@ -56,7 +58,9 @@
             </span>
         </h4>
         <div class="col"></div>
-        {{> tool_lala/continue_model_version_button}}
+        {{#model_version_interrupted}}
+            {{> tool_lala/continue_model_version_button}}
+        {{/model_version_interrupted}}
     </div>
 
     {{#description}}

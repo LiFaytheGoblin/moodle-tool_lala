@@ -28,6 +28,7 @@ use renderer_base;
 use templatable;
 use renderable;
 use stdClass;
+use tool_lala\task\version_create;
 
 /**
  * Class for the output for a single model version.
@@ -85,6 +86,15 @@ class model_version implements templatable, renderable {
         // Add info about the model version.
         $data['description'] = $this->get_description($output);
         $data['evidence'] = $this->get_evidence_items($output);
+
+        $interrupted = true;
+        // If the version creation is finished, scheduled to be running or running, it's not interrupted.
+        $finished = isset($this->version->timecreationfinished) && (int) $this->version->timecreationfinished > 0;
+        if ($finished || version_create::is_active($this->version->id)) {
+            $interrupted = false;
+        }
+
+        $data['model_version_interrupted'] = $interrupted;
         $data['hasevidence'] = count($data['evidence']) > 0;
 
         return $data;

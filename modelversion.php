@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $versionid = model_version::create_scaffold_and_get_for_config($configid);
 
         if ($auto) {
-            // For the automatic creation, directly set the versionid and redirect to the same page.
+            // For the automatic creation, directly set the versionid and redirect to the plugin page.
             trigger_adhoc_model_version_creation($versionid);
             redirect(new moodle_url($priorpath, null, 'version'.$versionid));
         } else {

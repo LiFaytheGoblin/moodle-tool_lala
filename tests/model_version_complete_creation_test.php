@@ -152,7 +152,7 @@ class model_version_complete_creation_test extends advanced_testcase {
         $this->assertTrue(isset($predictionsdataset));
 
         // Get related data.
-        $this->version->gather_related_data($anonymous);
+        $this->version->gather_related_data();
         $evidencetype = $anonymous ? 'related_data_anonymized' : 'related_data';
         $relateddatasets = $this->version->get_array_of_evidences($evidencetype);
         $this->assertEquals(5, count($relateddatasets));
@@ -260,10 +260,10 @@ class model_version_complete_creation_test extends advanced_testcase {
     /**
      * Check that a model version can be completed automatically after data gathering was done.
      *
+     * @dataProvider tool_lala_model_creation_parameters_provider
      * @covers ::tool_lala_model_version
      */
-    public function test_model_version_complete_creation_resume_after_data_gathering(): void {
-        $anonymous = false;
+    public function test_model_version_complete_creation_resume_after_data_gathering(bool $anonymous): void {
         // Generate test data.
         test_course_with_students::create($this->getDataGenerator());
 
@@ -271,7 +271,8 @@ class model_version_complete_creation_test extends advanced_testcase {
         $this->version->gather_dataset($anonymous);
 
         // No training and test data, model and predictions yet.
-        $hasdataset = $this->version->has_evidence('dataset');
+        $datasettype = $anonymous ? 'dataset_anonymized' : 'dataset';
+        $hasdataset = $this->version->has_evidence($datasettype);
         $this->assertTrue($hasdataset);
         $hastestdataset = $this->version->has_evidence('test_dataset');
         $this->assertFalse($hastestdataset);
@@ -306,10 +307,10 @@ class model_version_complete_creation_test extends advanced_testcase {
     /**
      * Check that a model version can be completed automatically after training data was split.
      *
+     * @dataProvider tool_lala_model_creation_parameters_provider
      * @covers ::tool_lala_model_version
      */
-    public function test_model_version_complete_creation_resume_after_data_split(): void {
-        $anonymous = false;
+    public function test_model_version_complete_creation_resume_after_data_split(bool $anonymous): void {
         // Generate test data.
         test_course_with_students::create($this->getDataGenerator());
 
@@ -343,10 +344,10 @@ class model_version_complete_creation_test extends advanced_testcase {
     /**
      * Check that a model version can be completed automatically after model was trained.
      *
+     * @dataProvider tool_lala_model_creation_parameters_provider
      * @covers ::tool_lala_model_version
      */
-    public function test_model_version_complete_creation_resume_after_training(): void {
-        $anonymous = false;
+    public function test_model_version_complete_creation_resume_after_training($anonymous): void {
         // Generate test data.
         test_course_with_students::create($this->getDataGenerator());
 

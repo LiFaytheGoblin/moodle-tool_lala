@@ -247,7 +247,7 @@ class model_version {
             $version->predict();
 
             if (empty($dataset)) { // Only if gathering data on site can we find related data.
-                $version->gather_related_data($anonymous);
+                $version->gather_related_data();
             }
         } catch (Exception $e) {
             $version->register_error($e);
@@ -427,15 +427,14 @@ class model_version {
     /**
      * Call next step: Gather the related data.
      *
-     * @param bool $anonymous whether to anonymize the related data
      * @throws Exception
      */
-    public function gather_related_data(bool $anonymous = true): void {
+    public function gather_related_data(): void {
         $origintablename = $this->analyser->get_samples_origin(); // The main tables to which related data should be gathered.
 
-        if ($anonymous) {
+        if ($this->evidence_in_cache('dataset_anonymized')) {
             $this->gather_related_data_anonymized($origintablename);
-        } else {
+        } else if ($this->has_evidence('dataset')) {
             $this->gather_related_data_unanonymized($origintablename);
         }
     }
@@ -447,9 +446,11 @@ class model_version {
      * @throws Exception
      */
     public function gather_related_data_anonymized(string $origintablename) : void {
-        if (!isset($this->evidence['dataset_anonymized'])) { // Only data from the cache can be used, so don't check the DB.
-            throw new LogicException('No data available for which to get related data. Have you gathered data?');
+        $evidencetype = 'related_data_anonymized';
+        if ($this->has_evidence($evidencetype)) {
+            return;
         }
+
         if (!isset($this->idmaps)) {
             throw new LogicException('No idmaps available.');
         }
@@ -467,7 +468,7 @@ class model_version {
             $options['tablename'] = $relatedtablename;
             $options['ids'] = $relevantids;
 
-            $evidence = $this->add('related_data_anonymized', $options);
+            $evidence = $this->add($evidencetype, $options);
 
             $evidences[] = $evidence; // Store the evidence for anonymizing it later.
 
@@ -481,7 +482,7 @@ class model_version {
         // Anonymize the related data. We need ALL idmaps for that.
         foreach ($evidences as $evidence) {
             $pseudonomizeddata = $evidence->pseudonomize($evidence->get_raw_data(), $this->idmaps, $evidence->get_tablename());
-            $this->evidence['related_data_anonymized'][$evidence->get_id()] = $pseudonomizeddata;
+            $this->evidence[$evidencetype][$evidence->get_id()] = $pseudonomizeddata;
             $evidence->store(); // Only now can we store the data.
         }
     }
@@ -492,9 +493,11 @@ class model_version {
      * @param string $origintablename
      */
     public function gather_related_data_unanonymized(string $origintablename) : void {
-        if (!$this->has_evidence('dataset')) {
-            throw new LogicException('No data available for which to get related data. Have you gathered data?');
+        $evidencetype = 'related_data';
+        if ($this->has_evidence($evidencetype)) {
+            return;
         }
+
         $data = $this->get_single_evidence('dataset');
         $originids = dataset_helper::get_ids_used_in_dataset($data);
 
@@ -504,7 +507,7 @@ class model_version {
         foreach ($relatedtables as $relatedtablename => $relevantids) {
             $options['tablename'] = $relatedtablename;
             $options['ids'] = $relevantids;
-            $evidence = $this->add('related_data', $options);
+            $evidence = $this->add($evidencetype, $options);
             $evidence->store();
         }
     }

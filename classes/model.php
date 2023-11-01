@@ -42,7 +42,8 @@ class model extends evidence {
      * @param array $options = [$data, $predictor]
      */
     public function collect(array $options): void {
-        $this->validate($options);
+        $this->validate_collect_options($options);
+        $this->fail_if_attempting_to_overwrite();
 
         // Get only samples and targets.
         $datawithoutheader = dataset_helper::get_rows($options['data']);
@@ -66,7 +67,7 @@ class model extends evidence {
     /** Validate the options.
      * @param array $options
      */
-    public function validate(array $options): void {
+    public function validate_collect_options(array $options): void {
         if (!isset($options['predictor'])) {
             throw new InvalidArgumentException('Options array is missing predictor.');
         }
@@ -75,9 +76,6 @@ class model extends evidence {
         }
         if (count($options['data']) == 0) {
             throw new DomainException('Training dataset can not be empty.');
-        }
-        if (isset($this->data)) {
-            throw new LogicException('Model has already been trained and can not be changed.');
         }
     }
 
@@ -99,9 +97,14 @@ class model extends evidence {
     }
 
     /**
+     * @param array $options
      * @return void
      */
-    public function restore_raw_data(): void {
+    public function restore_raw_data(array $options): void {
         // TODO: Implement restore_raw_data() method.
+    }
+
+    public function validate_restore_options(array $options): void {
+        // TODO: Implement validate_restore_options() method.
     }
 }

@@ -47,7 +47,7 @@ abstract class evidence {
     /** @var int|null $timecollectionfinished of the evidence. */
     private ?int $timecollectionfinished;
     /** @var string|null $serializedfilelocation path of the evidence. */
-    private ?string $serializedfilelocation;
+    protected ?string $serializedfilelocation;
 
     /**
      * Constructor. Deserialize DB object.
@@ -103,12 +103,21 @@ abstract class evidence {
     abstract public function collect(array $options): void;
 
     /**
-     * Validates the $options array.
+     * Validates the $options array passed to collect.
      *
      * @param array $options depending on the implementation
      */
-    abstract public function validate(array $options): void;
+    abstract public function validate_collect_options(array $options): void;
 
+    /**
+     * Throw an error if data already exists. Can be used in collect()
+     * to prevent overwriting of data after it has already been collected.
+     */
+    public function fail_if_attempting_to_overwrite(): void {
+        if (isset($this->data)) {
+            throw new LogicException('Evidence' . $this->name . 'has already been collected and can not be changed.');
+        }
+    }
     /**
      * Stores a serialized data string in a file. Sets the serializedfilelocation property of the class.
      */
@@ -239,8 +248,17 @@ abstract class evidence {
 
     /**
      * Restore the raw data from a serialized file for bypassing the collection process of the evidence item.
+     *
+     * @param array $options
      */
-    public abstract function restore_raw_data(): void;
+    public abstract function restore_raw_data(array $options): void;
+
+    /**
+     * Validates the $options array passed to restore_raw_data.
+     *
+     * @param array $options
+     */
+    public abstract function validate_restore_options(array $options): void;
 
     /**
      * Returns the serialized data of the evidence.

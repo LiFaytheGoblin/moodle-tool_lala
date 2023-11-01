@@ -535,7 +535,7 @@ class model_version {
             // Restore the evidence with this id.
             $class = '\tool_lala\\'.$evidencetype;
             $evidence = new $class($evidenceid);
-            $evidence->restore_raw_data();
+            $evidence->restore_raw_data(['analysisintervalkey' => $this->analysisinterval]);
 
             return $evidence->get_raw_data(); // Return the evidence data.
         }

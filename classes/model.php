@@ -101,10 +101,9 @@ class model extends evidence {
      * @return void
      */
     public function restore_raw_data(array $options): void {
-        // TODO: Implement restore_raw_data() method.
+        $file = $this->get_file();
+        $this->data = unserialize($file->get_content());
     }
 
-    public function validate_restore_options(array $options): void {
-        // TODO: Implement validate_restore_options() method.
-    }
+    public function validate_restore_options(array $options): void {}
 }

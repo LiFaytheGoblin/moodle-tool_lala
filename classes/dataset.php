@@ -105,24 +105,7 @@ class dataset extends evidence {
      * Store the serialization string in the filestring field.
      */
     public function serialize(): void {
-        $str = '';
-        $columns = null;
-
-        foreach ($this->data as $results) {
-            $ids = array_keys($results);
-            foreach ($ids as $id) {
-                if ($id == '0') {
-                    $columns = implode(',', $results[$id]);
-                    continue;
-                }
-                $indicatorvaluesstr = implode(',', $results[$id]);
-                $str = $str.$id.','.$indicatorvaluesstr."\n";
-            }
-        }
-
-        $comma = (isset($columns)) ? ',' : null;
-        $heading = 'sampleid'.$comma.$columns."\n";
-        $this->filestring = $heading.$str;
+        $this->filestring = dataset_helper::serialize($this->data);;
     }
 
     /**
@@ -140,20 +123,7 @@ class dataset extends evidence {
      */
     public function restore_raw_data(array $options): void {
         $this->validate_restore_options($options);
-        if (!$this->serializedfilelocation) {
-            throw new LogicException('No serialized file available to restore data from.');
-        }
-
-        $fs = get_file_storage();
-        $fileinfo = $this->get_file_info();
-        $file = $fs->get_file(
-                $fileinfo['contextid'],
-                $fileinfo['component'],
-                $fileinfo['filearea'],
-                $fileinfo['itemid'],
-                $fileinfo['filepath'],
-                $fileinfo['filename']
-        );
+        $file = $this->get_file();
         $filehandle = $file->get_content_file_handle();
         $this->data = dataset_helper::build_from_csv($filehandle, $options['analysisintervalkey']);
     }

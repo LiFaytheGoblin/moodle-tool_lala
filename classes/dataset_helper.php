@@ -361,4 +361,24 @@ class dataset_helper {
             throw new InvalidArgumentException('Header needs to contain a target column but does not: '.$headerstring);
         }
     }
+
+    public static function serialize(array $dataset) : string {
+        $str = '';
+        $columns = null;
+
+        foreach ($dataset as $record) {
+            $ids = array_keys($record);
+            foreach ($ids as $id) {
+                if ($id == '0') {
+                    $columns = implode(',', $record[$id]);
+                    continue;
+                }
+                $str = $str . $id . ',' . implode(',', $record[$id]) . "\n";
+            }
+        }
+
+        $comma = (isset($columns)) ? ',' : null;
+        $heading = 'sampleid' . $comma . $columns . "\n";
+        return $heading.$str;
+    }
 }

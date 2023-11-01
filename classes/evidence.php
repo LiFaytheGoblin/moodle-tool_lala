@@ -260,6 +260,24 @@ abstract class evidence {
      */
     public abstract function validate_restore_options(array $options): void;
 
+
+    public function get_file() {
+        if (!$this->serializedfilelocation) {
+            throw new LogicException('No serialized file available to restore data from.');
+        }
+
+        $fs = get_file_storage();
+        $fileinfo = $this->get_file_info();
+        $file = $fs->get_file(
+                $fileinfo['contextid'],
+                $fileinfo['component'],
+                $fileinfo['filearea'],
+                $fileinfo['itemid'],
+                $fileinfo['filepath'],
+                $fileinfo['filename']
+        );
+        return $file;
+    }
     /**
      * Returns the serialized data of the evidence.
      * Useful for testing.

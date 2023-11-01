@@ -79,4 +79,26 @@ class related_data_helper {
         $originalids = self::get_ids_used_in_related_data($relateddata);
         return idmap::create_from_ids($originalids);
     }
+
+    /**
+     * Serialize a related data nested array to a string.
+     *
+     * @param array $relateddata
+     * @return string
+     */
+    public static function serialize(array $relateddata): string {
+        $str = '';
+        $columns = null;
+
+        foreach ($relateddata as $record) {
+            $arr = (array) $record;
+            if (!isset($columns)) {
+                $columns = implode(',', array_keys($arr));
+            }
+            $str = $str . implode(',', $arr) . "\n";
+        }
+
+        $heading = $columns."\n";
+        return $heading.$str;
+    }
 }

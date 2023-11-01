@@ -188,7 +188,7 @@ class dataset_helper {
     public static function merge(array $dataseta, array $datasetb) : array {
         if (count($dataseta) < 1) return $datasetb;
         if (count($datasetb) < 1) return $dataseta;
-        
+
         $analysisintervalkeya = self::get_analysisintervalkey($dataseta);
         $analysisintervalkeyb = self::get_analysisintervalkey($datasetb);
         if ($analysisintervalkeya == $analysisintervalkeyb) {

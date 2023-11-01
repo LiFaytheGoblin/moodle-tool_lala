@@ -222,10 +222,11 @@ class model_version {
      * @param int $versionid
      * @param array|null $contexts
      * @param string|null $dataset
+     * @param boolean|null $anonymous
      * @return model_version
      * @throws Exception
      */
-    public static function create(int $versionid, ?array $contexts = null, ?string $dataset = null): model_version {
+    public static function create(int $versionid, ?array $contexts = null, ?string $dataset = null, ?bool $anonymous = true): model_version {
         $version = new model_version($versionid);
 
         try {
@@ -236,7 +237,7 @@ class model_version {
             if (!empty($dataset)) { // If a dataset is provided, use that one.
                 $version->set_dataset($dataset);
             } else { // Otherwise, gather data.
-                $version->gather_dataset();
+                $version->gather_dataset($anonymous);
             }
 
             $version->split_training_test_data();
@@ -246,7 +247,7 @@ class model_version {
             $version->predict();
 
             if (empty($dataset)) { // Only if gathering data on site can we find related data.
-                $version->gather_related_data();
+                $version->gather_related_data($anonymous);
             }
         } catch (Exception $e) {
             $version->register_error($e);

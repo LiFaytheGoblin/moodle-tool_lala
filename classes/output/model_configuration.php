@@ -57,8 +57,8 @@ class model_configuration implements templatable, renderable {
         $data = [];
 
         // Add info about the model configuration.
-        $data['id'] = $this->modelconfig->id;
-        $data['name'] = $this->get_name();
+        $data['configid'] = $this->modelconfig->id;
+        $data['configname'] = $this->get_name();
 
         // Add description.
         $description = [];

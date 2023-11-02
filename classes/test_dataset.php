@@ -39,7 +39,8 @@ class test_dataset extends dataset {
      * @param array $options = [$data, $testsize]
      */
     public function collect(array $options): void {
-        $this->validate($options);
+        $this->validate_collect_options($options);
+        $this->fail_if_attempting_to_overwrite();
 
         $datawithoutheader = dataset_helper::get_rows($options['data']);
 
@@ -61,7 +62,7 @@ class test_dataset extends dataset {
      *
      * @param array $options
      */
-    public function validate(array $options): void {
+    public function validate_collect_options(array $options): void {
         if (!isset($options['data'])) {
             throw new InvalidArgumentException('Missing dataset that can be split.');
         }
@@ -73,9 +74,6 @@ class test_dataset extends dataset {
         }
         if ($options['testsize'] <= 0 || $options['testsize'] >= 1) {
             throw new InvalidArgumentException('Testsize must be a float between 0 and 1.');
-        }
-        if (isset($this->data) && count($this->data) > 0) {
-            throw new LogicException('Data has already been collected and can not be changed.');
         }
     }
 }

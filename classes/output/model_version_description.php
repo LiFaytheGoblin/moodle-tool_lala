@@ -54,13 +54,13 @@ class model_version_description implements templatable, renderable {
         $data = [];
 
         // Add info about the model version.
-        $data['id'] = $this->version->id;
+        $data['versionid'] = $this->version->id;
 
-        $data['name'] = $this->version->name;
+        $data['versionname'] = $this->version->name;
 
         $data['timecreationstarted'] = userdate((int) $this->version->timecreationstarted);
 
-        $finished = (int) $this->version->timecreationfinished > 0;
+        $finished = isset($this->version->timecreationfinished) && (int) $this->version->timecreationfinished > 0;
         $data['timecreationfinishedicon'] = $finished ? 'end' : 'half';
         $data['timecreationfinished'] = $finished ?
                 userdate((int) $this->version->timecreationfinished) : get_string('unfinished', 'tool_lala');

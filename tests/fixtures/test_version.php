@@ -77,6 +77,18 @@ class test_version {
     }
 
     /**
+     * Return whether an error has been registered for the version.
+     *
+     * @param int $versionid
+     * @return string|null
+     */
+    public static function geterror(int $versionid) : string|null {
+        global $DB;
+        $error = $DB->get_fieldset_select('tool_lala_model_versions', 'error', 'id='.$versionid)[0];
+        return $error;
+    }
+
+    /**
      * Get a predictor for this version.
      *
      * @return predictor predictor

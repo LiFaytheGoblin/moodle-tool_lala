@@ -362,6 +362,8 @@ class model_version {
         } catch (moodle_exception | Exception $e) {
             $this->register_error($e);
             throw $e;
+        } finally {
+            $this->set_contextids(['Using own dataset ' . $file->get_filename() . '.']);
         }
 
         $evidence->store();

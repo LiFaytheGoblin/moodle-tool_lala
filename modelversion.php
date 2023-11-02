@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $versionid = model_version::create_scaffold_and_get_for_config($configid);
     }
     if ($manual) {
-        render_page($versionid, $configid, $contexts, $dataset);
+        render_page($versionid, $configid);
     } else {
         // Now we have a version scaffold and possibly some creation parameters,
         // and need to create the version according to the set parameters.
@@ -80,10 +80,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
  *
  * @param int $versionid
  * @param array|null $contexts
- * @param string|null $dataset
+ * @param mixed $dataset
  * @return void
  */
-function trigger_adhoc_model_version_creation(int $versionid, ?array $contexts = null, ?string $dataset = null): void {
+function trigger_adhoc_model_version_creation(int $versionid, ?array $contexts = null, mixed $dataset = null): void {
     global $USER;
     $asynctask = version_create::instance($versionid, $contexts, $dataset);
     $asynctask->set_userid($USER->id);
@@ -97,7 +97,7 @@ function trigger_adhoc_model_version_creation(int $versionid, ?array $contexts =
  * @param int $configid
  * @throws Exception
  */
-function render_page(int $versionid, int $configid, ?array $contexts = null, ?array $dataset = null): void {
+function render_page(int $versionid, int $configid): void {
     $version = new model_version($versionid);
 
     // Create form to select contexts.

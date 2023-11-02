@@ -80,10 +80,6 @@ class select_context extends moodleform {
             throw new LogicException('The id of the model configuration needs to be passed to the form as \'configid\'');
         }
 
-        if (!isset($this->_customdata['contexts'])) {
-            throw new LogicException('The contexts of the model version need to be passed to the form as \'contexts\'');
-        }
-
         return $errors;
     }
 

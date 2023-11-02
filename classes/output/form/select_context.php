@@ -56,8 +56,9 @@ class select_context extends moodleform {
         $mform->addElement('hidden', 'versionid', $this->_customdata['versionid']);
         $mform->setType('versionid', PARAM_INT);
 
-        $mform->addElement('hidden', 'action', 'edit');
-        $mform->setType('action', PARAM_ALPHANUMEXT);
+        // For now, after setting a context, always continue with the automatic version creation.
+        $mform->addElement('hidden', 'manual', false);
+        $mform->setType('manual', PARAM_ALPHANUMEXT);
 
         $this->add_action_buttons(false, get_string('saveselection', 'tool_lala'));
     }

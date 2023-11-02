@@ -57,7 +57,7 @@ class test_evidence extends evidence {
      * @param array $options = []
      */
     public function collect(array $options): void {
-        $this->validate($options);
+        $this->validate_collect_options($options);
         $this->data = self::RAWDATA;
     }
 
@@ -80,7 +80,11 @@ class test_evidence extends evidence {
     /** Validate the $options -
      * @param array $options
      */
-    public function validate(array $options): void {
+    public function validate_collect_options(array $options): void {
         if (isset($this->data)) throw new Exception('Already collected.');
+    }
+
+    public function restore_raw_data(): void {
+        // TODO: Implement restore_raw_data() method.
     }
 }

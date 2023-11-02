@@ -42,7 +42,8 @@ class related_data extends dataset {
      * @param array $options = [string $tablename, array $ids]
      */
     public function collect(array $options): void {
-        $this->validate($options);
+        $this->validate_collect_options($options);
+        $this->fail_if_attempting_to_overwrite();
 
         $this->tablename = $options['tablename'];
 
@@ -60,15 +61,12 @@ class related_data extends dataset {
      *
      * @param array $options
      */
-    public function validate(array $options) : void {
+    public function validate_collect_options(array $options) : void {
         if (!isset($options['tablename'])) {
             throw new InvalidArgumentException('Options is missing the name of the related table.');
         }
         if (!isset($options['ids'])) {
             throw new InvalidArgumentException('Options is missing the ids the data should be related to.');
-        }
-        if (isset($this->data) && count($this->data) > 0) {
-            throw new LogicException('Data has already been collected and can not be changed.');
         }
     }
 
@@ -77,19 +75,7 @@ class related_data extends dataset {
      * Store the serialization string in the filestring field.
      */
     public function serialize(): void {
-        $str = '';
-        $columns = null;
-
-        foreach ($this->data as $record) {
-            $arr = (array) $record;
-            if (!isset($columns)) {
-                $columns = implode(',', array_keys($arr))."\n";
-            }
-            $str = $str . implode(',', $arr) . "\n";
-        }
-
-        $heading = $columns;
-        $this->filestring = $heading.$str;
+        $this->filestring = related_data_helper::serialize($this->data);
     }
 
     /**

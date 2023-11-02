@@ -216,15 +216,17 @@ class model_version {
     }
 
     /**
-     * Execute the model version creation process with parameters.
+     * Execute the model version creation process with parameters. A new model
+     * version object is created, and the cache from a prior model version is lost.
      *
      * @param int $versionid
      * @param array|null $contexts
      * @param string|null $dataset
+     * @param boolean|null $anonymous
      * @return model_version
      * @throws Exception
      */
-    public static function create(int $versionid, ?array $contexts = null, ?string $dataset = null): model_version {
+    public static function create(int $versionid, ?array $contexts = null, ?string $dataset = null, ?bool $anonymous = true): model_version {
         $version = new model_version($versionid);
 
         try {
@@ -235,11 +237,13 @@ class model_version {
             if (!empty($dataset)) { // If a dataset is provided, use that one.
                 $version->set_dataset($dataset);
             } else { // Otherwise, gather data.
-                $version->gather_dataset();
+                $version->gather_dataset($anonymous);
             }
 
             $version->split_training_test_data();
+
             $version->train();
+
             $version->predict();
 
             if (empty($dataset)) { // Only if gathering data on site can we find related data.
@@ -263,6 +267,7 @@ class model_version {
 
         // Add info about the model version.
         $obj->id = $this->id;
+        $obj->configid = $this->configid;
         $obj->name = $this->name;
         $obj->timecreationstarted = $this->timecreationstarted;
         $obj->timecreationfinished = $this->timecreationfinished;
@@ -284,6 +289,12 @@ class model_version {
         $options = ['modelid' => $this->modelid, 'analyser' => $this->analyser, 'contexts' => $this->contexts];
 
         $evidencetype = $anonymous ? 'dataset_anonymized' : 'dataset';
+
+        // If this evidence already exists, skip it.
+        // Retrieve data in later step if necessary.
+        if ($this->has_evidence($evidencetype)) {
+            return;
+        }
 
         $evidence = $this->add($evidencetype, $options);
 
@@ -321,7 +332,8 @@ class model_version {
         $file = reset($files);
 
         $evidencetype = 'dataset';
-        if (isset($this->evidence[$evidencetype]) && count($this->evidence[$evidencetype]) > 0) {
+        if ((isset($this->evidence[$evidencetype]) && count($this->evidence[$evidencetype]) > 0)
+                || $this->has_evidence($evidencetype)) {
             throw new LogicException('Can not set a dataset. Dataset evidence has already been collected for this version.');
         }
 
@@ -350,6 +362,8 @@ class model_version {
         } catch (moodle_exception | Exception $e) {
             $this->register_error($e);
             throw $e;
+        } finally {
+            $this->set_contextids(['Using own dataset ' . $file->get_filename() . '.']);
         }
 
         $evidence->store();
@@ -416,20 +430,14 @@ class model_version {
     /**
      * Call next step: Gather the related data.
      *
-     * @param bool $anonymous whether to anonymize the related data
      * @throws Exception
      */
-    public function gather_related_data(bool $anonymous = true): void {
-        $source = $anonymous ? 'dataset_anonymized' : 'dataset';
-        if (!isset($this->evidence[$source])) {
-            throw new LogicException('No data available for which to get related data. Have you gathered data?');
-        }
-
+    public function gather_related_data(): void {
         $origintablename = $this->analyser->get_samples_origin(); // The main tables to which related data should be gathered.
 
-        if ($anonymous) {
+        if ($this->evidence_in_cache('dataset_anonymized')) {
             $this->gather_related_data_anonymized($origintablename);
-        } else {
+        } else if ($this->has_evidence('dataset')) {
             $this->gather_related_data_unanonymized($origintablename);
         }
     }
@@ -441,6 +449,11 @@ class model_version {
      * @throws Exception
      */
     public function gather_related_data_anonymized(string $origintablename) : void {
+        $evidencetype = 'related_data_anonymized';
+        if ($this->has_evidence($evidencetype)) {
+            return;
+        }
+
         if (!isset($this->idmaps)) {
             throw new LogicException('No idmaps available.');
         }
@@ -458,7 +471,7 @@ class model_version {
             $options['tablename'] = $relatedtablename;
             $options['ids'] = $relevantids;
 
-            $evidence = $this->add('related_data_anonymized', $options);
+            $evidence = $this->add($evidencetype, $options);
 
             $evidences[] = $evidence; // Store the evidence for anonymizing it later.
 
@@ -472,7 +485,7 @@ class model_version {
         // Anonymize the related data. We need ALL idmaps for that.
         foreach ($evidences as $evidence) {
             $pseudonomizeddata = $evidence->pseudonomize($evidence->get_raw_data(), $this->idmaps, $evidence->get_tablename());
-            $this->evidence['related_data_anonymized'][$evidence->get_id()] = $pseudonomizeddata;
+            $this->evidence[$evidencetype][$evidence->get_id()] = $pseudonomizeddata;
             $evidence->store(); // Only now can we store the data.
         }
     }
@@ -483,6 +496,11 @@ class model_version {
      * @param string $origintablename
      */
     public function gather_related_data_unanonymized(string $origintablename) : void {
+        $evidencetype = 'related_data';
+        if ($this->has_evidence($evidencetype)) {
+            return;
+        }
+
         $data = $this->get_single_evidence('dataset');
         $originids = dataset_helper::get_ids_used_in_dataset($data);
 
@@ -492,7 +510,7 @@ class model_version {
         foreach ($relatedtables as $relatedtablename => $relevantids) {
             $options['tablename'] = $relatedtablename;
             $options['ids'] = $relevantids;
-            $evidence = $this->add('related_data', $options);
+            $evidence = $this->add($evidencetype, $options);
             $evidence->store();
         }
     }
@@ -504,45 +522,109 @@ class model_version {
      * @return array|Phpml\Classification\Linear\LogisticRegression|null the evidence raw data
      */
     public function get_single_evidence(string $evidencetype): mixed {
-        if (!isset($this->evidence[$evidencetype])) {
-            return null;
+        // Try to retrieve the data from the cache.
+        if ($this->evidence_in_cache($evidencetype)) {
+            $allevidence = array_values($this->evidence[$evidencetype]);
+            return reset($allevidence);
         }
-        $allevidence = array_values($this->evidence[$evidencetype]);
-        return reset($allevidence);
+        // Try to retrieve the data from the server.
+        if ($this->evidence_in_db($evidencetype)) {
+            // Find the id of the evidence.
+            global $DB;
+            $evidencerecords = $DB->get_records('tool_lala_evidence', ['versionid' => $this->id, 'name' => $evidencetype]);
+            if (!isset($evidencerecords) || count($evidencerecords) < 1) {
+                throw new LogicException('Evidence ' . $evidencetype . ' should be in DB but is not');
+            }
+            $firstevidence = reset($evidencerecords);
+            $evidenceid = $firstevidence->id;
+
+            // Restore the evidence with this id.
+            $class = '\tool_lala\\'.$evidencetype;
+            $evidence = new $class($evidenceid);
+            $evidence->restore_raw_data(['analysisintervalkey' => $this->analysisinterval]);
+
+            return $evidence->get_raw_data(); // Return the evidence data.
+        }
+        return null; // No data available!
     }
 
     /**
      * Call next step: Split the data into training and testing data.
      */
     public function split_training_test_data(): void {
-        if (isset($this->evidence['dataset_anonymized'])) {
-            $data = $this->get_single_evidence('dataset_anonymized');
-        } else if (isset($this->evidence['dataset'])) {
-            $data = $this->get_single_evidence('dataset');
-        } else {
-            throw new LogicException('No data available to split into training and testing data. Have you gathered data?');
+        $existingtrainingdataset = $this->get_single_evidence('training_dataset');
+        $existingtestdataset = $this->get_single_evidence('test_dataset');
+        if (isset($existingtrainingdataset) && isset($existingtestdataset)) {
+            return; // The evidence has already been gathered completely - return.
         }
 
-        $datashuffled = dataset_helper::get_shuffled($data);
-
+        // Get shuffled data to use for splitting.
+        $datashuffled = $this->get_shuffled_data($existingtrainingdataset, $existingtestdataset);
+        if (count($datashuffled) == 0) {
+            throw new LogicException('No data available to split into training and testing data. Have you gathered data?');
+        }
         $options = ['data' => $datashuffled, 'testsize' => $this->relativetestsetsize];
 
-        $trainingevidence = $this->add('training_dataset', $options);
-        $trainingevidence->store();
+        if (!$existingtrainingdataset) {
+            $trainingevidence = $this->add('training_dataset', $options);
+            $trainingevidence->store();
+        }
+        if (!$existingtestdataset) {
+            $testevidence = $this->add('test_dataset', $options);
+            $testevidence->store();
+        }
+    }
 
-        $testevidence = $this->add('test_dataset', $options);
-        $testevidence->store();
+    /**
+     * Get the dataset evidence but shuffled. Also restore the shuffled dataset if possible.
+     *
+     * @param array|false $existingtrainingdataset
+     * @param array|false $existingtestdataset
+     * @return array
+     */
+    public function get_shuffled_data(mixed $existingtrainingdataset, mixed $existingtestdataset): array {
+        if ($this->has_evidence('dataset_anonymized')) { // The dataset exists and is already shuffled.
+            return $this->get_single_evidence('dataset_anonymized');
+        }
+
+        if ($this->has_evidence('dataset')) { // The dataset exists but is not shuffled yet.
+            $data = $this->get_single_evidence('dataset');
+
+            // If a training dataset exists already, we can not simply shuffle the dataset again.
+            // This would lead to some wrong samples ending up in the test dataset.
+            // Therefore, we need to reconstruct the shuffled dataset.
+            // We know that the first part of the shuffled dataset is the training dataset.
+            // So the second part needs to be the remaining data, but shuffled.
+            if ($existingtrainingdataset !== false && !$existingtestdataset) {
+                $trainingdata = $this->get_single_evidence('training_dataset'); // First part of reconstructed data.
+                if (!isset($trainingdata)) $trainingdata = [];
+                $remainingdata = dataset_helper::diff($data, $trainingdata); // Second part of reconstructed data.
+                $remainingdatashuffled = dataset_helper::get_shuffled($remainingdata);
+                return dataset_helper::merge($trainingdata, $remainingdatashuffled);
+            } else {
+                return dataset_helper::get_shuffled($data);
+            }
+        }
+
+        return [];
     }
 
     /**
      * Call next step: Train a model.
      */
     public function train(): void {
-        if (!isset($this->evidence['training_dataset'])) {
+        // Check if the evidence has already been gathered.
+        $evidencetype = 'model';
+        if ($this->has_evidence($evidencetype)) {
+            return;
+        }
+
+        $trainingdataset = $this->get_single_evidence('training_dataset');
+        if (!isset($trainingdataset)) {
             throw new LogicException('No training data is available for training. Have you gathered data and split it into
             training and testing data?');
         }
-        $options = ['data' => $this->get_single_evidence('training_dataset'), 'predictor' => $this->predictor];
+        $options = ['data' => $trainingdataset, 'predictor' => $this->predictor];
 
         $evidence = $this->add('model', $options);
         $evidence->store();
@@ -552,18 +634,23 @@ class model_version {
      * Call next step: Request predictions from a trained model.
      */
     public function predict(): void {
-        if (!isset($this->evidence['test_dataset'])) {
-            throw new LogicException('No test data is available for getting predictions. Have you gathered data and split
-            it into training and testing data?');
+        $evidencetype = 'predictions_dataset';
+        if ($this->has_evidence($evidencetype)) {
+            return;
         }
-        if (!isset($this->evidence['model'])) {
+
+        $model = $this->get_single_evidence('model');
+        if (!isset($model)) {
             throw new LogicException('No model is available for getting predictions. Have
             you trained a model?');
         }
+        $testdataset = $this->get_single_evidence('test_dataset');
+        if (!isset($testdataset)) {
+            throw new LogicException('No dataset is available for testing. Have you created a training/test split?');
+        }
+        $options = ['model' => $model, 'data' => $testdataset];
 
-        $options = ['model' => $this->get_single_evidence('model'), 'data' => $this->get_single_evidence('test_dataset')];
-
-        $evidence = $this->add('predictions_dataset', $options);
+        $evidence = $this->add($evidencetype, $options);
         $evidence->store();
     }
 
@@ -593,7 +680,43 @@ class model_version {
     }
 
     /**
-     * Get all evidence items of a type.
+     * Check if evidence of said type already exists in db.
+     *
+     * @param string $evidencetype
+     * @return bool
+     */
+    public function evidence_in_db(string $evidencetype): bool {
+        global $DB;
+        $evidence = $DB->get_records('tool_lala_evidence', ['versionid' => $this->id, 'name' => $evidencetype], '', 'id');
+        if (count($evidence) < 1) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * Check if evidence of said type already exists in cache.
+     *
+     * @param string $evidencetype
+     * @return bool
+     */
+    public function evidence_in_cache(string $evidencetype): bool {
+        return isset($this->evidence[$evidencetype]) && count($this->evidence[$evidencetype]) > 0;
+    }
+
+    /**
+     * Check if evidence of said type already exists in cache or db.
+     *
+     * @param string $evidencetype
+     * @return bool
+     */
+    public function has_evidence(string $evidencetype): bool {
+        return $this->evidence_in_cache($evidencetype) || $this->evidence_in_db($evidencetype);
+    }
+
+    /**
+     * Get all evidence items of a type. Useful for testing.
      *
      * @param string $evidencetype a valid name of an evidence inheriting class
      * @return array[]|Phpml\Classification\Linear\LogisticRegression[] the evidence raw data

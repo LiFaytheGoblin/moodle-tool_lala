@@ -57,4 +57,20 @@ class version_create extends adhoc_task {
         model_version::create($data->versionid, $data->contexts, $data->dataset);
         mtrace('Finished version ' . $data->versionid . '.');
     }
+
+    /*
+     * Check whether the version creation task is active for a specific version.
+     */
+    public static function is_active($versionid) {
+        global $DB;
+        $records = $DB->get_records('task_adhoc', ['classname' => '\\'. self::class], '', 'customdata');
+        foreach ($records as $record) {
+            $customdata = json_decode($record->customdata, false);
+            if (isset($customdata->versionid) && (int) $customdata->versionid === $versionid) {
+                // If it is still running or scheduled to be started, it's active.
+                return true;
+            }
+        }
+        return false;
+    }
 }

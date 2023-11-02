@@ -267,6 +267,7 @@ class model_version {
 
         // Add info about the model version.
         $obj->id = $this->id;
+        $obj->configid = $this->configid;
         $obj->name = $this->name;
         $obj->timecreationstarted = $this->timecreationstarted;
         $obj->timecreationfinished = $this->timecreationfinished;

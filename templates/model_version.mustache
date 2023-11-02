@@ -12,11 +12,12 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template tool_lala/evidence_set
-    Template for evidence_set.
+    @template tool_lala/model_version
+    Template for model_version.
     Context variables required for this template:
-    - id
-    - name
+    - versionid
+    - configid
+    - versionname
     - sesskey
     - description: [{}]
     - evidence: [{}]
@@ -24,12 +25,13 @@
     - hasevidence
     Example context (json):
     {
-        "id": 1,
-        "name": "default",
+        "versionid": 1,
+        "configid": 1,
+        "versionname": "default",
         "sesskey": 'somesessionkey',
         "description": [{
-            "id": 1,
-            "name": "default",
+            "versionid": 1,
+            "versionname": "default",
             "timecreationstarted": "1679987403",
             "contextids": [1, 2, 3],
             "timecreationfinished": null,
@@ -49,12 +51,12 @@
         "hasevidence": true
       }
 }}
-<section aria-label="version{{id}}">
+<section aria-label="version{{versionid}}">
     <div class="row">
         <h4 class="col-auto">
-            <span title="{{#str}}version, tool_lala{{/str}}" id="version{{id}}">{{name}}</span>
+            <span title="{{#str}}version, tool_lala{{/str}}" id="version{{versionid}}">{{versionname}}</span>
             <span class="badge rounded-pill bg-light ml-2 position-absolute start-0" title="{{#str}}versionid, tool_lala{{/str}}">
-               <i class="icon fa fa-key" aria-hidden="true"></i>{{id}}
+               <i class="icon fa fa-key" aria-hidden="true"></i>{{versionid}}
             </span>
         </h4>
         <div class="col"></div>
@@ -69,11 +71,11 @@
 
     {{#hasevidence}}
     <div class="w-100 text-dark bg-secondary rounded-bottom px-1 text-center position-relative">
-        <a class="collapse multi-collapse show multi-collapseevidence{{id}} stretched-link text-dark" data-toggle="collapse" data-target=".multi-collapseevidence{{id}}" role="button" aria-expanded="false" aria-controls="evidence{{id}} moreevidence{{id}} lessevidence{{id}}" id="moreevidence{{id}}">
+        <a class="collapse multi-collapse show multi-collapseevidence{{versionid}} stretched-link text-dark" data-toggle="collapse" data-target=".multi-collapseevidence{{versionid}}" role="button" aria-expanded="false" aria-controls="evidence{{versionid}} moreevidence{{versionid}} lessevidence{{versionid}}" id="moreevidence{{versionid}}">
             display evidence
         </a>
     </div>
-    <div class="container rounded-top mx-0 collapse multi-collapse bg-light multi-collapseevidence{{id}} pb-3 mb-n3" id="evidence{{id}}">
+    <div class="container rounded-top mx-0 collapse multi-collapse bg-light multi-collapseevidence{{versionid}} pb-3 mb-n3" id="evidence{{versionid}}">
         <ul class="row list-unstyled px-2">
             {{#evidence}}
                 {{> tool_lala/evidence_item}}
@@ -81,7 +83,7 @@
         </ul>
     </div>
     <div class="w-100 text-dark bg-secondary rounded-top px-1 text-center position-relative mb-3">
-        <a class="collapse multi-collapse hide multi-collapseevidence{{id}} stretched-link text-dark" data-toggle="collapse" data-target=".multi-collapseevidence{{id}}" role="button" aria-expanded="true" aria-controls="evidence{{id}} moreevidence{{id}} lessevidence{{id}}" id="lessevidence{{id}}">
+        <a class="collapse multi-collapse hide multi-collapseevidence{{versionid}} stretched-link text-dark" data-toggle="collapse" data-target=".multi-collapseevidence{{versionid}}" role="button" aria-expanded="true" aria-controls="evidence{{versionid}} moreevidence{{versionid}} lessevidence{{versionid}}" id="lessevidence{{versionid}}">
             hide evidence
         </a>
     </div>

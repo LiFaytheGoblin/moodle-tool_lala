@@ -69,6 +69,6 @@ class model_configurations implements templatable, renderable {
      * @return bool if a comes before b
      */
     private static function sort_nested_array_by_key_name(array $a, array $b) : bool {
-        return $a['name'] > $b['name'];
+        return $a['configname'] > $b['configname'];
     }
 }

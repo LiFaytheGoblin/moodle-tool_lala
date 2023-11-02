@@ -15,16 +15,18 @@
     @template tool_lala/model_configuration_version_creation
     Template for model configuration item.
     Context variables required for this template:
-    - id: int - model config unique identifier
-    - name: string - name of the model config
+    - configid: int - model config unique identifier
+    - versionid: int
+    - configname: string - name of the model config
     - description
     - sesskey: string
     - selectcontextform: string
     - uploaddatasetform: string
     Example context (json):
     {
-            "id": 1,
-            "name": "model4",
+            "configid": 1,
+            "versionid": 1,
+            "configname": "config1/1",
             "description": [{
                 "target": "Prevent devs at risk",
                 "modelanalysabletype": "user_enrolments",
@@ -39,10 +41,10 @@
             "uploaddatasetform": "some html"
     }
 }}
-<section class="activity activity-wrapper my-2" aria-label="config{{id}}">
+<section class="activity activity-wrapper my-2" aria-label="config{{configid}}">
     <div class="activity-item">
         <h3>
-            <span title="{{#str}}model, tool_lala{{/str}}" id="config{{id}}">{{name}}</span>
+            <span title="{{#str}}model, tool_lala{{/str}}" id="config{{configid}}">{{configname}}</span>
         </h3>
         {{#description}}
             {{> tool_lala/model_configuration_description}}
@@ -69,6 +71,12 @@
                     <p>{{#str}}datagatheringinforestorebackup, tool_lala{{/str}}</p>
                 </div>
             </section>
+        </section>
+        <section>
+
+        </section>
+        <section>
+            {{> tool_lala/continue_model_version_button}}
         </section>
     </div>
 </section>

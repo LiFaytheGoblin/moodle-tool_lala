@@ -15,8 +15,8 @@
     @template tool_lala/model_configuration
     Template for model configuration item.
     Context variables required for this template:
-    - id: int - model config unique identifier
-    - name: string - name of the model config
+    - configid: int - model config unique identifier
+    - configname: string - name of the model config
     - target: string - name of the target associated with the model config
     - modelanalysabletype: string - name of the analysable type associated with the model config
     - predictionsprocessor: string
@@ -27,8 +27,8 @@
     - sesskey: string
     Example context (json):
     {
-            "id": 1,
-            "name": "model4",
+            "configid": 1,
+            "configname": "model4",
             "target": "Prevent devs at risk",
             "modelanalysabletype": "user_enrolments",
             "predictionsprocessor": "php",
@@ -39,8 +39,8 @@
             "sesskey": 'somesessionkey',
             "versions": [{
                 "description": {
-                    "id": 1,
-                    "name": "AutoSet",
+                    "versionid": 1,
+                    "versionname": "AutoSet",
                     "timecreationstarted": "1679987403",
                     "contextids": [1, 2, 3],
                     "timecreationfinished": null,
@@ -56,11 +56,11 @@
             }]
     }
 }}
-<section class="activity activity-wrapper my-2" aria-label="config{{id}}">
+<section class="activity activity-wrapper my-2" aria-label="config{{configid}}">
     <div class="activity-item">
         <div class="row">
             <h3 class="col-auto">
-                <span title="{{#str}}model, tool_lala{{/str}}" id="config{{id}}">{{name}}</span>
+                <span title="{{#str}}model, tool_lala{{/str}}" id="config{{configid}}">{{configname}}</span>
             </h3>
             <div class="col"></div>
             {{> tool_lala/create_model_version_button}}

@@ -54,9 +54,9 @@ class model_version_description implements templatable, renderable {
         $data = [];
 
         // Add info about the model version.
-        $data['id'] = $this->version->id;
+        $data['versionid'] = $this->version->id;
 
-        $data['name'] = $this->version->name;
+        $data['versionname'] = $this->version->name;
 
         $data['timecreationstarted'] = userdate((int) $this->version->timecreationstarted);
 

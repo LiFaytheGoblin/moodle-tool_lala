@@ -176,6 +176,21 @@ class dataset_test extends evidence_testcase {
     }
 
     /**
+     * Check that get_shuffled returns a shuffled array.
+     *
+     * @covers ::tool_lala_dataset_helper_get_shuffled
+     */
+    public function test_dataset_helper_restore_raw_data() : void {
+        $data = test_dataset_evidence::create(10);
+
+        $res = dataset_helper::get_shuffled($data);
+
+        $this->assertFalse(json_encode($data) == json_encode($res));
+        $this->assertEquals(count($data), count($res));
+        $this->assertTrue(str_contains(json_encode($res), json_encode(test_dataset_evidence::get_header())));
+    }
+
+    /**
      * Create test data.
      *
      * @param int $nstudents amount of students

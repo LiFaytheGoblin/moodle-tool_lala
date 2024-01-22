@@ -45,7 +45,8 @@ class related_data_anonymized extends related_data {
      * @throws Exception
      */
     public function collect(array $options): void {
-        $this->validate($options);
+        $this->validate_collect_options($options);
+        $this->fail_if_attempting_to_overwrite();
 
         $this->tablename = $options['tablename'];
 

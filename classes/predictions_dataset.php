@@ -38,7 +38,8 @@ class predictions_dataset extends dataset {
      * @param array $options = [$model, $data]
      */
     public function collect(array $options): void {
-        $this->validate($options);
+        $this->validate_collect_options($options);
+        $this->fail_if_attempting_to_overwrite();
 
         // Get the test data without analysisinterval container and header.
         $datawithoutheader = dataset_helper::get_rows($options['data']);
@@ -59,15 +60,12 @@ class predictions_dataset extends dataset {
     /** Validate the evidence's options.
      * @param array $options
      */
-    public function validate(array $options): void {
+    public function validate_collect_options(array $options): void {
         if (!isset($options['model'])) {
             throw new InvalidArgumentException('Missing trained model');
         }
         if (!isset($options['data'])) {
             throw new InvalidArgumentException('Missing test dataset');
-        }
-        if (isset($this->data) && count($this->data) > 0) {
-            throw new LogicException('Data has already been collected and can not be changed.');
         }
     }
 }

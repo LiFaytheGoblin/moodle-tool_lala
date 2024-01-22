@@ -62,6 +62,7 @@ class model_configuration_version_creation extends model_configuration {
      */
     public function export_for_template(renderer_base $output): array {
         $data = parent::export_for_template($output);
+        $data['versionid'] = $this->modelversion->id;
         $data['selectcontextform'] = $this->forms->selectcontext;
         $data['uploaddatasetform'] = $this->forms->uploaddataset;
         return $data;

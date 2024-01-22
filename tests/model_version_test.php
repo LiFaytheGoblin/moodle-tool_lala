@@ -27,6 +27,7 @@ require_once($CFG->dirroot . '/admin/tool/lala/classes/model_version.php');
 require_once(__DIR__ . '/fixtures/test_config.php');
 require_once(__DIR__ . '/fixtures/test_model.php');
 require_once(__DIR__ . '/fixtures/test_version.php');
+require_once(__DIR__ . '/fixtures/test_course_with_students.php');
 
 /**
  * Model version __construct() and create_scaffold_and_get_for_config() test.
@@ -100,5 +101,79 @@ class model_version_test extends advanced_testcase {
     public function test_model_version_create_scaffold_and_get_for_config_error(): void {
         $this->expectException(Exception::class);
         model_version::create_scaffold_and_get_for_config(test_config::get_highest_id() + 1);
+    }
+
+    /**
+     * Check that a model version can be completed automatically after data gathering was done.
+     *
+     * @covers ::tool_lala_model_version
+     */
+    public function test_model_version_has_evidence(): void {
+        $this->resetAfterTest(true);
+
+        // Generate test data.
+        test_course_with_students::create($this->getDataGenerator());
+
+        // Create a model version for testing.
+        $modelid = test_model::create();
+        $configid = test_config::create($modelid);
+        $versionid = test_version::create($configid);
+        $version = new model_version($versionid);
+
+        // Data becomes available in cache and db.
+        $hasdatasetincache = $version->has_evidence('dataset');
+        $this->assertFalse($hasdatasetincache);
+
+        $version->gather_dataset(false);
+
+        $hasdatasetincache = $version->evidence_in_cache('dataset');
+        $this->assertTrue($hasdatasetincache);
+        $hasdataindb =  $version->evidence_in_db('dataset');
+        $this->assertTrue($hasdataindb);
+
+        // Finish the model version automatically.
+        $version = new model_version($versionid);
+
+        // Data becomes available in db but not in cache.
+        $hasdataset = $version->has_evidence('dataset');
+        $this->assertTrue($hasdataset);
+        $hasdatasetincache = $version->evidence_in_cache('dataset');
+        $this->assertFalse($hasdatasetincache);
+        $hasdataindb =  $version->evidence_in_db('dataset');
+        $this->assertTrue($hasdataindb);
+    }
+
+    /**
+     * Check that a model version can be completed automatically after data gathering was done.
+     *
+     * @covers ::tool_lala_model_version
+     */
+    public function test_model_version_get_single_evidence(): void {
+        $this->resetAfterTest(true);
+        // Generate test data.
+        test_course_with_students::create($this->getDataGenerator());
+
+        // Create a model version for testing.
+        $modelid = test_model::create();
+        $configid = test_config::create($modelid);
+        $versionid = test_version::create($configid);
+        $version = new model_version($versionid);
+
+        // Data becomes available.
+        $dataset = $version->get_single_evidence('dataset');
+        $this->assertFalse(isset($dataset));
+
+        $version->gather_dataset(false);
+
+        $dataset = $version->get_single_evidence('dataset');
+        $this->assertTrue(isset($dataset));
+        $this->assertTrue(count($dataset) > 0);
+
+        $version = new model_version($versionid);
+
+        // Data becomes available again.
+        $dataset = $version->get_single_evidence('dataset');
+        $this->assertTrue(isset($dataset));
+        $this->assertTrue(count($dataset) > 0);
     }
 }

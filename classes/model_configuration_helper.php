@@ -32,69 +32,27 @@ use core_analytics\manager;
  * Class to help the model configuration.
  */
 class model_configuration_helper {
+    /** @var string[] Lists all columns in analytics_models that can be null */
+    const CANBENULL = ['predictionsprocessor', 'timesplitting'];
+
+    /** @var string[] Maps the column names of analytics_models to tool_lala_model_configs */
+    const CORRESPONDINGSETTINGS = [
+        'id' => 'modelid',
+        'predictionsprocessor' => 'predictionsprocessor',
+        'timesplitting' => 'analysisinterval',
+        'indicators' => 'indicators'
+    ];
 
     /**
-     * Collect all model configuration objects.
+     * Return all available model config objects.
      *
-     * @return stdClass[] of model config objects
+     * @return array
      * @throws Exception
      */
-    public static function init_and_get_all_model_config_objs(): array {
+    public static function get_all_model_config_obs(): array {
         global $DB;
 
-        // Get all existing model configs ids.
         $modelconfigids = $DB->get_fieldset_select('tool_lala_model_configs', 'id', '1=1');
-
-        // Add configs for new models/ models that have not received a config entry yet.
-        // Can we use something else than modelid? The version is stored somewhere I think?
-        $modelidsinconfigtable = $DB->get_fieldset_select('tool_lala_model_configs', 'modelid', '1=1');
-        $modelidsinanalyticsmodelstable = $DB->get_fieldset_select('analytics_models', 'id', '1=1');
-
-        // If a model has changed indicators, predictionsprocessor, analysisinterval,
-        // and no config for this combination of settings has been created yet,
-        // create a new config for it.
-        $modelidsfromanalyticsmodeltableinconfigtable = array_intersect($modelidsinanalyticsmodelstable, $modelidsinconfigtable);
-        if (count($modelidsfromanalyticsmodeltableinconfigtable) > 0) {
-            foreach ($modelidsfromanalyticsmodeltableinconfigtable as $modelid) {
-                $configtimecreated = $DB->get_fieldset_select('tool_lala_model_configs', 'timecreated', 'modelid='.$modelid);
-                $modeltimemodified = $DB->get_fieldset_select('analytics_models', 'timemodified', 'id='.$modelid)[0];
-
-                if ($modeltimemodified > max($configtimecreated)) {
-                    $analyticsmodelsettings = $DB->get_records('analytics_models', ['id' => $modelid], null,
-                            'id, predictionsprocessor, timesplitting, indicators');
-                    $configsettings = $DB->get_records('tool_lala_model_configs', ['modelid' => $modelid], null,
-                            'id, predictionsprocessor, analysisinterval, indicators');
-                    $analyticsmodelsetting = $analyticsmodelsettings[$modelid];
-                    $analyticsmodelsettingvalues = self::get_settings_values($analyticsmodelsetting);
-
-                    $modelalreadyhasexactsameconfig = false;
-                    foreach ($configsettings as $configsetting) {
-                        $configsettingvalues = self::get_settings_values($configsetting);
-                        $diff = array_diff($analyticsmodelsettingvalues, $configsettingvalues);
-
-                        if (count($diff) == 0) {
-                            $modelalreadyhasexactsameconfig = true;
-                            break;
-                        }
-                    }
-
-                    if (!$modelalreadyhasexactsameconfig) {
-                        $modelconfigids[] = self::create_and_get_for_model($modelid);
-                    }
-                }
-            }
-        }
-
-        $missingmodelids = array_diff($modelidsinanalyticsmodelstable, $modelidsinconfigtable);
-        foreach ($missingmodelids as $missingmodelid) {
-            // Check if the model is a static model.
-            $targetname = $DB->get_fieldset_select('analytics_models', 'target', 'id='.$missingmodelid)[0];
-            $target = manager::get_target($targetname);
-            if (!$target->based_on_assumptions()) {
-                // For now, ignore static models and only handle machine learning models.
-                $modelconfigids[] = self::create_and_get_for_model($missingmodelid);
-            }
-        }
 
         $modelconfigs = [];
         foreach ($modelconfigids as $configid) {
@@ -106,14 +64,42 @@ class model_configuration_helper {
     }
 
     /**
+     * Add a new config for each model without an (up-to-date) config.
+     * This means, if a model has changed indicators, predictionsprocessor, analysisinterval,
+     * and no config for this combination of settings has been created yet,
+     * create a new config for it.
+     *
+     * @return void
+     */
+    public static function init_all_model_config_obs(): void {
+        global $DB;
+
+        // Add configs for new models/ models that have not received a config entry yet.
+        $modelids = $DB->get_fieldset_select('analytics_models', 'id', '1=1');
+
+        foreach ($modelids as $modelid) { // For each modelid...
+            // Skip if the model is static.
+            if (self::is_model_static($modelid)) {
+                continue;
+            }
+
+            // If no corresponding and up-to-date config exists...
+            $relatedconfigs = self::get_related_configs($modelid);
+            if (count($relatedconfigs) < 1) {
+                self::create_and_get_for_model($modelid); // Create a new one.
+            }
+        }
+    }
+
+    /**
      * Collect all model configuration objects.
      *
-     * @param stdClass $settingdbentry
      * @return stdClass[] of model config objects
+     * @throws Exception
      */
-    private static function get_settings_values(stdClass $settingdbentry): array {
-        $vals = array_values((array) $settingdbentry);
-        return array_slice($vals, 1, null);
+    public static function init_and_get_all_model_config_objs(): array {
+        self::init_all_model_config_obs();
+        return self::get_all_model_config_obs();
     }
 
     /**
@@ -173,5 +159,50 @@ class model_configuration_helper {
         $obj->timecreated = time();
 
         return $DB->insert_record('tool_lala_model_configs', $obj);
+    }
+
+    /**
+     * Get configs that correspond to the given model.
+     *
+     * @param int $modelid
+     * @return array
+     */
+    public static function get_related_configs(int $modelid): array {
+        global $DB;
+
+        $analyticsmodelsettings = $DB->get_record('analytics_models', ['id' => $modelid],
+                'id, predictionsprocessor, timesplitting, indicators', MUST_EXIST);
+        $where = [];
+        $params = [];
+        foreach ($analyticsmodelsettings as $setting => $value) {
+            if (($value == null || $value == '') && in_array($setting, self::CANBENULL)) {
+                continue; // This value does not need to be compared - it is expected to be different in the config.
+            }
+
+            // Not all corresponding columns have an equal name.
+            // Use the name of the column in the config table for constructing the query.
+            $correspondingsetting = self::CORRESPONDINGSETTINGS[$setting];
+            $where[] = $correspondingsetting . '= :' . $correspondingsetting;
+            $params[$correspondingsetting] = $value;
+        }
+        $wherestring = implode(' AND ', $where);
+
+        // Try to get a config with the same (relevant) settings.
+        $query = "SELECT id
+                    FROM {tool_lala_model_configs}
+                   WHERE " . $wherestring;
+        return $DB->get_records_sql($query, $params);
+    }
+
+    /**
+     * Check whether the model is static.
+     *
+     * @param int $modelid
+     * @return bool
+     */
+    private static function is_model_static(int $modelid): bool {
+        global $DB;
+        $targetname = $DB->get_fieldset_select('analytics_models', 'target', 'id='.$modelid)[0];
+        return manager::get_target($targetname)->based_on_assumptions();
     }
 }

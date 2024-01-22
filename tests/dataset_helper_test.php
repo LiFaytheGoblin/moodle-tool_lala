@@ -18,6 +18,10 @@ namespace tool_lala;
 
 use advanced_testcase;
 
+defined('MOODLE_INTERNAL') || die();
+
+require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
+
 /**
  * Dataset helper test.
  *

@@ -42,7 +42,8 @@ class dataset extends evidence {
      * @param array $options = [$modelid, $analyser, $contexts]
      */
     public function collect(array $options): void {
-        $this->validate($options);
+        $this->validate_collect_options($options);
+        $this->fail_if_attempting_to_overwrite();
 
         $this->heavy_duty_mode();
 
@@ -77,7 +78,7 @@ class dataset extends evidence {
     /** Validate the evidence's options.
      * @param array $options
      */
-    public function validate(array $options) : void {
+    public function validate_collect_options(array $options) : void {
         if (!isset($options['contexts'])) {
             throw new InvalidArgumentException('Options is missing contexts.');
         }
@@ -86,9 +87,6 @@ class dataset extends evidence {
         }
         if (!isset($options['modelid'])) {
             throw new InvalidArgumentException('Options is missing model id.');
-        }
-        if (isset($this->data) && count($this->data) > 0) {
-            throw new LogicException('Data has already been collected and can not be changed.');
         }
     }
 
@@ -107,24 +105,7 @@ class dataset extends evidence {
      * Store the serialization string in the filestring field.
      */
     public function serialize(): void {
-        $str = '';
-        $columns = null;
-
-        foreach ($this->data as $results) {
-            $ids = array_keys($results);
-            foreach ($ids as $id) {
-                if ($id == '0') {
-                    $columns = implode(',', $results[$id]);
-                    continue;
-                }
-                $indicatorvaluesstr = implode(',', $results[$id]);
-                $str = $str.$id.','.$indicatorvaluesstr."\n";
-            }
-        }
-
-        $comma = (isset($columns)) ? ',' : null;
-        $heading = "sampleid".$comma.$columns."\n";
-        $this->filestring = $heading.$str;
+        $this->filestring = dataset_helper::serialize($this->data);;
     }
 
     /**
@@ -134,5 +115,25 @@ class dataset extends evidence {
      */
     public function get_file_type(): string {
         return 'csv';
+    }
+
+    /**
+     * @param array $options
+     * @return void
+     */
+    public function restore_raw_data(array $options): void {
+        $this->validate_restore_options($options);
+        $file = $this->get_file();
+        $filehandle = $file->get_content_file_handle();
+        $this->data = dataset_helper::build_from_csv($filehandle, $options['analysisintervalkey']);
+    }
+
+    /** Validate the evidence's options.
+     * @param array $options
+     */
+    public function validate_restore_options(array $options) : void {
+        if (!isset($options['analysisintervalkey'])) {
+            throw new InvalidArgumentException('Options is missing analysisintervalkey.');
+        }
     }
 }

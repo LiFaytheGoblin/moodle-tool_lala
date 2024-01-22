@@ -16,8 +16,8 @@
     Template for model configurations list.
     Context variables required for this template:
     * modelconfigs: array - a model configuration to display
-        - id: int - model config unique identifier
-        - modelname: string - name of the model config
+        - configid: int - model config unique identifier
+        - configname: string - name of the model config
         - modelid: int - model id
         - modeltarget: string - name of the target associated with the model config
         - modelanalysabletype: string - name of the analysable type associated with the model config
@@ -26,9 +26,9 @@
     Example context (json):
     {
         "modelconfigs": [{
-            "id": 1,
+            "configid": 1,
             "modelid": 4,
-            "name": "model4",
+            "configname": "config1/1",
             "target": "Prevent devs at risk",
             "firstindactor": "someindicator",
             "indicators": ["someindicator"],
@@ -42,8 +42,8 @@
             }],
             "versions": [{
                 "description": {
-                    "id": 1,
-                    "name": "AutoSet",
+                    "versionid": 1,
+                    "versionname": "AutoSet",
                     "timecreationstarted": "1679987403",
                     "contextids": [1, 2, 3],
                     "timecreationfinished": null,

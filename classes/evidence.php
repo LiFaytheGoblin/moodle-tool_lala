@@ -47,7 +47,7 @@ abstract class evidence {
     /** @var int|null $timecollectionfinished of the evidence. */
     private ?int $timecollectionfinished;
     /** @var string|null $serializedfilelocation path of the evidence. */
-    private ?string $serializedfilelocation;
+    protected ?string $serializedfilelocation;
 
     /**
      * Constructor. Deserialize DB object.
@@ -74,7 +74,7 @@ abstract class evidence {
      * @return evidence of the created evidence
      * @throws Exception
      */
-    public static function create_scaffold_and_get_for_version(int $versionid): evidence {
+    public static function create_scaffold_and_get_for_version(int $versionid): self {
         global $DB;
 
         $obj = new stdClass();
@@ -103,12 +103,21 @@ abstract class evidence {
     abstract public function collect(array $options): void;
 
     /**
-     * Validates the $options array.
+     * Validates the $options array passed to collect.
      *
      * @param array $options depending on the implementation
      */
-    abstract public function validate(array $options): void;
+    abstract public function validate_collect_options(array $options): void;
 
+    /**
+     * Throw an error if data already exists. Can be used in collect()
+     * to prevent overwriting of data after it has already been collected.
+     */
+    public function fail_if_attempting_to_overwrite(): void {
+        if (isset($this->data)) {
+            throw new LogicException('Evidence' . $this->name . 'has already been collected and can not be changed.');
+        }
+    }
     /**
      * Stores a serialized data string in a file. Sets the serializedfilelocation property of the class.
      */
@@ -222,6 +231,9 @@ abstract class evidence {
      * @return array|mixed|null raw data
      */
     public function get_raw_data(): mixed {
+        if (!isset($this->data)) {
+            return null;
+        }
         return $this->data;
     }
 
@@ -234,6 +246,38 @@ abstract class evidence {
         $this->data = $data;
     }
 
+    /**
+     * Restore the raw data from a serialized file for bypassing the collection process of the evidence item.
+     *
+     * @param array $options
+     */
+    public abstract function restore_raw_data(array $options): void;
+
+    /**
+     * Validates the $options array passed to restore_raw_data.
+     *
+     * @param array $options
+     */
+    public abstract function validate_restore_options(array $options): void;
+
+
+    public function get_file() {
+        if (!$this->serializedfilelocation) {
+            throw new LogicException('No serialized file available to restore data from.');
+        }
+
+        $fs = get_file_storage();
+        $fileinfo = $this->get_file_info();
+        $file = $fs->get_file(
+                $fileinfo['contextid'],
+                $fileinfo['component'],
+                $fileinfo['filearea'],
+                $fileinfo['itemid'],
+                $fileinfo['filepath'],
+                $fileinfo['filename']
+        );
+        return $file;
+    }
     /**
      * Returns the serialized data of the evidence.
      * Useful for testing.

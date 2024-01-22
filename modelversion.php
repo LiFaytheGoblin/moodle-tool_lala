@@ -24,13 +24,15 @@
 
 require(__DIR__ . '/../../../config.php');
 
+use core\task\manager;
 use tool_lala\model_configuration;
 use tool_lala\model_version;
 use tool_lala\output\form\select_context;
 use tool_lala\output\form\upload_dataset;
+use tool_lala\task\version_create;
 
 $configid = required_param('configid', PARAM_INT);
-$auto = optional_param('auto', true, PARAM_BOOL); // Should version be created automatically with default settings?
+$manual = optional_param('manual', true, PARAM_BOOL); // Should version be created automatically with default settings?
 $versionid = optional_param('versionid', null, PARAM_INT); // Should version be created automatically with default settings?
 $contexts = optional_param_array('contexts', null, PARAM_INT);
 $dataset = optional_param('dataset', null, PARAM_FILE);
@@ -40,7 +42,7 @@ $sesskey = optional_param('sesskey', null, PARAM_ALPHANUMEXT);
 $priorpath = '/admin/tool/lala/index.php';
 $priorurl = new moodle_url($priorpath);
 $pagepath = '/admin/tool/lala/modelversion.php';
-$pageurl = new moodle_url($pagepath, ['configid' => $configid, 'auto' => $auto, 'versionid' => $versionid]);
+$pageurl = new moodle_url($pagepath, ['configid' => $configid, 'manual' => $manual, 'versionid' => $versionid]);
 $heading = get_string('pluginname', 'tool_lala');
 $context = context_system::instance();
 
@@ -60,23 +62,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($versionid)) {
         // We do not have a version scaffold yet - first, create one.
         $versionid = model_version::create_scaffold_and_get_for_config($configid);
-
-        if ($auto) {
-            // For the automatic creation, directly set the versionid and redirect to the same page.
-            model_version::create($versionid);
-            redirect(new moodle_url($priorpath, null, 'version'.$versionid));
-        } else {
-            // For manual creation, display a form. If anything is input to the form, it will redirect.
-            render_page($versionid, $configid);
-        }
+    }
+    if ($manual) {
+        render_page($versionid, $configid);
     } else {
         // Now we have a version scaffold and possibly some creation parameters,
         // and need to create the version according to the set parameters.
-        model_version::create($versionid, $contexts, $dataset);
+        trigger_adhoc_model_version_creation($versionid, $contexts, $dataset);
         redirect(new moodle_url($priorpath, null, 'version'.$versionid));
     }
 } else {
     http_response_code(405);
+}
+
+/**
+ * Creates and queues a new adhoc task for creating a model version.
+ *
+ * @param int $versionid
+ * @param array|null $contexts
+ * @param mixed $dataset
+ * @return void
+ */
+function trigger_adhoc_model_version_creation(int $versionid, ?array $contexts = null, mixed $dataset = null): void {
+    global $USER;
+    $asynctask = version_create::instance($versionid, $contexts, $dataset);
+    $asynctask->set_userid($USER->id);
+    manager::queue_adhoc_task($asynctask, true);
 }
 
 /**

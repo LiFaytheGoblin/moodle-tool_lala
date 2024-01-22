@@ -63,8 +63,8 @@ Fernsel, L. (2023) Let's audit Learning Analytics [Moodle Plugin]. Available at:
   author = {Linda Fernsel},
   title={Let’s audit Learning Analytics [Moodle Plugin]}, 
   url={https://github.com/LiFaytheGoblin/moodle-tool_lala/}, 
-  version = {2.0.0},
-  date = {2023-08-07},
+  version = {3.1.0},
+  date = {2023-11-02},
 }
 ```
 

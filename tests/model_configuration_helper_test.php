@@ -78,29 +78,46 @@ class model_configuration_helper_test extends advanced_testcase {
 
         // Update a model.
         test_model::update($modelid, 'predictionsprocessor');
+        $nmodels++;
         $configs4 = model_configuration_helper::init_and_get_all_model_config_objs();
-        $this->assertEquals($nmodels + 1, count($configs4)); // New config belonging to updated model should be created.
+        $this->assertEquals($nmodels, count($configs4)); // New config belonging to updated model should be created.
 
         sleep(1);
 
         // Update a model again.
         test_model::update($modelid, 'timesplitting');
+        $nmodels++;
         $configs5 = model_configuration_helper::init_and_get_all_model_config_objs();
-        $this->assertEquals($nmodels + 2, count($configs5)); // New config belonging to updated model should be created.
+        $this->assertEquals($nmodels, count($configs5)); // New config belonging to updated model should be created.
 
         sleep(1);
 
         // Update a model again.
         test_model::update($modelid, 'indicators');
+        $nmodels++;
         $configs6 = model_configuration_helper::init_and_get_all_model_config_objs();
-        $this->assertEquals($nmodels + 3, count($configs6)); // New config belonging to updated model should be created.
+        $this->assertEquals($nmodels, count($configs6)); // New config belonging to updated model should be created.
 
         sleep(1);
 
         // Reset model = update model to previous state.
         test_model::reset($modelid);
         $configs7 = model_configuration_helper::init_and_get_all_model_config_objs();
-        $this->assertEquals($nmodels + 3, count($configs7)); // No new config belonging to updated model should be created.
+        $this->assertEquals($nmodels, count($configs7)); // No new config belonging to updated model should be created.
+
+        sleep(1);
+
+        // Update a model without making any changes.
+        test_model::update($modelid);
+        $configs8 = model_configuration_helper::init_and_get_all_model_config_objs();
+        $this->assertEquals($nmodels, count($configs8)); // No new config belonging to updated model should be created.
+
+        sleep(1);
+
+        // Update a model and set ml backend to empty string.
+        test_model::update($modelid, 'predictionsprocessor', "");
+        $configs9 = model_configuration_helper::init_and_get_all_model_config_objs();
+        $this->assertEquals($nmodels, count($configs9)); // No new config belonging to updated model should be created.
     }
 
     /**
@@ -118,6 +135,23 @@ class model_configuration_helper_test extends advanced_testcase {
         $returnedconfigid = model_configuration_helper::create_and_get_for_model($modelid);
         $this->assertGreaterThan($maxidbeforenewconfigcreation,
                 $returnedconfigid); // New config has been created, is referenced.
+    }
+
+    /**
+     * Check that get_related_configs() gets the correct configs
+     *
+     * @covers ::tool_lala_model_configuration_helper_get_related_configs
+     */
+    public function test_model_configuration_helper_get_related_configs() {
+        $this->resetAfterTest(true);
+
+        $modelid = test_model::create();
+        $configid = test_config::create($modelid);
+
+        $returnedconfigs = model_configuration_helper::get_related_configs($modelid);
+
+        $this->assertEquals(1, count($returnedconfigs)); // 1 corresponding config exists.
+        $this->assertEquals($configid, reset($returnedconfigs)->id);
     }
 
     /**

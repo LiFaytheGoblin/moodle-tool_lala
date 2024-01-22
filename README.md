@@ -56,15 +56,15 @@ You should have received a copy of the GNU General Public License along with
 this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ## Cite as ##
-Fernsel, L. (2023) Let's audit Learning Analytics [Moodle Plugin]. Available at: https://github.com/LiFaytheGoblin/moodle-tool_lala/.
+Fernsel, L. (2024) Let's audit Learning Analytics [Moodle Plugin]. Available at: https://github.com/LiFaytheGoblin/moodle-tool_lala/.
 
 ```biblatex
 @software{lala,
   author = {Linda Fernsel},
   title={Let’s audit Learning Analytics [Moodle Plugin]}, 
   url={https://github.com/LiFaytheGoblin/moodle-tool_lala/}, 
-  version = {3.1.0},
-  date = {2023-11-02},
+  version = {4.0.0},
+  date = {2024-01-22},
 }
 ```
 

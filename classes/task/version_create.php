@@ -58,8 +58,10 @@ class version_create extends adhoc_task {
         mtrace('Finished version ' . $data->versionid . '.');
     }
 
-    /*
+    /**
      * Check whether the version creation task is active for a specific version.
+     *
+     * @param int $versionid
      */
     public static function is_active($versionid) {
         global $DB;

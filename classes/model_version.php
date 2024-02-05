@@ -226,7 +226,8 @@ class model_version {
      * @return model_version
      * @throws Exception
      */
-    public static function create(int $versionid, ?array $contexts = null, ?string $dataset = null, ?bool $anonymous = true): model_version {
+    public static function create(int $versionid, ?array $contexts = null, ?string $dataset = null,
+            ?bool $anonymous = true): model_version {
         $version = new model_version($versionid);
 
         try {
@@ -597,7 +598,9 @@ class model_version {
             // So the second part needs to be the remaining data, but shuffled.
             if ($existingtrainingdataset !== false && !$existingtestdataset) {
                 $trainingdata = $this->get_single_evidence('training_dataset'); // First part of reconstructed data.
-                if (!isset($trainingdata)) $trainingdata = [];
+                if (!isset($trainingdata)) {
+                    $trainingdata = [];
+                }
                 $remainingdata = dataset_helper::diff($data, $trainingdata); // Second part of reconstructed data.
                 $remainingdatashuffled = dataset_helper::get_shuffled($remainingdata);
                 return dataset_helper::merge($trainingdata, $remainingdatashuffled);

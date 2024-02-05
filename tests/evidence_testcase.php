@@ -29,7 +29,7 @@ require_once(__DIR__ . '/fixtures/test_analyser.php');
 require_once(__DIR__ . '/fixtures/test_dataset_evidence.php');
 
 /**
- * Dataset test.
+ * Evidence test.
  *
  * @package     tool_lala
  * @copyright   2023 Linda Fernsel <fernsel@htw-berlin.de>

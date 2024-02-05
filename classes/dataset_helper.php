@@ -186,8 +186,12 @@ class dataset_helper {
      * @return array[]
      */
     public static function merge(array $dataseta, array $datasetb) : array {
-        if (count($dataseta) < 1) return $datasetb;
-        if (count($datasetb) < 1) return $dataseta;
+        if (count($dataseta) < 1) {
+            return $datasetb;
+        }
+        if (count($datasetb) < 1) {
+            return $dataseta;
+        }
 
         $analysisintervalkeya = self::get_analysisintervalkey($dataseta);
         $analysisintervalkeyb = self::get_analysisintervalkey($datasetb);
@@ -211,8 +215,12 @@ class dataset_helper {
      * @return array
      */
     public static function diff(array $dataseta, array $datasetb) : array {
-        if (count($dataseta) < 1) return $datasetb;
-        if (count($datasetb) < 1) return $dataseta;
+        if (count($dataseta) < 1) {
+            return $datasetb;
+        }
+        if (count($datasetb) < 1) {
+            return $dataseta;
+        }
 
         $sampleidsb = self::get_sampleids_used_in_dataset($datasetb);
         $rowsa = self::get_rows($dataseta);
@@ -362,6 +370,13 @@ class dataset_helper {
         }
     }
 
+    /**
+     * Transform a dataset (a two dimensional array) into a string which can be
+     * stored as a CSV. Elements at id '0' are treated as the header.
+     *
+     * @param array $dataset
+     * @return string
+     */
     public static function serialize(array $dataset) : string {
         $str = '';
         $columns = null;

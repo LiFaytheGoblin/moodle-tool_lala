@@ -251,16 +251,20 @@ abstract class evidence {
      *
      * @param array $options
      */
-    public abstract function restore_raw_data(array $options): void;
+    abstract public function restore_raw_data(array $options): void;
 
     /**
      * Validates the $options array passed to restore_raw_data.
      *
      * @param array $options
      */
-    public abstract function validate_restore_options(array $options): void;
+    abstract public function validate_restore_options(array $options): void;
 
-
+    /**
+     * Return the file that contains the evidence data.
+     *
+     * @return mixed
+     */
     public function get_file() {
         if (!$this->serializedfilelocation) {
             throw new LogicException('No serialized file available to restore data from.');

@@ -262,6 +262,7 @@ class model_version_complete_creation_test extends advanced_testcase {
      *
      * @dataProvider tool_lala_model_creation_parameters_provider
      * @covers ::tool_lala_model_version
+     * @param bool $anonymous
      */
     public function test_model_version_complete_creation_resume_after_data_gathering(bool $anonymous): void {
         // Generate test data.
@@ -299,7 +300,7 @@ class model_version_complete_creation_test extends advanced_testcase {
         $this->assertTrue($hasmodel);
         $haspredictionsdatasetincache = $this->version->evidence_in_cache('predictions_dataset');
         $this->assertTrue($haspredictionsdatasetincache);
-        $predictionsdataset =  $this->version->get_single_evidence('predictions_dataset');
+        $predictionsdataset = $this->version->get_single_evidence('predictions_dataset');
         $this->assertTrue(isset($predictionsdataset));
         $this->assertTrue(count($predictionsdataset) > 0);
     }
@@ -309,6 +310,7 @@ class model_version_complete_creation_test extends advanced_testcase {
      *
      * @dataProvider tool_lala_model_creation_parameters_provider
      * @covers ::tool_lala_model_version
+     * @param bool $anonymous
      */
     public function test_model_version_complete_creation_resume_after_data_split(bool $anonymous): void {
         // Generate test data.
@@ -336,7 +338,7 @@ class model_version_complete_creation_test extends advanced_testcase {
         $this->assertTrue($hasmodel);
         $haspredictionsdataset = $this->version->has_evidence('predictions_dataset');
         $this->assertTrue($haspredictionsdataset);
-        $predictionsdataset =  $this->version->get_single_evidence('predictions_dataset');
+        $predictionsdataset = $this->version->get_single_evidence('predictions_dataset');
         $this->assertTrue(isset($predictionsdataset));
         $this->assertTrue(count($predictionsdataset) > 0);
     }
@@ -346,8 +348,9 @@ class model_version_complete_creation_test extends advanced_testcase {
      *
      * @dataProvider tool_lala_model_creation_parameters_provider
      * @covers ::tool_lala_model_version
+     * @param bool $anonymous
      */
-    public function test_model_version_complete_creation_resume_after_training($anonymous): void {
+    public function test_model_version_complete_creation_resume_after_training(bool $anonymous): void {
         // Generate test data.
         test_course_with_students::create($this->getDataGenerator());
 
@@ -371,7 +374,7 @@ class model_version_complete_creation_test extends advanced_testcase {
         // Now the data is all there.
         $haspredictionsdataset = $this->version->has_evidence('predictions_dataset');
         $this->assertTrue($haspredictionsdataset);
-        $predictionsdataset =  $this->version->get_single_evidence('predictions_dataset');
+        $predictionsdataset = $this->version->get_single_evidence('predictions_dataset');
         $this->assertTrue(isset($predictionsdataset));
         $this->assertTrue(count($predictionsdataset) > 0);
     }

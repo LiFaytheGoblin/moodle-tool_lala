@@ -118,6 +118,8 @@ class dataset extends evidence {
     }
 
     /**
+     * Restore the data for a model version to the cache from the stored CSV files.
+     *
      * @param array $options
      * @return void
      */
@@ -128,7 +130,9 @@ class dataset extends evidence {
         $this->data = dataset_helper::build_from_csv($filehandle, $options['analysisintervalkey']);
     }
 
-    /** Validate the evidence's options.
+    /**
+     * Validate the evidence's options.
+     *
      * @param array $options
      */
     public function validate_restore_options(array $options) : void {

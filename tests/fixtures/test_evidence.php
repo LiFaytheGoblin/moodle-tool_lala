@@ -77,14 +77,30 @@ class test_evidence extends evidence {
         return self::FILETYPE;
     }
 
-    /** Validate the $options -
+    /**
+     * Validate the $options -
      * @param array $options
      */
     public function validate_collect_options(array $options): void {
         if (isset($this->data)) throw new Exception('Already collected.');
     }
 
-    public function restore_raw_data(): void {
+    /**
+     * Return the test data.
+     *
+     * @param array $options
+     * @return void
+     */
+    public function restore_raw_data(array $options): void {
         // TODO: Implement restore_raw_data() method.
+    }
+
+    /**
+     * Validate the $options param - this is formality, since restore_raw_data is mocked.
+     *
+     * @param array $options
+     * @return void
+     */
+    public function validate_restore_options(array $options): void {
     }
 }

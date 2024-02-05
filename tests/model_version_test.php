@@ -128,7 +128,7 @@ class model_version_test extends advanced_testcase {
 
         $hasdatasetincache = $version->evidence_in_cache('dataset');
         $this->assertTrue($hasdatasetincache);
-        $hasdataindb =  $version->evidence_in_db('dataset');
+        $hasdataindb = $version->evidence_in_db('dataset');
         $this->assertTrue($hasdataindb);
 
         // Finish the model version automatically.
@@ -139,7 +139,7 @@ class model_version_test extends advanced_testcase {
         $this->assertTrue($hasdataset);
         $hasdatasetincache = $version->evidence_in_cache('dataset');
         $this->assertFalse($hasdatasetincache);
-        $hasdataindb =  $version->evidence_in_db('dataset');
+        $hasdataindb = $version->evidence_in_db('dataset');
         $this->assertTrue($hasdataindb);
     }
 

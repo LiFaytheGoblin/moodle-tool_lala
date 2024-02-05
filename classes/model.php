@@ -97,7 +97,9 @@ class model extends evidence {
     }
 
     /**
-     * @param array $options
+     * Restore the model from the stored .ser file.
+     *
+     * @param array $options (can be empty - not used)
      * @return void
      */
     public function restore_raw_data(array $options): void {
@@ -105,5 +107,13 @@ class model extends evidence {
         $this->data = unserialize($file->get_content());
     }
 
-    public function validate_restore_options(array $options): void {}
+    /**
+     * No validation is needed for the restore options of the model class,
+     * since that parameter is not used.
+     *
+     * @param array $options
+     * @return void
+     */
+    public function validate_restore_options(array $options): void {
+    }
 }

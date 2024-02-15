@@ -28,6 +28,7 @@ use renderer_base;
 use templatable;
 use renderable;
 use stdClass;
+use context;
 
 /**
  * Class for the output for a single model version description.
@@ -72,10 +73,17 @@ class model_version_description implements templatable, renderable {
 
         $data['contextids'] = get_string('allcontexts', 'tool_lala');
         $contextids = json_decode($this->version->contextids);
+        $contextnames = [];
         if (gettype($contextids) == 'array') {
-            $data['contextids'] = implode(', ', $contextids);
+            foreach ($contextids as $contextid) {
+                $context = context::instance_by_id($contextid, IGNORE_MISSING);
+                if (isset($context)) {
+                    $contextnames[] = $context->get_context_name();
+                }
+            }
+            $data['contextids'] = implode(', ', $contextnames);
         } else if (gettype($contextids) == 'string') {
-            $data['contextids'] = $contextids;
+            $data['contextids'] = 'TEXT' . $contextids;
         }
 
         $data['errormessage'] = $this->version->error;

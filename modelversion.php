@@ -68,11 +68,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         // Now we have a version scaffold and possibly some creation parameters,
         // and need to create the version according to the set parameters.
+        set_contexts($versionid, $contexts);
         trigger_adhoc_model_version_creation($versionid, $contexts, $dataset);
         redirect(new moodle_url($priorpath, null, 'version'.$versionid));
     }
 } else {
     http_response_code(405);
+}
+
+/**
+ * Updates the contexts for a model version.
+ *
+ * @param int $versionid
+ * @param array|null $contexts
+ * @return void
+ */
+function set_contexts(int $versionid, ?array $contexts = null): void {
+    $version = new model_version($versionid);
+    if (!empty($contexts)) { // If contexts are provided, set those to limit the data gathering scope.
+        $version->set_contextids($contexts);
+    }
 }
 
 /**

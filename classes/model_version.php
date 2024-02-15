@@ -231,7 +231,10 @@ class model_version {
         $version = new model_version($versionid);
 
         try {
-            if (!empty($contexts)) { // If contexts are provided, set those to limit the data gathering scope.
+            // If contexts are provided, set those to limit the data gathering scope.
+            // This can be done before calling create asynchronously to make sure the UI
+            // already displays the correct contexts.
+            if (!empty($contexts)) {
                 $version->set_contextids($contexts);
             }
 

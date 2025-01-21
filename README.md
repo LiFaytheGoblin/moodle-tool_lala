@@ -70,4 +70,4 @@ Fernsel, L. (2024) Let's audit Learning Analytics [Moodle Plugin]. Available at:
 
 ## Acknowledgements ##
 This work is funded by the Federal Ministry of Education and Research of Germany as part of the project [Fair Enough?](https://iug.htw-berlin.de/projekte/fair-enough/)
-(project nr: 16DHB4002) at the University of Applied Sciences (HTW) Berlin.
+(project nr: 16DHB4002), in Prof. Katharina Simbeck's research group "Informatik und Gesellschaft" at the University of Applied Sciences (HTW) Berlin.
